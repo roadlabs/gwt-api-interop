@@ -482,22 +482,6 @@ public class JSWrapperGenerator extends Generator {
     sw.outdent();
     sw.println("}");
 
-    // Build a factory method for use by JSNI code. This method would be
-    // unnecessary if it were possible to construct Java objects from within a
-    // JSNI block.
-    sw.print("public static ");
-    sw.print(context.returnType.getQualifiedSourceName());
-    sw.print(" __create__");
-    sw.println("() {");
-    sw.indent();
-    sw.print("return (");
-    sw.print(context.returnType.getQualifiedSourceName());
-    sw.print(")GWT.create(");
-    sw.print(context.returnType.getQualifiedSourceName());
-    sw.println(".class);");
-    sw.outdent();
-    sw.println("}");
-
     // Initialize native state of the wrapper
     sw.println("private native JavaScriptObject __nativeInit() /*-{");
     sw.indent();
@@ -734,8 +718,29 @@ public class JSWrapperGenerator extends Generator {
     }
 
     // Method declaration
-    sw.print("native ");
-    sw.print(imported.getReadableDeclaration(false, true, true, false, true));
+    sw.print("public native ");
+    sw.print(imported.getReturnType().getQualifiedSourceName());
+    sw.print(" ");
+    sw.print(imported.getName());
+    sw.print("(");
+    for (int i = 0; i < parameters.length; i++) {
+      JType returnType = parameters[i].getType();
+      JParameterizedType pType = returnType.isParameterized();
+      
+      if (pType != null) {
+        sw.print(pType.getRawType().getQualifiedSourceName());
+      } else {
+        sw.print(returnType.getQualifiedSourceName());
+      }
+      
+      sw.print(" ");
+      sw.print(parameters[i].getName());
+      
+      if (i < parameters.length - 1) {
+        sw.print(", ");
+      }
+    }
+    sw.print(")");
     sw.println(" /*-{");
     sw.indent();
 
@@ -797,9 +802,9 @@ public class JSWrapperGenerator extends Generator {
 
     // Wrap the return type in the correct Java type. Void returns are ignored
     if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
-      subParams.returnType = returnType;
-      subParams.parameterName = "jsReturn";
+      FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
+      subContext.returnType = returnType;
+      subContext.parameterName = "jsReturn";
 
       FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
           context.typeOracle, returnType);
@@ -807,20 +812,32 @@ public class JSWrapperGenerator extends Generator {
       if (useConstructor) {
         sw.print("var toReturn = this.");
       } else if (fragmentGenerator.fromJSRequiresObject()) {
-        sw.print("toReturn = ");
-        fragmentGenerator.writeJSNIObjectCreator(context);
+        sw.print("var toReturn = ");
+        
+        fragmentGenerator.writeJSNIObjectCreator(subContext);
         sw.println(";");
+        
+        /*
+        sw.print("@");
+        sw.print(context.qualifiedTypeName);
+        sw.print("::");
+        sw.print("__create__");
+        sw.print(returnType.getQualifiedSourceName().replaceAll("\\.", "_"));
+        sw.println("()();");
+
+        context.creatorFixups.add(returnType);*/
         
         sw.print("toReturn.");
       } else {
         sw.print("var toReturn = ");
       }
-
-      fragmentGenerator.fromJS(subParams);
+      
+      fragmentGenerator.fromJS(subContext);
       sw.println(";");
       sw.print("return ");
       sw.println(useConstructor ? "this;" : "toReturn;");
     }
+    
 
     sw.outdent();
     sw.println("}-*/;");

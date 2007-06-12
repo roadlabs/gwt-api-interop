@@ -78,9 +78,15 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
   void writeJSNIObjectCreator(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
+    JClassType returnType = context.returnType.isClassOrInterface();
 
     sw.print("@");
     sw.print(context.qualifiedTypeName);
-    sw.print("::__create__()()");
+    sw.print("::");
+    sw.print("__create__");
+    sw.print(returnType.getQualifiedSourceName().replaceAll("\\.", "_"));
+    sw.print("()()");
+    
+    context.creatorFixups.add(returnType);
   }
 }

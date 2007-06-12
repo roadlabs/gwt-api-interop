@@ -73,15 +73,24 @@ public class JSONInvokerTest extends GWTTestCase {
      * between invocations.
      */
     public boolean identityEquals(HelloCallbackInt a, HelloCallbackInt b);
+
     public boolean identityEquals(JSWrapper a, JSWrapper b);
 
     public void increment();
-
+    
     /**
      * Test that a JSWrapper can be passed through and returned from a native
      * code block.
      */
     public HelloWrapper passthrough(HelloWrapper w);
+
+    public OtherWrapper passthrough(OtherWrapper w);
+
+    /**
+     * @gwt.typeArgs arr <java.lang.Integer>
+     * @gwt.typeArgs <java.lang.Integer>
+     */
+    public JSList reverseNumbers(JSList arr);
 
     /**
      * Don't implement this as a bean function, but make a call out to the js
@@ -111,6 +120,12 @@ public class JSONInvokerTest extends GWTTestCase {
    * @gwt.global $wnd.SingletonHello
    */
   public static interface SingletonHello extends HelloWrapper {
+  }
+
+  /**
+   * This is a blank interface just to be used as a reference type.
+   */
+  public static interface OtherWrapper extends JSWrapper {
   }
 
   /**
@@ -147,6 +162,14 @@ public class JSONInvokerTest extends GWTTestCase {
    
    Hello.prototype.identityEquals = function(o1, o2) {
    return o1 === o2;
+   }
+   
+   Hello.prototype.reverseNumbers = function(arr) {
+   var toReturn = [];
+   for (var i = 0; i < arr.length; i++) {
+     toReturn[i] = arr[arr.length - i - 1];
+   }
+   return toReturn;
    }
    
    Hello.prototype.passthrough = function(o) {
@@ -202,9 +225,17 @@ public class JSONInvokerTest extends GWTTestCase {
     wrapper.setHello(10);
     assertEquals(20, wrapper.getHello());
 
+    // Check lists returned from bean-style accessors
     JSList numbers = wrapper.getNumbers();
     for (int i = 0; i < numbers.size(); i++) {
       assertEquals(new Integer(i + 1), numbers.get(i));
+    }
+    
+    // Check a list returned through an imported function
+    JSList reversed = wrapper.reverseNumbers(numbers);
+    assertEquals(numbers.size(), reversed.size());
+    for (int i = 0; i < numbers.size(); i++) {
+      assertEquals(numbers.get(i), reversed.get(numbers.size() - i - 1));
     }
   }
 
@@ -222,9 +253,14 @@ public class JSONInvokerTest extends GWTTestCase {
     w2.constructor("world", 2);
 
     HelloWrapper w3 = w2.passthrough(w1);
-    
+
     assertTrue(w3 instanceof HelloWrapper);
-    assertTrue(w2.identityEquals(w1,w3));
+    assertTrue(w2.identityEquals(w1, w3));
+
+    OtherWrapper o1 = (OtherWrapper) GWT.create(OtherWrapper.class);
+    OtherWrapper o2 = w2.passthrough(o1);
+    assertTrue(o2 instanceof OtherWrapper);
+    assertTrue(w2.identityEquals(o1, o2));
   }
 
   /**
