@@ -93,8 +93,8 @@ public class JSONArray extends JSONValue {
    * @return size of this array
    */
   public native int size() /*-{
-    return this.@com.google.gwt.json.client.JSONArray::javascriptArray.length;
-  }-*/;
+   return this.@com.google.gwt.json.client.JSONArray::javascriptArray.length;
+   }-*/;
 
   /**
    * Create the JSON encoded string representation of this JSONArray instance.
@@ -117,36 +117,36 @@ public class JSONArray extends JSONValue {
   }
 
   private native JavaScriptObject createArray() /*-{
-    return [];
-  }-*/;
+   return [];
+   }-*/;
 
   private native JavaScriptObject rawGet(int index) /*-{
-    var x = this.@com.google.gwt.json.client.JSONArray::javascriptArray[index];
-    if (typeof x == 'number' || typeof x == 'string' || typeof x == 'array' || typeof x == 'boolean') {
-      x = (Object(x));
-    }
-    return x;
-  }-*/;
+   var x = this.@com.google.gwt.json.client.JSONArray::javascriptArray[index];
+   if (typeof x == 'number' || typeof x == 'string' || typeof x == 'array' || typeof x == 'boolean') {
+   x = (Object(x));
+   }
+   return x;
+   }-*/;
 
   private native void rawSet(int index, JavaScriptObject jsObject) /*-{
-    this.@com.google.gwt.json.client.JSONArray::javascriptArray[index] = jsObject; 
-  }-*/;
+   this.@com.google.gwt.json.client.JSONArray::javascriptArray[index] = jsObject; 
+   }-*/;
 
   private native boolean rawTest(int index) /*-{
-    var x = this.@com.google.gwt.json.client.JSONArray::javascriptArray[index];
-    return x !== undefined;
-  }-*/;
+   var x = this.@com.google.gwt.json.client.JSONArray::javascriptArray[index];
+   return x !== undefined;
+   }-*/;
 
   private native JSONValue wrappedGet(int index) /*-{
-    return this.@com.google.gwt.json.client.JSONArray::wrappedArray[index];
-  }-*/;
+   return this.@com.google.gwt.json.client.JSONArray::wrappedArray[index];
+   }-*/;
 
   private native void wrappedSet(int index, JSONValue jsonValue) /*-{
-    this.@com.google.gwt.json.client.JSONArray::wrappedArray[index] = jsonValue;
-  }-*/;
+   this.@com.google.gwt.json.client.JSONArray::wrappedArray[index] = jsonValue;
+   }-*/;
 
   private native boolean wrappedTest(int index) /*-{
-    var x = this.@com.google.gwt.json.client.JSONArray::wrappedArray[index];
-    return x !== undefined;
-  }-*/;
+   var x = this.@com.google.gwt.json.client.JSONArray::wrappedArray[index];
+   return x !== undefined;
+   }-*/;
 }
