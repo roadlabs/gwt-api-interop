@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
@@ -22,7 +22,7 @@ import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.json.client.JSFunction;
+import com.google.gwt.jsio.client.JSFunction;
 import com.google.gwt.user.rebind.SourceWriter;
 
 /**
@@ -62,9 +62,9 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
 
     sw.print("(");
     sw.print(context.parameterName);
-    sw.print(".@com.google.gwt.json.client.JSFunction::exportedFunction || (");
+    sw.print(".@com.google.gwt.jsio.client.JSFunction::exportedFunction || (");
     sw.print(context.parameterName);
-    sw.print(".@com.google.gwt.json.client.JSFunction::exportedFunction = ");
+    sw.print(".@com.google.gwt.jsio.client.JSFunction::exportedFunction = ");
     writeFunction(context);
     sw.print("))");
   }

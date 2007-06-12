@@ -16,7 +16,7 @@
 <!--                                                                        -->
 <module>
 	<inherits name="com.google.gwt.core.Core"/>
-  <generate-with class="com.google.gwt.json.rebind.JSWrapperGenerator">
-    <when-type-assignable class="com.google.gwt.json.client.JSWrapper" />
+  <generate-with class="com.google.gwt.jsio.rebind.JSWrapperGenerator">
+    <when-type-assignable class="com.google.gwt.jsio.client.JSWrapper" />
   </generate-with>
 </module>

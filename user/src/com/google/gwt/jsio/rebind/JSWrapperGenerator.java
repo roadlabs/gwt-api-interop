@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -28,7 +28,7 @@ import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.json.client.JSWrapper;
+import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
 import com.google.gwt.user.rebind.SourceWriter;
 
@@ -138,8 +138,8 @@ public class JSWrapperGenerator extends Generator {
     f.addImport(GWT.class.getName());
     f.addImport(JavaScriptObject.class.getName());
     // This is a cheat, but doesn't require excessive maintenance
-    f.addImport("com.google.gwt.json.client.*");
-    f.addImport("com.google.gwt.json.client.impl.*");
+    f.addImport("com.google.gwt.jsio.client.*");
+    f.addImport("com.google.gwt.jsio.client.impl.*");
 
     // Either extend an abstract base class or implement the interface
     if (sourceType.isClass() != null) {

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.client;
+package com.google.gwt.jsio.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
@@ -143,7 +143,7 @@ public class JSONInvokerTest extends GWTTestCase {
   }-*/;
   
   public String getModuleName() {
-    return "com.google.gwt.json.JSON";
+    return "com.google.gwt.jsio.JSON";
   }
   
   public void testCallback() {

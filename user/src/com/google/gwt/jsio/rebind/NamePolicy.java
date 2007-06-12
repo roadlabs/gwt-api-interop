@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 /**
  * Defines a property-name to field-name conversion policy.
