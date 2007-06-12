@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
@@ -65,7 +65,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
     TypeOracle typeOracle = context.typeOracle;
     JClassType returnType = context.returnType.isClassOrInterface();
 
-    sw.print("@com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper");
+    sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper");
 
     // Just plow through the Boxed types
     if (isAssignable(typeOracle, returnType, Boolean.class)) {
@@ -120,7 +120,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
     SourceWriter sw = context.sw;
-    sw.print("@com.google.gwt.json.client.impl.JSONWrapperUtil::");
+    sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::");
     sw.print(context.returnType.getSimpleSourceName().toUpperCase());
     sw.print("_EXTRACTOR");
   }

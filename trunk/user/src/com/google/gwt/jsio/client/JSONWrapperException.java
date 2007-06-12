@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.client;
+package com.google.gwt.jsio.client;
 
 /**
  * A generic Exception base class for JSWrapper operations.

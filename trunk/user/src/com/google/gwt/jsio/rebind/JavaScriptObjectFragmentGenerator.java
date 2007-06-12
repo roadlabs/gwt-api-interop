@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.ext.TreeLogger;
@@ -59,6 +59,6 @@ class JavaScriptObjectFragmentGenerator extends FragmentGenerator {
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
     SourceWriter sw = context.sw;
-    sw.print("@com.google.gwt.json.client.impl.JSONWrapperUtil::JSO_EXTRACTOR");
+    sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::JSO_EXTRACTOR");
   }
 }

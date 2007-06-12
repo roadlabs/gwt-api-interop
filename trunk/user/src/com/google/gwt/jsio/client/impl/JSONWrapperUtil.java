@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.client.impl;
+package com.google.gwt.jsio.client.impl;
 
 import com.google.gwt.core.client.JavaScriptObject;
 
@@ -23,7 +23,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 public class JSONWrapperUtil {
   public static final Extractor BOOLEAN_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(Z)(Boolean(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(Z)(Boolean(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -33,7 +33,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor BYTE_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(B)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(B)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -43,7 +43,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor CHARACTER_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(C)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(C)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -53,7 +53,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor DOUBLE_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(D)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(D)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -63,7 +63,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor FLOAT_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(F)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(F)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -73,7 +73,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor INTEGER_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(I)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(I)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -97,7 +97,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor LONG_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(J)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(J)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{
@@ -107,7 +107,7 @@ public class JSONWrapperUtil {
 
   public static final Extractor SHORT_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.json.client.impl.JSONWrapperUtil::createWrapper(S)(Number(obj));
+     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(S)(Number(obj));
      }-*/;
 
     public native JavaScriptObject toJS(Object o) /*-{

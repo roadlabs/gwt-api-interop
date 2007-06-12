@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.json.client.JSWrapper;
+import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.user.rebind.SourceWriter;
 
 /**
@@ -43,7 +43,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
         "Building string value getter statement", null);
     SourceWriter sw = context.sw;
 
-    sw.print("@com.google.gwt.json.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    sw.print("@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
     sw.print(context.parameterName);
     sw.print(")");
   }
@@ -57,7 +57,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
         "Building string value setter statement", null);
     SourceWriter sw = context.sw;
     sw.print(context.parameterName);
-    sw.print(".@com.google.gwt.json.client.JSWrapper::getJavaScriptObject()()");
+    sw.print(".@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()()");
   }
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
@@ -70,7 +70,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     sw.print("::");
     sw.print("__create__");
     sw.print(elementType.getQualifiedSourceName().replaceAll("\\.", "_"));
-    sw.print("()().@com.google.gwt.json.client.JSWrapper::getExtractor()()");
+    sw.print("()().@com.google.gwt.jsio.client.JSWrapper::getExtractor()()");
 
     context.creatorFixups.add(elementType);
   }

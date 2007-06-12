@@ -13,14 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.rebind;
+package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.json.client.JSList;
+import com.google.gwt.jsio.client.JSList;
 import com.google.gwt.user.rebind.SourceWriter;
 
 /**
@@ -50,7 +50,7 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     JParameterizedType listType = context.returnType.isParameterized();
     JType argumentType = listType.getTypeArgs()[0];
 
-    sw.print("@com.google.gwt.json.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/json/client/impl/Extractor;)(");
+    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
     FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
         typeOracle, argumentType.isClassOrInterface());
@@ -69,7 +69,7 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     JParameterizedType listType = context.returnType.isParameterized();
     JType argumentType = listType.getTypeArgs()[0];
 
-    sw.print("@com.google.gwt.json.client.impl.JSListWrapper::create(Lcom/google/gwt/json/client/impl/Extractor;)(");
+    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
     FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
         typeOracle, argumentType.isClassOrInterface());

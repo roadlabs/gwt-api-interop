@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.client;
+package com.google.gwt.jsio.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.json.client.impl.Extractor;
+import com.google.gwt.jsio.client.impl.Extractor;
 
 /**
  * Automatically generates a Java wrapper around JSON object data. The GWT

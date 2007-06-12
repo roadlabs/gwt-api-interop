@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.json.client;
+package com.google.gwt.jsio.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
@@ -28,7 +28,7 @@ public class JSONWrapperTest extends GWTTestCase {
   
   /**
    * A class that uses class-based naming policy.
-   * @gwt.namePolicy com.google.gwt.json.rebind.TestNamePolicy
+   * @gwt.namePolicy com.google.gwt.jsio.rebind.TestNamePolicy
    */
   static interface ClassPolicyNamedInterface extends JSWrapper {
     public String getHello();
@@ -38,7 +38,7 @@ public class JSONWrapperTest extends GWTTestCase {
   static interface ListInterface extends JSWrapper {
     public int getBasicInt();
     /**
-     * @gwt.typeArgs <com.google.gwt.json.client.JSONWrapperTest.PartialWrapper>
+     * @gwt.typeArgs <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
      */
     public JSList getPartialWrappers();
     
@@ -48,12 +48,12 @@ public class JSONWrapperTest extends GWTTestCase {
     public JSList getRank1();
     
     /**
-     * @gwt.typeArgs <com.google.gwt.json.client.JSList<java.lang.Integer>>
+     * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<java.lang.Integer>>
      */
     public JSList getRank2();
     
     /**
-     * @gwt.typeArgs <com.google.gwt.json.client.JSList<com.google.gwt.json.client.JSList<java.lang.Integer>>>
+     * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<com.google.gwt.jsio.client.JSList<java.lang.Integer>>>
      */
     public JSList getRank3();
     
@@ -63,7 +63,7 @@ public class JSONWrapperTest extends GWTTestCase {
     public JSList getString1();
     
     /**
-     * @gwt.typeArgs list <com.google.gwt.json.client.JSONWrapperTest.PartialWrapper>
+     * @gwt.typeArgs list <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
      */
     public void setPartialWrappers(JSList list);
   }
@@ -209,7 +209,7 @@ public class JSONWrapperTest extends GWTTestCase {
   }
   
   public String getModuleName() {
-    return "com.google.gwt.json.JSON";
+    return "com.google.gwt.jsio.JSON";
   }
   
   public void testBoxedSetters() {
