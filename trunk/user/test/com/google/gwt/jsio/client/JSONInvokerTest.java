@@ -1,12 +1,12 @@
 /*
  * Copyright 2007 Google Inc.
- *
+ * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
  * the License at
- *
+ * 
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
@@ -39,7 +39,7 @@ public class JSONInvokerTest extends GWTTestCase {
       return new Integer(a.intValue() * b.intValue());
     }
   }
-  
+
   /**
    * Testbed class for invocation testing.
    */
@@ -49,113 +49,129 @@ public class JSONInvokerTest extends GWTTestCase {
      * underlying JS function.
      */
     public int add(int toAdd);
+
     public int add(int toAdd, int second);
+
     /**
      * @gwt.constructor $wnd.Hello
      */
     public HelloWrapper constructor(String param1, int param2);
+
     public int getHello();
-    
+
     /**
      * @gwt.typeArgs <java.lang.Integer>
      */
     public JSList getNumbers();
-    
+
     public String getParam1();
+
     public int getParam2();
-    
+
     /**
      * Test that the function returned from a JSFunction is the same object
      * between invocations.
      */
     public boolean identityEquals(HelloCallbackInt a, HelloCallbackInt b);
-    
+    public boolean identityEquals(JSWrapper a, JSWrapper b);
+
     public void increment();
-    
+
     /**
-     * Don't implement this as a bean function, but make a call out to the
-     * js object.
+     * Test that a JSWrapper can be passed through and returned from a native
+     * code block.
+     */
+    public HelloWrapper passthrough(HelloWrapper w);
+
+    /**
+     * Don't implement this as a bean function, but make a call out to the js
+     * object.
+     * 
      * @gwt.imported true
      */
     public void setHello(int hello);
-    
+
     /**
      * Alias test.
-     *
+     * 
      * @gwt.fieldName sub
      */
     public int subtract(int toSubtract);
-    
+
     public int testCallback(int a, int b, HelloCallbackInt c);
-    
+
     /**
      * @gwt.fieldName testCallback
      */
     public Integer testCallbackBoxed(Integer a, Integer b,
         HelloCallbackInteger c);
   }
-  
+
   /**
    * @gwt.global $wnd.SingletonHello
    */
   public static interface SingletonHello extends HelloWrapper {
   }
-  
+
   /**
-   * This would normally be done by the JS included by the module.  It's
-   * included inline for ease of comprehension.
+   * This would normally be done by the JS included by the module. It's included
+   * inline for ease of comprehension.
    */
   private static native void initializeHello() /*-{
-    function Hello(param1, param2) {
-      this.hello = 42;
-      this.param1 = param1;
-      this.param2 = param2;
-      this.numbers = [1,2,3,4,5];
-    }
-    
-    Hello.prototype.add = function(sum, sum2) {
-      return this.hello += sum + (sum2 || 0);
-    }
-    
-    Hello.prototype.sub = function(sum) {
-      return this.hello -= sum;
-    }
-    
-    Hello.prototype.increment = function() {
-      this.hello++;
-    }
-    
-    Hello.prototype.setHello = function(a) {
-      this.hello = a + 10;
-    }
-    
-    Hello.prototype.testCallback = function(param1, param2, callback) {
-      return 5 * callback(param1, param2);
-    }
-    
-    Hello.prototype.identityEquals = function(o1, o2) {
-      return o1 === o2;
-    }
-    
-    $wnd.Hello = Hello;
-    
-    $wnd.SingletonHello = new Hello("Singleton", 314159);
-  }-*/;
-  
+   function Hello(param1, param2) {
+   this.hello = 42;
+   this.param1 = param1;
+   this.param2 = param2;
+   this.numbers = [1,2,3,4,5];
+   }
+   
+   Hello.prototype.add = function(sum, sum2) {
+   return this.hello += sum + (sum2 || 0);
+   }
+   
+   Hello.prototype.sub = function(sum) {
+   return this.hello -= sum;
+   }
+   
+   Hello.prototype.increment = function() {
+   this.hello++;
+   }
+   
+   Hello.prototype.setHello = function(a) {
+   this.hello = a + 10;
+   }
+   
+   Hello.prototype.testCallback = function(param1, param2, callback) {
+   return 5 * callback(param1, param2);
+   }
+   
+   Hello.prototype.identityEquals = function(o1, o2) {
+   return o1 === o2;
+   }
+   
+   Hello.prototype.passthrough = function(o) {
+   return o;
+   }
+   
+   $wnd.Hello = Hello;
+   
+   $wnd.SingletonHello = new Hello("Singleton", 314159);
+   }-*/;
+
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIO";
   }
-  
+
   public void testCallback() {
     initializeHello();
-    
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
+
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
-    
+
     assertEquals(30, wrapper.testCallback(2, 3, new HelloCallbackInt()));
-    assertEquals(new Integer(30), wrapper.testCallbackBoxed(
-        new Integer(2), new Integer(3), new HelloCallbackInteger()));
-    
+    assertEquals(new Integer(30), wrapper.testCallbackBoxed(new Integer(2),
+        new Integer(3), new HelloCallbackInteger()));
+
     // Verify that the function object returned is the same so that
     // register/unregister APIs will work correctly.
     HelloCallbackInt c1 = new HelloCallbackInt();
@@ -163,11 +179,11 @@ public class JSONInvokerTest extends GWTTestCase {
     HelloCallbackInt c2 = new HelloCallbackInt();
     assertFalse(wrapper.identityEquals(c1, c2));
   }
-  
+
   public void testInvocation() {
     initializeHello();
-    
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
+
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
     assertEquals(42, wrapper.getHello());
     assertEquals("Hello world", wrapper.getParam1());
@@ -180,23 +196,45 @@ public class JSONInvokerTest extends GWTTestCase {
     assertEquals(43, wrapper.getHello());
     assertEquals(143, wrapper.add(50, 50));
     assertEquals(143, wrapper.getHello());
-    
+
     // We'll know that the JS object's setHello() was invoked, because it
     // adds 10 to the value of the parameter.
     wrapper.setHello(10);
     assertEquals(20, wrapper.getHello());
-    
+
     JSList numbers = wrapper.getNumbers();
     for (int i = 0; i < numbers.size(); i++) {
       assertEquals(new Integer(i + 1), numbers.get(i));
     }
   }
-  
+
+  /**
+   * Ensure that wrapped objects returned from a native JS API are returned
+   * correctly and have the correct identity semantics for the underlying
+   * object.
+   */
+  public void testPassthrough() {
+    initializeHello();
+
+    HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
+    w1.constructor("hello", 1);
+    HelloWrapper w2 = (HelloWrapper) GWT.create(HelloWrapper.class);
+    w2.constructor("world", 2);
+
+    HelloWrapper w3 = w2.passthrough(w1);
+    
+    assertTrue(w3 instanceof HelloWrapper);
+    assertTrue(w2.identityEquals(w1,w3));
+  }
+
+  /**
+   * Test initialization of a wrapper via the gwt.global singleton constructor.
+   */
   public void testSingleton() {
     initializeHello();
-    
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(SingletonHello.class);
-    
+
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(SingletonHello.class);
+
     assertEquals("Singleton", wrapper.getParam1());
     assertEquals(314159, wrapper.getParam2());
   }
