@@ -17,6 +17,9 @@ package com.google.gwt.jsio.rebind;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests the built-in NamePolicy classes.
+ */
 public class NamePolicyTest extends TestCase {
 
   public void testBean() {
