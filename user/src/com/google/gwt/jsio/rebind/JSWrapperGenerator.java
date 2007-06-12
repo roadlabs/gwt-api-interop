@@ -766,7 +766,7 @@ public class JSWrapperGenerator extends Generator {
 
     // Don't bother recording a return value for void invocations.
     if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
-      sw.print("var toReturn = ");
+      sw.print("var jsReturn = ");
     }
 
     // If the imported method is acting as an invocation of a JavaScript
@@ -799,16 +799,21 @@ public class JSWrapperGenerator extends Generator {
     if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
       FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
       subParams.returnType = returnType;
-      subParams.objRef = "this";
-      subParams.parameterName = "toReturn";
+      subParams.parameterName = "jsReturn";
 
       FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
           context.typeOracle, returnType);
 
-      if (fragmentGenerator.fromJSRequiresObject()) {
-        sw.print("this.");
-      } else {
+      if (useConstructor) {
+        sw.print("var toReturn = this.");
+      } else if (fragmentGenerator.fromJSRequiresObject()) {
         sw.print("toReturn = ");
+        fragmentGenerator.writeJSNIObjectCreator(context);
+        sw.println(";");
+        
+        sw.print("toReturn.");
+      } else {
+        sw.print("var toReturn = ");
       }
 
       fragmentGenerator.fromJS(subParams);
