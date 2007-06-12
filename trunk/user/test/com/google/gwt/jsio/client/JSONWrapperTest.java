@@ -209,7 +209,7 @@ public class JSONWrapperTest extends GWTTestCase {
   }
   
   public String getModuleName() {
-    return "com.google.gwt.jsio.JSON";
+    return "com.google.gwt.jsio.JSIO";
   }
   
   public void testBoxedSetters() {
