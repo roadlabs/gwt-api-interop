@@ -16,6 +16,7 @@
 package com.google.gwt.jsio.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.junit.client.GWTTestCase;
 
 import java.util.List;
@@ -340,7 +341,6 @@ public class JSONWrapperTest extends GWTTestCase {
       assertEquals(a++ * b++, pw.multiply());
     }
     
-    
     // Make sure that setJSList() works as expected
     ListInterface ai2 = (ListInterface)GWT.create(ListInterface.class);
     ai2.setPartialWrappers(ai.getPartialWrappers());
@@ -358,20 +358,35 @@ public class JSONWrapperTest extends GWTTestCase {
     assertEquals(pw.multiply(), ((PartialWrapper)ai2.getPartialWrappers().get(0)).multiply());
   }
   
+  public void testMultipleWrapperException() {
+    NamedInterface ni = (NamedInterface)GWT.create(NamedInterface.class);
+    NamedInterface ni2 = (NamedInterface)GWT.create(NamedInterface.class);
+    
+    try {
+      ni2.setJavaScriptObject(ni.getJavaScriptObject());
+      fail("Should have thrown a MultipleWrapperException");
+    } catch (MultipleWrapperException e) {
+      // Expected behavior
+    }
+  }
+  
   public void testNamedObject() throws JSONWrapperException {
     NamedInterface ni = (NamedInterface)GWT.create(NamedInterface.class);
     ni.setJSONData("{HELLO:\"Hello world\"}");
     
     assertEquals("Hello world", ni.getHello());
     
+    // Re-parent the backing JSO
     NamedInterface ni2 = (NamedInterface)GWT.create(NamedInterface.class);
-    ni2.setJavaScriptObject(ni.getJavaScriptObject());
+    JavaScriptObject jso = ni.getJavaScriptObject();
+    ni.setJavaScriptObject(null);
+    ni2.setJavaScriptObject(jso);
     assertEquals("Hello world", ni2.getHello());
 
     // Check that objects sharing the same backing object reflect one another's
     // changes
+    assertNull(ni.getHello());
     ni2.setHello("foo");
-    assertEquals("foo", ni.getHello());
   }
   
   public void testObjectGetters() throws JSONWrapperException {

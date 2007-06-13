@@ -80,6 +80,10 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     SourceWriter sw = context.sw;
     JClassType returnType = context.returnType.isClassOrInterface();
 
+    sw.print(context.parameterName);
+    sw.print(".");
+    sw.print(JSWrapperGenerator.BACKREF);
+    sw.print(" || ");
     sw.print("@");
     sw.print(context.qualifiedTypeName);
     sw.print("::");

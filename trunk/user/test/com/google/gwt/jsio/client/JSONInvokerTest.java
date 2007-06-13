@@ -77,7 +77,7 @@ public class JSONInvokerTest extends GWTTestCase {
     public boolean identityEquals(JSWrapper a, JSWrapper b);
 
     public void increment();
-    
+
     /**
      * Test that a JSWrapper can be passed through and returned from a native
      * code block.
@@ -85,6 +85,8 @@ public class JSONInvokerTest extends GWTTestCase {
     public HelloWrapper passthrough(HelloWrapper w);
 
     public OtherWrapper passthrough(OtherWrapper w);
+
+    public StatefulWrapper passthrough(StatefulWrapper w);
 
     /**
      * @gwt.typeArgs arr <java.lang.Integer>
@@ -122,6 +124,18 @@ public class JSONInvokerTest extends GWTTestCase {
   public static interface SingletonHello extends HelloWrapper {
   }
 
+  /**
+   * Tests state-preserving behavior across the JS/Java boundary.
+   */
+  public abstract static class StatefulWrapper implements HelloWrapper {
+    static String staticField;
+    final String finalField = "finalField";
+    transient String transientField;
+    /**
+     * This field will always emit a warning.
+     */
+    String localField;
+  }
   /**
    * This is a blank interface just to be used as a reference type.
    */
@@ -167,7 +181,7 @@ public class JSONInvokerTest extends GWTTestCase {
    Hello.prototype.reverseNumbers = function(arr) {
    var toReturn = [];
    for (var i = 0; i < arr.length; i++) {
-     toReturn[i] = arr[arr.length - i - 1];
+   toReturn[i] = arr[arr.length - i - 1];
    }
    return toReturn;
    }
@@ -188,7 +202,7 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testCallback() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
 
     assertEquals(30, wrapper.testCallback(2, 3, new HelloCallbackInt()));
@@ -206,7 +220,7 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testInvocation() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
     assertEquals(42, wrapper.getHello());
     assertEquals("Hello world", wrapper.getParam1());
@@ -230,7 +244,7 @@ public class JSONInvokerTest extends GWTTestCase {
     for (int i = 0; i < numbers.size(); i++) {
       assertEquals(new Integer(i + 1), numbers.get(i));
     }
-    
+
     // Check a list returned through an imported function
     JSList reversed = wrapper.reverseNumbers(numbers);
     assertEquals(numbers.size(), reversed.size());
@@ -247,9 +261,9 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testPassthrough() {
     initializeHello();
 
-    HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper w1 = (HelloWrapper)GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);
-    HelloWrapper w2 = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper w2 = (HelloWrapper)GWT.create(HelloWrapper.class);
     w2.constructor("world", 2);
 
     HelloWrapper w3 = w2.passthrough(w1);
@@ -257,7 +271,7 @@ public class JSONInvokerTest extends GWTTestCase {
     assertTrue(w3 instanceof HelloWrapper);
     assertTrue(w2.identityEquals(w1, w3));
 
-    OtherWrapper o1 = (OtherWrapper) GWT.create(OtherWrapper.class);
+    OtherWrapper o1 = (OtherWrapper)GWT.create(OtherWrapper.class);
     OtherWrapper o2 = w2.passthrough(o1);
     assertTrue(o2 instanceof OtherWrapper);
     assertTrue(w2.identityEquals(o1, o2));
@@ -269,9 +283,26 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testSingleton() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(SingletonHello.class);
+    HelloWrapper wrapper = (HelloWrapper)GWT.create(SingletonHello.class);
 
     assertEquals("Singleton", wrapper.getParam1());
     assertEquals(314159, wrapper.getParam2());
+  }
+
+  public void testStatePreservation() {
+    initializeHello();
+
+    StatefulWrapper w1 = (StatefulWrapper)GWT.create(StatefulWrapper.class);
+    w1.constructor(null, 0);
+    w1.localField = "bad field";
+    w1.staticField = "static field";
+    w1.transientField = "transient field";
+
+    StatefulWrapper w2 = w1.passthrough(w1);
+    assertSame(w1, w2);
+    assertEquals(w1.localField, w2.localField);
+    assertEquals(w1.finalField, w2.finalField);
+    assertEquals(w1.staticField, w2.staticField);
+    assertEquals(w1.transientField, w2.transientField);
   }
 }

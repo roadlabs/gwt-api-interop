@@ -16,6 +16,7 @@
 package com.google.gwt.jsio.client.impl;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.jsio.client.MultipleWrapperException;
 
 /**
  * Internal utility functions to encapsulate often-used idioms.
@@ -168,6 +169,13 @@ public class JSONWrapperUtil {
    }
    return x;
    }-*/;
+  
+  /**
+   * Utility method for JSWrapper to throw an exception.
+   */
+  public static void throwMultipleWrapperException() {
+    throw new MultipleWrapperException();
+  }
 
   private JSONWrapperUtil() {
   }
