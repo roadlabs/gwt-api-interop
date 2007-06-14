@@ -18,13 +18,13 @@ package com.google.gwt.jsio.client;
 import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * This is an interface for use with JSWrapper to export a Java function into
- * a JavaSccript context. If the JSFunction contains multiple functions, the
- * method to export may be specified with a <code>gwt.fieldName</code>
- * annotation.
+ * This is an interface for use with JSWrapper to export a Java function into a
+ * JavaScript context. If the JSFunction contains multiple functions, the method
+ * to export may be specified with a <code>gwt.exported</code> annotation on
+ * the class or interface. Anonymous classes are supported.
  * <p>
  * The underlying JavaScript function object will have an identity corresponding
- * to that of the JSFunction object, which makes it suitable for use with
+ * to that of the JSFunction object, which makes it suitable for use with a
  * register/unregister style of JavaScript API.
  * </p>
  */
