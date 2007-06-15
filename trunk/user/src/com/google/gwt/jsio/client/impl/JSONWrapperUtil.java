@@ -96,6 +96,17 @@ public class JSONWrapperUtil {
      }-*/;
   };
 
+  public static final Extractor JSOPAQUE_EXTRACTOR = new Extractor() {
+    // XXX Does this make sense?
+    public native Object fromJS(JavaScriptObject obj) /*-{
+     return undefined;
+     }-*/;
+
+    public native JavaScriptObject toJS(Object o) /*-{
+     return eval(o.@com.google.gwt.jsio.client.JSOpaque::reference);
+     }-*/;
+  };
+
   public static final Extractor LONG_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
      return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(J)(Number(obj));

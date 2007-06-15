@@ -507,7 +507,7 @@ public class JSWrapperGenerator extends Generator {
       if (pair.getter == null && pair.imported == null && pair.exported == null) {
         logger.log(TreeLogger.ERROR, "No getter or import for property "
             + propertyName
-            + ". Perhaps your setter needs an @gwt.import annotation", null);
+            + ". Perhaps your setter needs an @" + IMPORTED + "annotation", null);
         throw new UnableToCompleteException();
       }
 
