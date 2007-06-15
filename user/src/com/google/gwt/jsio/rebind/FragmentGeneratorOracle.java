@@ -42,6 +42,7 @@ class FragmentGeneratorOracle {
     fragmentGenerators.add(new JSListFragmentGenerator());
     fragmentGenerators.add(new PrimitiveFragmentGenerator());
     fragmentGenerators.add(new StringFragmentGenerator());
+    fragmentGenerators.add(new JSOpaqueFragmentGenerator());
     fragmentGenerators.add(new JSWrapperFragmentGenerator());
 
     // We don't actually support Arrays, but we can at least provide useful
