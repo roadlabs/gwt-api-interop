@@ -42,6 +42,7 @@ public class JSONInvokerTest extends GWTTestCase {
 
   /**
    * Testbed class for invocation testing.
+   * @gwt.beanProperties
    */
   public static interface HelloWrapper extends JSWrapper {
     /**
