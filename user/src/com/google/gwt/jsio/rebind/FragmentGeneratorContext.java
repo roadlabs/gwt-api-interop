@@ -81,6 +81,17 @@ class FragmentGeneratorContext {
    * this Set to indicate that they require a creator method for the given type.
    */
   Set/* <JType> */creatorFixups;
+  
+  /**
+   * Indicates the JSWrapper should be generated in read-only mode.
+   */
+  boolean readOnly;
+  
+  /**
+   * Indicates that a 1:1 identity mapping should be retained between the
+   * JSWrapper and the underlying JSO.
+   */
+  boolean maintainIdentity;
 
   /**
    * Constructor.
@@ -102,5 +113,7 @@ class FragmentGeneratorContext {
     objRef = copyFrom.objRef;
     qualifiedTypeName = copyFrom.qualifiedTypeName;
     creatorFixups = copyFrom.creatorFixups;
+    readOnly = copyFrom.readOnly;
+    maintainIdentity = copyFrom.maintainIdentity;
   }
 }
