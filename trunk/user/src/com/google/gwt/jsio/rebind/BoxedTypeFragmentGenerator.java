@@ -67,6 +67,9 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
 
     sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper");
 
+    // XXX Need to consider the correctness of the Boolean/Number casts
+    // done here.  See PrimitimeFragmentGenerator as well.
+    
     // Just plow through the Boxed types
     if (isAssignable(typeOracle, returnType, Boolean.class)) {
       sw.print("(Z)(Boolean(");
