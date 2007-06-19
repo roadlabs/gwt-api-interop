@@ -46,16 +46,31 @@ class PrimitiveFragmentGenerator extends FragmentGenerator {
 
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Building primitive value getter statement", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Building primitive value getter statement", null);
     SourceWriter sw = context.sw;
 
+    JPrimitiveType asPrimitive = context.returnType.isPrimitive();
+
+    // XXX The correctness of casting to a numeric type here is
+    // debatable, but it significantly increases convenience to the end
+    // developer to be able to declare a return type of int, rather than having
+    // to call Integer.decode().  BoxedPrimitiveGenerator also does this.
+    if (JPrimitiveType.BOOLEAN.equals(asPrimitive)) {
+      sw.print("Boolean(");
+    } else {
+      sw.print("Number(");
+    }
+
     sw.print(context.parameterName);
+    sw.print(")");
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Building primitive value setter statement", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Building primitive value setter statement", null);
     SourceWriter sw = context.sw;
 
     sw.print(context.parameterName);
