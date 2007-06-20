@@ -296,9 +296,17 @@ public class JSWrapperGenerator extends Generator {
         continue;
       }
 
-      // Enable bypassing of name-determination logic with the presence of the
-      // @gwt.imported annotation
-      if (shouldImport(typeOracle, m)) {
+      if (shouldConstruct(typeOracle, m)) {
+        // getReadableDeclaration is used so that overloaded methods will
+        // be stored with distinct keys.
+        Task task =
+            getPropertyPair(propertyAccessors, m.getReadableDeclaration());
+        task.constructor = m;
+        logger.log(TreeLogger.DEBUG, "Using constructor/global override", null);
+
+        // Enable bypassing of name-determination logic with the presence of the
+        // @gwt.imported annotation
+      } else if (shouldImport(typeOracle, m)) {
         // getReadableDeclaration is used so that overloaded methods will
         // be stored with distinct keys.
         Task task =
@@ -307,16 +315,14 @@ public class JSWrapperGenerator extends Generator {
         logger.log(TreeLogger.DEBUG, "Using import override", null);
 
         // Look for setFoo()
-      } else if (methodName.startsWith("set")
-          && (m.getParameters().length == 1)) {
+      } else if (methodName.startsWith("set")) {
         String propertyName = getPropertyNameFromMethod(m);
         Task task = getPropertyPair(propertyAccessors, propertyName);
         task.setter = m;
         logger.log(TreeLogger.DEBUG, "Determined this is a setter", null);
 
         // Look for getFoo() or isFoo()
-      } else if ((methodName.startsWith("get") || methodName.startsWith("is"))
-          && (m.getParameters().length == 0)) {
+      } else if ((methodName.startsWith("get") || methodName.startsWith("is"))) {
         String propertyName = getPropertyNameFromMethod(m);
         Task task = getPropertyPair(propertyAccessors, propertyName);
         task.getter = m;
@@ -370,6 +376,13 @@ public class JSWrapperGenerator extends Generator {
       }
     }
     return false;
+  }
+
+  protected boolean shouldConstruct(TypeOracle typeOracle, JMethod method) {
+    boolean methodConstructorTag = hasTag(method, CONSTRUCTOR);
+    boolean methodGlobalTag = hasTag(method, GLOBAL);
+
+    return methodConstructorTag || methodGlobalTag;
   }
 
   /**
@@ -641,6 +654,120 @@ public class JSWrapperGenerator extends Generator {
     sw.println("}-*/;");
     sw.outdent();
     sw.println("};");
+  }
+
+  protected void writeConstructor(TreeLogger logger, TypeOracle typeOracle,
+      SourceWriter sw, JMethod constructor, FragmentGeneratorContext context)
+      throws UnableToCompleteException {
+
+    logger =
+        logger.branch(TreeLogger.DEBUG, "Writing constructor "
+            + constructor.getName(), null);
+
+    JParameter[] parameters = constructor.getParameters();
+    if (parameters == null) {
+      parameters = new JParameter[0];
+    }
+
+    // Method declaration
+    sw.print("public native ");
+    sw.print(constructor.getReturnType().getQualifiedSourceName());
+    sw.print(" ");
+    sw.print(constructor.getName());
+    sw.print("(");
+    for (int i = 0; i < parameters.length; i++) {
+      JType returnType = parameters[i].getType();
+      JParameterizedType pType = returnType.isParameterized();
+
+      if (pType != null) {
+        sw.print(pType.getRawType().getQualifiedSourceName());
+      } else {
+        sw.print(returnType.getQualifiedSourceName());
+      }
+
+      sw.print(" ");
+      sw.print(parameters[i].getName());
+
+      if (i < parameters.length - 1) {
+        sw.print(", ");
+      }
+    }
+    sw.print(")");
+    sw.println(" /*-{");
+    sw.indent();
+
+    // Assign the Java parameters to the function to their corresponding
+    // JavaScriptObject values.
+    // var jso0 = <conversion logic for first parameter>;
+    // var jso1 = <conversion logic for second parameter>;
+    // ......
+    for (int i = 0; i < parameters.length; i++) {
+      JType returnType = parameters[i].getType();
+
+      FragmentGeneratorContext subParams =
+          new FragmentGeneratorContext(context);
+      subParams.returnType = returnType;
+      subParams.parameterName = parameters[i].getName();
+
+      FragmentGenerator fragmentGenerator =
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
+
+      sw.print("var jso");
+      sw.print(String.valueOf(i));
+      sw.print(" = ");
+      fragmentGenerator.toJS(subParams);
+      sw.println(";");
+    }
+
+    // The return type of the function we're importing.
+    JType returnType = constructor.getReturnType();
+
+    // Don't bother recording a return value for void invocations.
+    if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
+      sw.print("var jsReturn = ");
+    }
+
+    // If the imported method is acting as an invocation of a JavaScript
+    // constructor, use the new Foo() syntax, otherwise treat is an an
+    // invocation on a field on the underlying JSO.
+    String[][] constructorMeta = constructor.getMetaData(CONSTRUCTOR);
+    sw.print("new ");
+    sw.print(constructorMeta[0][0]);
+
+    // Write the invocation's parameter list
+    sw.print("(");
+    for (int i = getImportOffset(); i < parameters.length; i++) {
+      sw.print("jso" + i);
+      if (i < parameters.length - 1) {
+        sw.print(", ");
+      }
+    }
+    sw.println(");");
+
+    // Wrap the return type in the correct Java type. Void returns are ignored
+    if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
+      FragmentGeneratorContext subContext =
+          new FragmentGeneratorContext(context);
+      subContext.returnType = returnType;
+      subContext.parameterName = "jsReturn";
+
+      FragmentGenerator fragmentGenerator =
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
+
+      sw.print("var toReturn = ");
+      sw.print(context.parameterName);
+
+      fragmentGenerator.fromJS(subContext);
+      sw.println(";");
+      sw.print("return ");
+      sw.print(context.objRef);
+      sw.println(";");
+    }
+
+    sw.outdent();
+    sw.println("}-*/;");
   }
 
   /**
@@ -967,6 +1094,8 @@ public class JSWrapperGenerator extends Generator {
         context.returnType = pair.imported.getReturnType();
       } else if (pair.setter != null) {
         context.returnType = getSetterParameter(pair.setter).getType();
+      } else if (pair.constructor != null) {
+        context.returnType = pair.constructor.getReturnType();
       } else {
         logger.log(TreeLogger.ERROR,
             "Unable to determine operative type for property", null);
@@ -974,6 +1103,13 @@ public class JSWrapperGenerator extends Generator {
       }
 
       context.fieldName = fieldName;
+
+      if (pair.constructor != null) {
+        FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
+        subContext.parameterName = "this.";
+        subContext.objRef = "this";
+        writeConstructor(logger, typeOracle, sw, pair.constructor, subContext);
+      }
 
       if (pair.setter != null) {
         if (context.readOnly) {

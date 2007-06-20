@@ -30,6 +30,7 @@ class Task {
   JMethod setter;
   JMethod imported;
   JMethod exported;
+  JMethod constructor;
 
   /**
    * Determines the field name to be used by the methods associated with the
@@ -52,6 +53,8 @@ class Task {
       return extractFieldName(logger, exported, true);
     } else if (imported != null) {
       return extractFieldName(logger, imported, true);
+    } else if (constructor != null) {
+      return extractFieldName(logger, constructor, true);
     } else {
       logger.log(TreeLogger.ERROR, "Unable to determine field name", null);
       throw new UnableToCompleteException();
@@ -67,7 +70,7 @@ class Task {
    */
   public boolean hasMethods() {
     return (getter != null) || (setter != null) || (imported != null)
-        || (exported != null);
+        || (exported != null) || (constructor != null);
   }
 
   /**
