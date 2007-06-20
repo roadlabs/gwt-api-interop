@@ -15,6 +15,7 @@
  */
 package com.google.gwt.jsio.rebind;
 
+import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
@@ -44,31 +45,37 @@ class FragmentGeneratorOracle {
     fragmentGenerators.add(new StringFragmentGenerator());
     fragmentGenerators.add(new JSOpaqueFragmentGenerator());
     fragmentGenerators.add(new JSWrapperFragmentGenerator());
+    fragmentGenerators.add(new PeeringFragmentGenerator());
 
-    // We don't actually support Arrays, but we can at least provide useful
+    // We don't actually support some types, but we can at least provide useful
     // error messages.
     fragmentGenerators.add(new ArrayFragmentGenerator());
+    fragmentGenerators.add(new JSFlyweightFragmentGenerator());
   }
 
   /**
    * Finds a FragmentGenerator that can operate on a given type.
    * 
+   * @param logger the context's TreeLogger
+   * @param oracle the type system in use
    * @param type the type to generate fragments for
    * @return <code>null</code> if there is no FragmentGenerator for the
    *         specified type
    * @throws UnableToCompleteException if there is no registered generator
    */
-  public FragmentGenerator findFragmentGenerator(TypeOracle oracle, JType type)
-      throws UnableToCompleteException {
+  public FragmentGenerator findFragmentGenerator(TreeLogger logger,
+      TypeOracle oracle, JType type) throws UnableToCompleteException {
 
     for (Iterator i = fragmentGenerators.iterator(); i.hasNext();) {
-      FragmentGenerator g = (FragmentGenerator) i.next();
+      FragmentGenerator g = (FragmentGenerator)i.next();
 
       if (g.accepts(oracle, type)) {
         return g;
       }
     }
 
+    logger.branch(TreeLogger.ERROR, "The type " + type.getQualifiedSourceName()
+        + " cannot be handled by JSWrapper.", null);
     throw new UnableToCompleteException();
   }
 }

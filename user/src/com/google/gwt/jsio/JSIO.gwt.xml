@@ -19,4 +19,7 @@
   <generate-with class="com.google.gwt.jsio.rebind.JSWrapperGenerator">
     <when-type-assignable class="com.google.gwt.jsio.client.JSWrapper" />
   </generate-with>
+  <generate-with class="com.google.gwt.jsio.rebind.JSFlyweightWrapperGenerator">
+    <when-type-assignable class="com.google.gwt.jsio.client.JSFlyweightWrapper" />
+  </generate-with>
 </module>

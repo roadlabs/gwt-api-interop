@@ -15,6 +15,7 @@
  */
 package com.google.gwt.jsio.rebind;
 
+import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JParameterizedType;
@@ -45,6 +46,9 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing JSNI reference to Extractor", null);
     TypeOracle typeOracle = context.typeOracle;
     SourceWriter sw = context.sw;
     JParameterizedType listType = context.returnType.isParameterized();
@@ -52,8 +56,9 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
 
     sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
-    FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-        typeOracle, argumentType.isClassOrInterface());
+    FragmentGenerator fragmentGenerator =
+        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+            typeOracle, argumentType.isClassOrInterface());
 
     FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
     subParams.returnType = argumentType;
@@ -68,11 +73,16 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     SourceWriter sw = context.sw;
     JParameterizedType listType = context.returnType.isParameterized();
     JType argumentType = listType.getTypeArgs()[0];
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing JSNI object creator for "
+                + argumentType.getQualifiedSourceName(), null);
 
     sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
-    FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-        typeOracle, argumentType.isClassOrInterface());
+    FragmentGenerator fragmentGenerator =
+        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+            typeOracle, argumentType.isClassOrInterface());
 
     FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
     subParams.returnType = argumentType;

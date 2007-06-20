@@ -25,11 +25,11 @@ import com.google.gwt.jsio.client.impl.Extractor;
 public interface JSWrapper {
 
   /**
-   * This is used by JSList as a helper.
+   * Used by JSList.
    * @skip
    */
   public Extractor getExtractor();
-
+  
   /**
    * Return the JavaScriptObject that is backing the wrapper.
    */

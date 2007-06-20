@@ -106,22 +106,22 @@ public class JSWrapperGenerator extends Generator {
    * The name of the field within the backing object that refers back to the
    * JSWrapper object.
    */
-  public static final String BACKREF = "__gwtObject";
+  public static final String BACKREF = "__gwtPeer";
 
   /**
    * The name of the backing object field.
    */
-  private static final String OBJ = "__jsonObject";
+  protected static final String OBJ = "jsoPeer";
 
   /**
    * The name of the static field that contains the class's Extractor instance.
    */
-  private static final String EXTRACTOR = "__extractor";
+  protected static final String EXTRACTOR = "__extractor";
 
   /**
    * Singleton instance of the FragmentGeneratorOracle for the system.
    */
-  private static final FragmentGeneratorOracle FRAGMENT_ORACLE =
+  protected static final FragmentGeneratorOracle FRAGMENT_ORACLE =
       new FragmentGeneratorOracle();
 
   /**
@@ -216,7 +216,7 @@ public class JSWrapperGenerator extends Generator {
       fragmentContext.fragmentGeneratorOracle = FRAGMENT_ORACLE;
       fragmentContext.typeOracle = typeOracle;
       fragmentContext.sw = sw;
-      fragmentContext.objRef = "@" + f.getCreatedClassName() + "::" + OBJ;
+      fragmentContext.objRef = "this.@" + f.getCreatedClassName() + "::" + OBJ;
       fragmentContext.simpleTypeName = generatedSimpleSourceName;
       fragmentContext.qualifiedTypeName = f.getCreatedClassName();
       fragmentContext.returnType = sourceType;
@@ -333,6 +333,14 @@ public class JSWrapperGenerator extends Generator {
     return propertyAccessors;
   }
 
+  protected int getImportOffset() {
+    return 0;
+  }
+
+  protected String getOperableClassName() {
+    return JSWrapper.class.getName();
+  }
+
   /**
    * Utility method to access a Map of String, Tasks.
    * 
@@ -348,6 +356,10 @@ public class JSWrapperGenerator extends Generator {
       propertyAccessors.put(property, pair);
       return pair;
     }
+  }
+
+  protected JParameter getSetterParameter(JMethod setter) {
+    return setter.getParameters()[0];
   }
 
   protected boolean hasTag(HasMetaData item, String tagName) {
@@ -371,8 +383,8 @@ public class JSWrapperGenerator extends Generator {
 
     return !method.isAbstract()
         && hasExportTag
-        && enclosing.isAssignableTo(typeOracle.findType(JSWrapper.class.getName()))
-        && !enclosing.equals(typeOracle.findType(JSWrapper.class.getName()));
+        && enclosing.isAssignableTo(typeOracle.findType(getOperableClassName()))
+        && !enclosing.equals(typeOracle.findType(getOperableClassName()));
   }
 
   /**
@@ -384,8 +396,8 @@ public class JSWrapperGenerator extends Generator {
     JClassType enclosing = method.getEnclosingType();
 
     return method.isAbstract()
-        && enclosing.isAssignableTo(typeOracle.findType(JSWrapper.class.getName()))
-        && !enclosing.equals(typeOracle.findType(JSWrapper.class.getName()));
+        && enclosing.isAssignableTo(typeOracle.findType(getOperableClassName()))
+        && !enclosing.equals(typeOracle.findType(getOperableClassName()));
   }
 
   /**
@@ -445,7 +457,7 @@ public class JSWrapperGenerator extends Generator {
       if ((pair.getter != null)
           && (pair.setter != null)
           && !pair.getter.getReturnType().equals(
-              pair.setter.getParameters()[0].getType())) {
+              getSetterParameter(pair.setter).getType())) {
         logger.log(TreeLogger.ERROR, "Setter has different parameter type "
             + "from getter for property " + propertyName, null);
         throw new UnableToCompleteException();
@@ -511,12 +523,11 @@ public class JSWrapperGenerator extends Generator {
 
     if (context.maintainIdentity) {
       // Delete the backing object's reference to the current wrapper
-      sw.print("if (this.");
+      sw.print("if (");
       sw.print(context.objRef);
       sw.println(") {");
       sw.indent();
       sw.print("delete ");
-      sw.print("this.");
       sw.print(context.objRef);
       sw.print(".");
       sw.print(BACKREF);
@@ -547,13 +558,11 @@ public class JSWrapperGenerator extends Generator {
     }
 
     // Capture the object in the wrapper
-    sw.print("this.");
     sw.print(context.objRef);
     sw.println(" = obj;");
 
     if (context.maintainIdentity) {
       // Assign the backreference from the wrapped object to the wrapper
-      sw.print("this.");
       sw.print(context.objRef);
       sw.print(".");
       sw.print(BACKREF);
@@ -564,7 +573,9 @@ public class JSWrapperGenerator extends Generator {
       // Initialize any other fields if the JSWrapper is read-write
       sw.print("this.@");
       sw.print(context.qualifiedTypeName);
-      sw.println("::__initializeEmptyFields()();");
+      sw.print("::__initializeEmptyFields(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+      sw.print(context.objRef);
+      sw.println(");");
     }
 
     sw.outdent();
@@ -590,8 +601,8 @@ public class JSWrapperGenerator extends Generator {
     FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
     subParams.parameterName = "obj";
     FragmentGenerator fragmentGenerator =
-        context.fragmentGeneratorOracle.findFragmentGenerator(typeOracle,
-            returnType);
+        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+            typeOracle, returnType);
     // We can't create new Java objects from within JSNI blocks, so we implement
     // a getter in Java that defers to an initializer that's writter in JS.
     boolean twoStep = fragmentGenerator.fromJSRequiresObject();
@@ -642,7 +653,7 @@ public class JSWrapperGenerator extends Generator {
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
 
-    sw.println("private native void __initializeEmptyFields() /*-{");
+    sw.println("private native void __initializeEmptyFields(JavaScriptObject jso) /*-{");
     sw.indent();
 
     for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
@@ -653,15 +664,13 @@ public class JSWrapperGenerator extends Generator {
       // Exported methods are always re-exported to ensure correct object
       // linkage.
       if (task.exported != null) {
-        sw.print("this.");
-        sw.print(context.objRef);
-        sw.print(".");
+        sw.print("jso.");
         sw.print(fieldName);
         sw.print(" = ");
 
         FragmentGeneratorContext subContext =
             new FragmentGeneratorContext(context);
-        subContext.parameterName = "this." + BACKREF;
+        subContext.parameterName = "jso." + BACKREF;
 
         JSFunctionFragmentGenerator.writeFunctionForMethod(subContext,
             task.exported);
@@ -676,19 +685,16 @@ public class JSWrapperGenerator extends Generator {
         final JType returnType = task.getter.getReturnType();
 
         FragmentGenerator fragmentGenerator =
-            FRAGMENT_ORACLE.findFragmentGenerator(context.typeOracle,
+            FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
                 returnType);
 
         sw.print("if (!(\"");
         sw.print(fieldName);
-        sw.print("\" in this.");
-        sw.print(context.objRef);
+        sw.print("\" in jso");
         sw.println(")) {");
         sw.indent();
 
-        sw.print("this.");
-        sw.print(context.objRef);
-        sw.print(".");
+        sw.print("jso.");
         sw.print(fieldName);
         sw.print(" = ");
         sw.print(fragmentGenerator.defaultValue(context.typeOracle, returnType));
@@ -742,13 +748,27 @@ public class JSWrapperGenerator extends Generator {
     final JType returnType = getter.getReturnType();
 
     FragmentGenerator fragmentGenerator =
-        FRAGMENT_ORACLE.findFragmentGenerator(typeOracle, context.returnType);
+        FRAGMENT_ORACLE.findFragmentGenerator(logger, typeOracle,
+            context.returnType);
 
     sw.print("public native ");
     sw.print(returnType.getQualifiedSourceName());
     sw.print(" ");
     sw.print(getter.getName());
-    sw.print("()");
+    sw.print("(");
+
+    // This is only important when working with the flyweight subclass
+    JParameter[] params = getter.getParameters();
+    for (int i = 0; i < params.length; i++) {
+      sw.print(params[i].getType().getQualifiedSourceName());
+      sw.print(" ");
+      sw.print(params[i].getName());
+
+      if (i < params.length - 1) {
+        sw.print(", ");
+      }
+    }
+    sw.print(")");
     sw.println(" /*-{");
     sw.indent();
 
@@ -827,7 +847,7 @@ public class JSWrapperGenerator extends Generator {
     // var jso0 = <conversion logic for first parameter>;
     // var jso1 = <conversion logic for second parameter>;
     // ......
-    for (int i = 0; i < parameters.length; i++) {
+    for (int i = getImportOffset(); i < parameters.length; i++) {
       JType returnType = parameters[i].getType();
 
       FragmentGeneratorContext subParams =
@@ -836,7 +856,8 @@ public class JSWrapperGenerator extends Generator {
       subParams.parameterName = parameters[i].getName();
 
       FragmentGenerator fragmentGenerator =
-          FRAGMENT_ORACLE.findFragmentGenerator(context.typeOracle, returnType);
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
 
       sw.print("var jso");
       sw.print(String.valueOf(i));
@@ -863,7 +884,6 @@ public class JSWrapperGenerator extends Generator {
       sw.print("new ");
       sw.print(constructorMeta[0][0]);
     } else {
-      sw.print("this.");
       sw.print(context.objRef);
       sw.print(".");
       sw.print(context.fieldName);
@@ -871,7 +891,7 @@ public class JSWrapperGenerator extends Generator {
 
     // Write the invocation's parameter list
     sw.print("(");
-    for (int i = 0; i < parameters.length; i++) {
+    for (int i = getImportOffset(); i < parameters.length; i++) {
       sw.print("jso" + i);
       if (i < parameters.length - 1) {
         sw.print(", ");
@@ -887,7 +907,8 @@ public class JSWrapperGenerator extends Generator {
       subContext.parameterName = "jsReturn";
 
       FragmentGenerator fragmentGenerator =
-          FRAGMENT_ORACLE.findFragmentGenerator(context.typeOracle, returnType);
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
 
       if (useConstructor) {
         sw.print("var toReturn = this.");
@@ -945,7 +966,7 @@ public class JSWrapperGenerator extends Generator {
       } else if (pair.imported != null) {
         context.returnType = pair.imported.getReturnType();
       } else if (pair.setter != null) {
-        context.returnType = pair.setter.getParameters()[0].getType();
+        context.returnType = getSetterParameter(pair.setter).getType();
       } else {
         logger.log(TreeLogger.ERROR,
             "Unable to determine operative type for property", null);
@@ -960,15 +981,14 @@ public class JSWrapperGenerator extends Generator {
               "Unable to write property setter on read-only wrapper.", null);
           throw new UnableToCompleteException();
         }
-        JParameter parameter = pair.setter.getParameters()[0];
+        JParameter parameter = getSetterParameter(pair.setter);
         // What the user called the parameter
         context.parameterName = parameter.getName();
         writeSetter(logger, typeOracle, sw, pair.setter, fieldName, context);
       }
 
       if (pair.getter != null) {
-        context.parameterName =
-            "this." + context.objRef + "." + context.fieldName;
+        context.parameterName = context.objRef + "." + context.fieldName;
         writeGetter(logger, typeOracle, sw, pair.getter, fieldName, context);
       }
 
@@ -989,7 +1009,8 @@ public class JSWrapperGenerator extends Generator {
     JType parameterType = context.returnType;
 
     FragmentGenerator fragmentGenerator =
-        FRAGMENT_ORACLE.findFragmentGenerator(typeOracle, context.returnType);
+        FRAGMENT_ORACLE.findFragmentGenerator(logger, typeOracle,
+            context.returnType);
     if (fragmentGenerator == null) {
       throw new UnableToCompleteException();
     }
@@ -1003,12 +1024,22 @@ public class JSWrapperGenerator extends Generator {
     sw.print("public native void ");
     sw.print(setter.getName());
     sw.print("(");
-    sw.print(parameterType.getQualifiedSourceName());
-    sw.print(" ");
-    sw.print(context.parameterName);
+    // This is only important when working with the flyweight subclass
+    JParameter[] params = setter.getParameters();
+    for (int i = 0; i < params.length; i++) {
+      sw.print(params[i].getType().getQualifiedSourceName());
+      sw.print(" ");
+      sw.print(params[i].getName());
+
+      if (i < params.length - 1) {
+        sw.print(", ");
+      }
+    }
+    // sw.print(parameterType.getQualifiedSourceName());
+    // sw.print(" ");
+    // sw.print(context.parameterName);
     sw.println(") /*-{");
     sw.indent();
-    sw.print("this.");
     sw.print(context.objRef);
     sw.print(".");
     sw.print(context.fieldName);
