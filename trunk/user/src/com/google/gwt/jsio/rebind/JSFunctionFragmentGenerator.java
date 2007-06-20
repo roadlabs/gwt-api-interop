@@ -68,7 +68,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       subParams.parameterName = "arg" + i;
 
       FragmentGenerator fragmentGenerator =
-          context.fragmentGeneratorOracle.findFragmentGenerator(
+          context.fragmentGeneratorOracle.findFragmentGenerator(logger,
               context.typeOracle, returnType);
       if (fragmentGenerator == null) {
         logger.log(TreeLogger.ERROR, "No fragment generator for "

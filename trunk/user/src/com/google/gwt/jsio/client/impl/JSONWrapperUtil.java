@@ -116,7 +116,7 @@ public class JSONWrapperUtil {
      return new Number(o.@java.lang.Long::longValue()());
      }-*/;
   };
-
+  
   public static final Extractor SHORT_EXTRACTOR = new Extractor() {
     public native Object fromJS(JavaScriptObject obj) /*-{
      return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(S)(Number(obj));
