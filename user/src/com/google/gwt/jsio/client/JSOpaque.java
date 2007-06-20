@@ -15,8 +15,6 @@
  */
 package com.google.gwt.jsio.client;
 
-import com.google.gwt.core.client.JavaScriptObject;
-
 /**
  * Allows by-name references to JavaScript values. This is intended for use with
  * opaque values such as those used in enumeration-like types.
@@ -36,32 +34,57 @@ public class JSOpaque {
   public JSOpaque(String reference) {
     this.reference = reference;
   }
-  
+
+  /**
+   * Object identity between JSOpaque instances is based on their reference.
+   * 
+   * @return <code>true</code> iff the other JSOpaque has the same reference.
+   */
+  public boolean equals(JSOpaque o) {
+    return reference.equals(o.reference);
+  }
+
   /**
    * Allows comparisons of the JSOpaque to JavaScriptObjects.
    */
-  public native boolean equals(JavaScriptObject o) /*-{
-    var result = eval(this.@com.google.gwt.jsio.client.JSOpaque::reference);
-    if (typeOf(result) == 'object' && typeOf(o) == 'object') {
-      return result.equals(o);
-    } else {
-      return result == o;
-    }
-  }-*/;
-
-  /**
-   * Equality is defined for JSOpaque based on the referenced name.
-   * @return <code>true</code> iff <code>o</code> refers to the same reference
-   */
-  public boolean equals(Object o) {
-    return (o instanceof JSOpaque) && reference.equals(((JSOpaque)o).reference);
-  }
+  public native boolean equals(Object o) /*-{
+   // We use eval so that JSOpaques don't have to be generated classes
+   var result = eval(this.@com.google.gwt.jsio.client.JSOpaque::reference);
+   
+   // Object versus everything else
+   if (typeof(result) == 'object' && typeof(o) == 'object') {
+   return result.equals(o);
+   } else {
+   return result == o;
+   }
+   }-*/;
 
   public int hashCode() {
     return reference.hashCode();
   }
-  
+
+  /**
+   * Convenience method for comparing object identity.
+   * 
+   * @return <code>true</code> if the value represented by the JSOpaque shares
+   *         identity with the value represented by <code>o</code>.
+   */
+  public native boolean identityEquals(JSOpaque o) /*-{
+   return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) ===
+   eval(o.@com.google.gwt.jsio.client.JSOpaque::reference);
+   }-*/;
+
+  /**
+   * Convenience method for comparing object identity.
+   * 
+   * @return <code>true</code> if the value represented by the JSOpaque shares
+   *         identity with <code>o</code>
+   */
+  public native boolean identityEquals(Object o) /*-{
+   return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) === o;
+   }-*/;
+
   public native String toString() /*-{
-    return String(eval(this.@com.google.gwt.jsio.client.JSOpaque::reference));
-  }-*/;
+   return String(eval(this.@com.google.gwt.jsio.client.JSOpaque::reference));
+   }-*/;
 }

@@ -26,7 +26,7 @@ import com.google.gwt.core.client.JavaScriptObject;
  * 
  * @see <a href="package-summary.html#package_description">JSIO reference</a>
  */
-public interface JSFlyweightWrapper  {
+public interface JSFlyweightWrapper {
   /**
    * Allows access to flyweight internals.
    */
@@ -34,13 +34,14 @@ public interface JSFlyweightWrapper  {
     /**
      * Returns the Java peer Object associated with <code>obj</code>.
      * 
-     * @param obj the stateful JavaScriptObject
+     * @param obj the stateful JavaScriptObject or <code>null</code> if none
+     *          exists.
      * @return the Java Object associated with <code>obj</code> by a call to
      *         {@link #bind(JavaScriptObject, Object)}
      */
     public static native Object getJavaPeer(JavaScriptObject obj) /*-{
-      // Must keep synchronized with JSFlyweightWrapperGenerator
-      return obj.__gwtPeer;
+     // Must keep synchronized with JSFlyweightWrapperGenerator
+     return obj.__gwtPeer || null;
      }-*/;
   }
 
