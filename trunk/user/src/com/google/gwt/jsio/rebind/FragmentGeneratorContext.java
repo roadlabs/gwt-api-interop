@@ -20,6 +20,7 @@ import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.user.rebind.SourceWriter;
 
+import java.util.Collection;
 import java.util.Set;
 
 /**
@@ -92,6 +93,11 @@ class FragmentGeneratorContext {
    * JSWrapper and the underlying JSO.
    */
   boolean maintainIdentity;
+  
+  /**
+   * All Tasks for the class that is being generated.
+   */
+  Collection tasks;
 
   /**
    * Constructor.
@@ -115,5 +121,6 @@ class FragmentGeneratorContext {
     creatorFixups = copyFrom.creatorFixups;
     readOnly = copyFrom.readOnly;
     maintainIdentity = copyFrom.maintainIdentity;
+    tasks = copyFrom.tasks;
   }
 }

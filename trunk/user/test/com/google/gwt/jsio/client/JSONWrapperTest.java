@@ -261,7 +261,7 @@ public class JSONWrapperTest extends GWTTestCase {
       "{" + "basicInt: 0, " + "rank1: " + makeJsonArray(1) + ", " + "rank2: "
           + makeJsonArray(2) + ", " + "rank3: " + makeJsonArray(3) + ", "
           + "string1: ['this', 'is', 'a', 'test']" + ", "
-          + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]" + ", "
+          + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]"
           + "}";
 
   /**

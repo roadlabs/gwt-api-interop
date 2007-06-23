@@ -32,26 +32,17 @@ public interface JSFlyweightWrapper {
    */
   public static final class Util {
     /**
-     * Returns the Java peer Object associated with <code>obj</code>.
+     * Returns the Java peer Object previously associated with <code>obj</code>
+     * via a flyweight binding.
      * 
-     * @param obj the stateful JavaScriptObject or <code>null</code> if none
-     *          exists.
-     * @return the Java Object associated with <code>obj</code> by a call to
-     *         {@link #bind(JavaScriptObject, Object)}
+     * @param obj the stateful JavaScriptObject
+     * @return the Java Object associated with <code>obj</code> by a call to a
+     *         binding method, or <code>null</code> if none has been
+     *         previously set.
      */
     public static native Object getJavaPeer(JavaScriptObject obj) /*-{
      // Must keep synchronized with JSFlyweightWrapperGenerator
      return obj.__gwtPeer || null;
      }-*/;
   }
-
-  /**
-   * Binds a JavaScriptObject to a peer Java object. This is required to
-   * establish a function call context.
-   * 
-   * @throws MultipleWrapperException If <code>obj</code> has been previously
-   *           initialized or is associated with a {@link JSWrapper}.
-   */
-  public void bind(JavaScriptObject obj, Object peer)
-      throws MultipleWrapperException;
 }

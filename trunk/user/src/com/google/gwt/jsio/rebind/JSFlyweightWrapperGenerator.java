@@ -21,10 +21,15 @@ import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
+import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
+import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.jsio.client.JSFlyweightWrapper;
 import com.google.gwt.user.rebind.SourceWriter;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Generates a flyweight-style JSIO interface.
@@ -49,36 +54,124 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     return setter.getParameters()[1];
   }
 
+  protected boolean isJso(TypeOracle oracle, JType type) {
+    JClassType jsoType = oracle.findType(JavaScriptObject.class.getName()).isClass();
+    return jsoType.isAssignableFrom(type.isClass());
+  }
+
+  /**
+   * Determines if the generator should generate an export binding for the
+   * method.
+   */
+  protected boolean shouldBind(TypeOracle typeOracle, JMethod method) {
+
+    boolean hasBindingTag = hasTag(method, BINDING);
+    JParameter[] params = method.getParameters();
+
+    return method.isAbstract()
+        && hasBindingTag
+        && ((params.length == 1) || (params.length == 2))
+        && isJso(typeOracle, params[0].getType())
+        && ((params.length == 1) || (params[1].getType().isClassOrInterface() != null));
+  }
+
+  protected boolean shouldExport(TypeOracle typeOracle, JMethod method) {
+    return false;
+  }
+
   /**
    * Determines if the generator should generate an import binding for the
    * method. XXX extract just the arguments checks?
    */
   protected boolean shouldImport(TypeOracle typeOracle, JMethod method) {
     JClassType enclosing = method.getEnclosingType();
-    JClassType jsoType =
-        typeOracle.findType(JavaScriptObject.class.getName()).isClass();
     String methodName = method.getName();
-    final int arguments = method.getParameters().length;
+    int arguments = method.getParameters().length;
 
+    boolean hasBindingTag = hasTag(method, BINDING);
     boolean hasImportTag = hasTag(method, IMPORTED);
     boolean methodHasBeanTag = hasTag(method, BEAN_PROPERTIES);
     boolean classHasBeanTag = hasTag(enclosing, BEAN_PROPERTIES);
 
-    boolean isIs =
-        (arguments == 0)
-            && (methodName.startsWith("is"))
-            && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
-    boolean isGetter =
-        (arguments == 1)
-            && (methodName.startsWith("get") && method.getParameters()[0].getType().isClass().equals(
-                jsoType));
-    boolean isSetter =
-        (arguments == 2)
-            && (methodName.startsWith("set") && method.getParameters()[0].getType().isClass().equals(
-                jsoType));
+    boolean isIs = (arguments == 0)
+        && (methodName.startsWith("is"))
+        && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
+    boolean isGetter = (arguments == 1)
+        && (methodName.startsWith("get") && isJso(typeOracle,
+            method.getParameters()[0].getType()));
+    boolean isSetter = (arguments == 2)
+        && (methodName.startsWith("set") && isJso(typeOracle,
+            method.getParameters()[0].getType()));
     boolean propertyAccessor = isIs || isGetter || isSetter;
 
-    return !(methodHasBeanTag || (propertyAccessor && !hasImportTag && classHasBeanTag));
+    return !(hasBindingTag || methodHasBeanTag || (propertyAccessor
+        && !hasImportTag && classHasBeanTag));
+  }
+
+  protected void writeBinding(FragmentGeneratorContext context, JMethod binding)
+      throws UnableToCompleteException {
+    context = new FragmentGeneratorContext(context);
+    SourceWriter sw = context.sw;
+
+    sw.print("public native void ");
+    sw.print(binding.getName());
+    sw.print("(");
+    JParameter[] params = binding.getParameters();
+
+    context.parameterName = "jso";
+    sw.print(params[0].getType().getQualifiedSourceName());
+    sw.print(" ");
+    sw.print(context.parameterName);
+
+    if (params.length == 2) {
+      sw.print(", ");
+
+      context.objRef = "obj";
+      sw.print(params[1].getType().getQualifiedSourceName());
+      sw.print(" ");
+      sw.print(context.objRef);
+
+      // Extract the exported methods
+      // XXX move method extraction outside of the generator classes
+      JSWrapperGenerator g = new JSWrapperGenerator();
+      context.tasks = g.extractMethods(context.parentLogger,
+          context.typeOracle, params[1].getType().isClassOrInterface()).values();
+    } else {
+      context.tasks = Collections.EMPTY_SET;
+    }
+    sw.println(") /*-{");
+    sw.indent();
+
+    context.returnType = JPrimitiveType.VOID;
+
+    if (context.maintainIdentity) {
+      // XXX link the Java object to the JSO?
+
+      // Verify that the incoming object doesn't already have a wrapper object.
+      // If there is a backreference, throw an exception.
+      sw.print("if (");
+      sw.print(context.parameterName);
+      sw.print(".hasOwnProperty('");
+      sw.print(BACKREF);
+      sw.println("')) {");
+      sw.indent();
+      sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
+      sw.outdent();
+      sw.println("}");
+
+      // Assign the backreference from the JSO object to the delegate
+      sw.print(context.parameterName);
+      sw.print(".");
+      sw.print(BACKREF);
+      sw.print(" = ");
+      sw.print(context.objRef);
+      sw.println(";");
+    }
+
+    writeEmptyFieldInitializers(context);
+
+    sw.outdent();
+    sw.println("}-*/;");
   }
 
   /**
@@ -87,63 +180,137 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
   protected void writeBoilerplate(final TreeLogger logger,
       final FragmentGeneratorContext context, final String constructor)
       throws UnableToCompleteException {
+  }
+
+  protected void writeConstructor(FragmentGeneratorContext context,
+      JMethod constructor) throws UnableToCompleteException {
+
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing constructor " + constructor.getName(), null);
     SourceWriter sw = context.sw;
 
-    sw.println("public native void bind(JavaScriptObject jso, Object peer) /*-{");
+    JParameter[] parameters = constructor.getParameters();
+    if (parameters == null) {
+      parameters = new JParameter[0];
+    }
+
+    // Method declaration
+    sw.print("public native ");
+    sw.print(constructor.getReturnType().getQualifiedSourceName());
+    sw.print(" ");
+    sw.print(constructor.getName());
+    sw.print("(");
+    for (int i = 0; i < parameters.length; i++) {
+      JType returnType = parameters[i].getType();
+      JParameterizedType pType = returnType.isParameterized();
+
+      if (pType != null) {
+        sw.print(pType.getRawType().getQualifiedSourceName());
+      } else {
+        sw.print(returnType.getQualifiedSourceName());
+      }
+
+      sw.print(" ");
+      sw.print(parameters[i].getName());
+
+      if (i < parameters.length - 1) {
+        sw.print(", ");
+      }
+    }
+    sw.print(")");
+    sw.println(" /*-{");
     sw.indent();
 
-    if (context.maintainIdentity) {
-      // Verify that the incoming object doesn't already have a wrapper object.
-      // If there is a backreference, throw an exception.
-      sw.print("if (jso.hasOwnProperty('");
-      sw.print(BACKREF);
-      sw.println("')) {");
-      sw.indent();
-      sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
-      sw.outdent();
-      sw.println("}");
+    // Assign the Java parameters to the function to their corresponding
+    // JavaScriptObject values.
+    // var jso0 = <conversion logic for first parameter>;
+    // var jso1 = <conversion logic for second parameter>;
+    // ......
+    for (int i = 0; i < parameters.length; i++) {
+      JType returnType = parameters[i].getType();
 
-      // Assign the backreference from the wrapped object to the wrapper
-      sw.print("jso.");
-      sw.print(BACKREF);
-      sw.println(" = peer;");
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
+      subParams.returnType = returnType;
+      subParams.parameterName = parameters[i].getName();
+
+      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
+          logger, context.typeOracle, returnType);
+
+      sw.print("var jso");
+      sw.print(String.valueOf(i));
+      sw.print(" = ");
+      fragmentGenerator.toJS(subParams);
+      sw.println(";");
     }
 
-    if (!context.readOnly) {
-      // Initialize any other fields if the JSWrapper is read-write
-      sw.print("this.@");
-      sw.print(context.qualifiedTypeName);
-      sw.println("::__initializeEmptyFields(Lcom/google/gwt/core/client/JavaScriptObject;)(jso);");
+    JType returnType = constructor.getReturnType();
+
+    FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
+    subContext.returnType = returnType;
+    subContext.parameterName = "jsReturn";
+    subContext.objRef = "jsReturn";
+
+    sw.print("var jsReturn = ");
+
+    if (hasTag(constructor, CONSTRUCTOR)) {
+      // If the imported method is acting as an invocation of a JavaScript
+      // constructor, use the new Foo() syntax, otherwise treat is an an
+      // invocation on a field on the underlying JSO.
+      String[][] constructorMeta = constructor.getMetaData(CONSTRUCTOR);
+      sw.print("new ");
+      sw.print(constructorMeta[0][0]);
+
+      // Write the invocation's parameter list
+      sw.print("(");
+      for (int i = getImportOffset(); i < parameters.length; i++) {
+        sw.print("jso" + i);
+        if (i < parameters.length - 1) {
+          sw.print(", ");
+        }
+      }
+      sw.println(");");
+
+    } else if (hasTag(constructor, GLOBAL)) {
+      String[][] globalMeta = constructor.getMetaData(GLOBAL);
+      sw.print(globalMeta[0][0]);
+      sw.println(";");
+
+    } else {
+      logger.log(TreeLogger.ERROR,
+          "Writing a constructor, but no constructor-appropriate annotations",
+          null);
+      throw new UnableToCompleteException();
     }
+
+    writeEmptyFieldInitializers(subContext);
+
+    sw.print("return ");
+    sw.print(subContext.objRef);
+    sw.println(";");
     sw.outdent();
     sw.println("}-*/;");
   }
 
-  protected void writeConstructor(TreeLogger logger, TypeOracle typeOracle,
-      SourceWriter sw, JMethod constructor, FragmentGeneratorContext context)
+  /**
+   * This is a no-op in the flyweight style.
+   */
+  protected void writeEmptyFieldInitializerMethod(final TreeLogger logger,
+      final Map propertyAccessors, final FragmentGeneratorContext context)
       throws UnableToCompleteException {
-
-    context = new FragmentGeneratorContext(context);
-    context.parameterName = "";
-    context.objRef = "toReturn";
-
-    super.writeConstructor(logger, typeOracle, sw, constructor, context);
   }
 
-  protected void writeGetter(TreeLogger logger, TypeOracle typeOracle,
-      SourceWriter sw, JMethod getter, String fieldName,
-      FragmentGeneratorContext context) throws UnableToCompleteException {
+  protected void writeGetter(FragmentGeneratorContext context, JMethod getter)
+      throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
     context.objRef = getter.getParameters()[0].getName();
     context.parameterName = context.objRef + "." + context.fieldName;
 
-    super.writeGetter(logger, typeOracle, sw, getter, fieldName, context);
+    super.writeGetter(context, getter);
   }
 
-  protected void writeImported(TreeLogger logger, TypeOracle typeOracle,
-      SourceWriter sw, JMethod imported, String fieldName,
-      FragmentGeneratorContext context) throws UnableToCompleteException {
+  protected void writeImported(FragmentGeneratorContext context,
+      JMethod imported) throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
     // The only imported methods without a leading JSO param are constructors
@@ -153,16 +320,24 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       context.objRef = null;
     }
 
-    super.writeImported(logger, typeOracle, sw, imported, fieldName, context);
+    super.writeImported(context, imported);
   }
 
-  protected void writeSetter(TreeLogger logger, TypeOracle typeOracle,
-      SourceWriter sw, JMethod setter, String fieldName,
-      FragmentGeneratorContext context) throws UnableToCompleteException {
+  protected void writeSetter(FragmentGeneratorContext context, JMethod setter)
+      throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
     context.objRef = setter.getParameters()[0].getName();
 
-    super.writeSetter(logger, typeOracle, sw, setter, fieldName, context);
+    super.writeSetter(context, setter);
+  }
+
+  protected void writeSingleTask(FragmentGeneratorContext context, Task task)
+      throws UnableToCompleteException {
+    if (task.binding != null) {
+      writeBinding(context, task.binding);
+    } else {
+      super.writeSingleTask(context, task);
+    }
   }
 }

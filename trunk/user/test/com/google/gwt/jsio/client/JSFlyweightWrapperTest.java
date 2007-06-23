@@ -29,6 +29,11 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface PrimitiveInterface extends JSFlyweightWrapper {
+    /**
+     * @gwt.constructor Object
+     */
+    public JavaScriptObject construct();
+
     public Boolean getBoxedBoolean(JavaScriptObject jso);
 
     public Byte getBoxedByte(JavaScriptObject jso);
@@ -101,6 +106,11 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface TreeInterface extends JSFlyweightWrapper {
+    /**
+     * @gwt.constructor Object
+     */
+    public JavaScriptObject construct();
+
     public JavaScriptObject getLeft(JavaScriptObject jso);
 
     public JavaScriptObject getRight(JavaScriptObject jso);
@@ -119,46 +129,41 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   public void testBoxedSetters() {
-    PrimitiveInterface primitiveInterface =
-      (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(primitiveInterface != null);
 
-    JavaScriptObject jso = makeJSO();
-    primitiveInterface.bind(jso, null);
+    JavaScriptObject jso = primitiveInterface.construct();
 
     primitiveInterface.setBoxedBoolean(jso, Boolean.TRUE);
-    primitiveInterface.setBoxedByte(jso, new Byte((byte)0x42));
+    primitiveInterface.setBoxedByte(jso, new Byte((byte) 0x42));
     primitiveInterface.setBoxedChar(jso, new Character('A'));
     primitiveInterface.setBoxedDouble(jso, new Double(Math.PI));
-    primitiveInterface.setBoxedFloat(jso, new Float((float)Math.E));
+    primitiveInterface.setBoxedFloat(jso, new Float((float) Math.E));
     primitiveInterface.setBoxedInt(jso, new Integer(42));
     primitiveInterface.setBoxedLong(jso, new Long(43));
-    primitiveInterface.setBoxedShort(jso, new Short((short)44));
+    primitiveInterface.setBoxedShort(jso, new Short((short) 44));
 
     assertEquals(Boolean.TRUE, primitiveInterface.getBoxedBoolean(jso));
-    assertEquals(new Byte((byte)0x42), primitiveInterface.getBoxedByte(jso));
+    assertEquals(new Byte((byte) 0x42), primitiveInterface.getBoxedByte(jso));
     assertEquals(new Character('A'), primitiveInterface.getBoxedChar(jso));
     assertEquals(new Double(Math.PI), primitiveInterface.getBoxedDouble(jso));
-    assertEquals(new Float((float)Math.E),
+    assertEquals(new Float((float) Math.E),
         primitiveInterface.getBoxedFloat(jso));
     assertEquals(new Integer(42), primitiveInterface.getBoxedInt(jso));
     assertEquals(new Long(43), primitiveInterface.getBoxedLong(jso));
-    assertEquals(new Short((short)44), primitiveInterface.getBoxedShort(jso));
+    assertEquals(new Short((short) 44), primitiveInterface.getBoxedShort(jso));
   }
 
   public void testObjectGetters() throws JSONWrapperException {
-    TreeInterface treeInterface =
-      (TreeInterface)GWT.create(TreeInterface.class);
-    
-    JavaScriptObject one = makeJSO();
-    treeInterface.bind(one, null);
+    TreeInterface treeInterface = (TreeInterface) GWT.create(TreeInterface.class);
+
+    JavaScriptObject one = treeInterface.construct();
 
     assertTrue(treeInterface != null);
     assertNull(treeInterface.getLeft(one));
     assertNull(treeInterface.getRight(one));
 
     JavaScriptObject two = makeTreeData();
-    treeInterface.bind(two, null);
 
     assertNotNull(treeInterface.getLeft(two));
     assertNotNull(treeInterface.getRight(two));
@@ -168,21 +173,17 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   public void testObjectSetters() {
-    TreeInterface treeInterface =
-      (TreeInterface)GWT.create(TreeInterface.class);
+    TreeInterface treeInterface = (TreeInterface) GWT.create(TreeInterface.class);
     assertNotNull(treeInterface);
 
-    JavaScriptObject one = makeJSO();
-    treeInterface.bind(one, null);
+    JavaScriptObject one = treeInterface.construct();
 
     assertNull(treeInterface.getLeft(one));
     assertNull(treeInterface.getRight(one));
 
-    JavaScriptObject two = makeJSO();
-    treeInterface.bind(two, null);
+    JavaScriptObject two = treeInterface.construct();
 
-    JavaScriptObject three = makeJSO();
-    treeInterface.bind(three, null);
+    JavaScriptObject three = treeInterface.construct();
 
     treeInterface.setValue(one, 1);
     treeInterface.setValue(two, 2);
@@ -196,40 +197,36 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   };
 
   public void testPrimitiveSetters() {
-    PrimitiveInterface primitiveInterface =
-      (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(primitiveInterface != null);
 
-    JavaScriptObject jso = makeJSO();
-    primitiveInterface.bind(jso, null);
+    JavaScriptObject jso = primitiveInterface.construct();
 
     primitiveInterface.setUnboxedBoolean(jso, true);
-    primitiveInterface.setUnboxedByte(jso, (byte)0x42);
+    primitiveInterface.setUnboxedByte(jso, (byte) 0x42);
     primitiveInterface.setUnboxedChar(jso, 'A');
     primitiveInterface.setUnboxedDouble(jso, Math.PI);
-    primitiveInterface.setUnboxedFloat(jso, (float)Math.E);
+    primitiveInterface.setUnboxedFloat(jso, (float) Math.E);
     primitiveInterface.setUnboxedInt(jso, 42);
     primitiveInterface.setUnboxedLong(jso, 43);
-    primitiveInterface.setUnboxedShort(jso, (short)44);
+    primitiveInterface.setUnboxedShort(jso, (short) 44);
 
     assertTrue(primitiveInterface.getUnboxedBoolean(jso));
     assertTrue(primitiveInterface.getUnboxedByte(jso) == 0x42);
     assertTrue(primitiveInterface.getUnboxedChar(jso) == 'A');
     assertTrue(primitiveInterface.getUnboxedDouble(jso) == Math.PI);
-    assertTrue(primitiveInterface.getUnboxedFloat(jso) == (float)Math.E);
+    assertTrue(primitiveInterface.getUnboxedFloat(jso) == (float) Math.E);
     assertTrue(primitiveInterface.getUnboxedInt(jso) == 42);
     assertTrue(primitiveInterface.getUnboxedLong(jso) == 43);
     assertTrue(primitiveInterface.getUnboxedShort(jso) == 44);
   }
 
   public void testStringSetters() {
-    PrimitiveInterface primitiveInterface =
-      (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
 
     assertTrue(primitiveInterface != null);
 
-    JavaScriptObject jso = makeJSO();
-    primitiveInterface.bind(jso, null);
+    JavaScriptObject jso = primitiveInterface.construct();
 
     // Check that non-existence of a property
     assertNull(primitiveInterface.getHello(jso));
@@ -248,24 +245,22 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
    * Test the state of an uninitialized wrapper.
    */
   public void testUninitializedWrapper() {
-    PrimitiveInterface primitiveInterface =
-      (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
-    
+    PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
+
     assertTrue(primitiveInterface != null);
 
-    JavaScriptObject jso = makeJSO();
-    primitiveInterface.bind(jso, null);
+    JavaScriptObject jso = primitiveInterface.construct();
 
     assertNull(primitiveInterface.getHello(jso));
 
     assertEquals(Boolean.FALSE, primitiveInterface.getBoxedBoolean(jso));
-    assertEquals(new Byte((byte)0), primitiveInterface.getBoxedByte(jso));
+    assertEquals(new Byte((byte) 0), primitiveInterface.getBoxedByte(jso));
     assertEquals(new Character(' '), primitiveInterface.getBoxedChar(jso));
     assertEquals(new Double(0), primitiveInterface.getBoxedDouble(jso));
     assertEquals(new Float(0), primitiveInterface.getBoxedFloat(jso));
     assertEquals(new Integer(0), primitiveInterface.getBoxedInt(jso));
     assertEquals(new Long(0), primitiveInterface.getBoxedLong(jso));
-    assertEquals(new Short((short)0), primitiveInterface.getBoxedShort(jso));
+    assertEquals(new Short((short) 0), primitiveInterface.getBoxedShort(jso));
 
     assertFalse(primitiveInterface.getUnboxedBoolean(jso));
     assertTrue(0 == primitiveInterface.getUnboxedByte(jso));
@@ -276,10 +271,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertTrue(0 == primitiveInterface.getUnboxedLong(jso));
     assertTrue(0 == primitiveInterface.getUnboxedShort(jso));
   }
-
-  private native JavaScriptObject makeJSO() /*-{
-   return {};
-   }-*/;
 
   private native JavaScriptObject makeTreeData() /*-{
    return {value:42, left:{value:43}, right:{value:44}};

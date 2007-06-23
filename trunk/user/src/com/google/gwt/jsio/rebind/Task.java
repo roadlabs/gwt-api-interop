@@ -28,6 +28,7 @@ import java.lang.reflect.Field;
 class Task {
   JMethod getter;
   JMethod setter;
+  JMethod binding;
   JMethod imported;
   JMethod exported;
   JMethod constructor;
@@ -49,6 +50,8 @@ class Task {
       return extractFieldName(logger, getter, false);
     } else if (setter != null) {
       return extractFieldName(logger, setter, false);
+    } else if (binding != null) {
+      return extractFieldName(logger, binding, true);
     } else if (exported != null) {
       return extractFieldName(logger, exported, true);
     } else if (imported != null) {
@@ -70,7 +73,7 @@ class Task {
    */
   public boolean hasMethods() {
     return (getter != null) || (setter != null) || (imported != null)
-        || (exported != null) || (constructor != null);
+        || (exported != null) || (constructor != null) || (binding != null);
   }
 
   /**
