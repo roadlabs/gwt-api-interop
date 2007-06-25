@@ -110,8 +110,14 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
   protected void writeBinding(FragmentGeneratorContext context, JMethod binding)
       throws UnableToCompleteException {
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing binding function", null);
     context = new FragmentGeneratorContext(context);
+    context.parentLogger = logger;
+
     SourceWriter sw = context.sw;
+    TypeOracle typeOracle = context.typeOracle;
+    String[][] bindingMeta = binding.getMetaData(BINDING);
 
     sw.print("public native void ");
     sw.print(binding.getName());
@@ -124,6 +130,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.print(context.parameterName);
 
     if (params.length == 2) {
+      // Infer the binding type from the second parameter of the binding
+      // method.
       sw.print(", ");
 
       context.objRef = "obj";
@@ -134,9 +142,31 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       // Extract the exported methods
       // XXX move method extraction outside of the generator classes
       JSWrapperGenerator g = new JSWrapperGenerator();
-      context.tasks = g.extractMethods(context.parentLogger,
-          context.typeOracle, params[1].getType().isClassOrInterface()).values();
+      context.tasks = g.extractMethods(logger, typeOracle,
+          params[1].getType().isClassOrInterface()).values();
+
+    } else if ((bindingMeta.length == 1) && (bindingMeta[0].length == 1)) {
+      // Use the binding type specified in the the gwt.binding annotation.
+      JType bindingType = typeOracle.findType(bindingMeta[0][0]);
+      if (bindingType == null) {
+        logger.log(TreeLogger.ERROR, "Could not resolve binding type "
+            + bindingMeta[0][0], null);
+        throw new UnableToCompleteException();
+      }
+
+      JClassType asClass = bindingType.isClassOrInterface();
+      if (asClass == null) {
+        logger.log(TreeLogger.ERROR, "Binding type " + bindingMeta[0][0]
+            + " is not a class or interface.", null);
+        throw new UnableToCompleteException();
+      }
+
+      // XXX move method extraction outside of the generator classes
+      JSWrapperGenerator g = new JSWrapperGenerator();
+      context.tasks = g.extractMethods(logger, typeOracle, asClass).values();
+
     } else {
+      logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
       context.tasks = Collections.EMPTY_SET;
     }
     sw.println(") /*-{");

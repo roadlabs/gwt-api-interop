@@ -12,7 +12,8 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- */package com.google.gwt.jsio.client;
+ */
+package com.google.gwt.jsio.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -29,15 +30,23 @@ import com.google.gwt.junit.client.GWTTestCase;
 public class JsoOverrideTest extends GWTTestCase {
 
   /**
-   * This shows the flyweight style.
+   * This shows the flyweight style. This is tagged as noIdentity to prevent a
+   * __gwtPeer field from being assigned to the prototype since the
+   * SubtractOverride class is implemented as a utility class.
+   * 
+   * @gwt.noIdentity
    */
   static interface FlyweightMathLib extends JSFlyweightWrapper {
     public int add(JavaScriptObject jso, int a, int b);
 
     /**
-     * @gwt.binding
+     * Because the SubtractOverride is a static utility class, we don't need
+     * to provide an instance of the class when we perform the binding.  Without
+     * a second parameter on the binding method from which to infer the binding
+     * type, we have to rely on a type declaration within the annotation.
+     * @gwt.binding com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride
      */
-    public void bind(JavaScriptObject jso, SubtractOverride override);
+    public void bind(JavaScriptObject jso);
 
     /**
      * @gwt.global $wnd.MathLib.constructor.prototype
@@ -48,27 +57,37 @@ public class JsoOverrideTest extends GWTTestCase {
   }
 
   /**
-   * This is a complete vanilla interface, save for the single annotation.
+   * This class is built as a utility class to avoid the overhead of carrying
+   * around an instance of SubtractOverride per MathLib instance.
    */
-  static interface SubtractOverride {
+  static class SubtractOverride {
     /**
      * @gwt.exported
      */
-    public int subtract(int x, int y);
+    public static int subtract(int x, int y) {
+      return x - y;
+    }
+
+    /**
+     * Private no-op constructor.
+     */
+    private SubtractOverride() {
+    }
   }
 
   /**
    * @gwt.global $wnd.MathLib.constructor.prototype
+   * @gwt.noIdentity
    */
   abstract static class WrapperMathLib implements JSWrapper {
-    public abstract int add(int a, int b);
-
     /**
      * @gwt.exported
      */
-    public int subtract(int a, int b) {
+    public static int subtract(int a, int b) {
       return a - b;
     }
+
+    public abstract int add(int a, int b);
   }
 
   public String getModuleName() {
@@ -87,18 +106,16 @@ public class JsoOverrideTest extends GWTTestCase {
     // The results from JavaScript agree
     assertEquals(0, invokeSubtract(10, 5));
 
-    // The Java object to bind to the JSO may be of any type.
-    flyweightMathLib.bind(mathJso, new SubtractOverride() {
-      public int subtract(int a, int b) {
-        return a - b;
-      }
-    });
+    // Because we're only exporting static methods from SubtractOverride, it's
+    // unnecessary to actually provide an instance of a SubtractOverride to the
+    // binding. If we did, it would be ignored.
+    flyweightMathLib.bind(mathJso);
 
     assertEquals(7, flyweightMathLib.add(mathJso, 3, 4));
-    
+
     // Show that the override has taken effect from the flyweight's view
     assertEquals(5, flyweightMathLib.subtract(mathJso, 10, 5));
-    
+
     // Methods in JavaScript will also use the replaced method.
     assertEquals(5, invokeSubtract(10, 5));
     assertEquals(5, invokeSubtractOnNewInstance(10, 5));
@@ -147,10 +164,10 @@ public class JsoOverrideTest extends GWTTestCase {
   private native int invokeSubtract(int a, int b) /*-{
    return $wnd.MathLib.subtract(a, b);
    }-*/;
-  
+
   /**
-   *  Creates a new instance of MathLib to verify that patching the prototype
-   *  will work for new instances of MathLib.
+   * Creates a new instance of MathLib to verify that patching the prototype
+   * will work for new instances of MathLib.
    */
   private native int invokeSubtractOnNewInstance(int a, int b) /*-{
    return (new $wnd.MathLibConstructor()).subtract(a, b);
