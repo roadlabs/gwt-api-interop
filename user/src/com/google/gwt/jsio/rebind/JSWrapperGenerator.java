@@ -451,39 +451,20 @@ public class JSWrapperGenerator extends Generator {
    */
   protected void validateType(Map propertyAccessors,
       FragmentGeneratorContext context) throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Validating extracted type information", null);
+
+    // Try to print as many errors as possible in a run before throwing the
+    // exception
+    boolean error = false;
 
     for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
-
       final Map.Entry entry = (Map.Entry) i.next();
-      final String propertyName = (String) entry.getKey();
       final Task pair = (Task) entry.getValue();
 
-      if ((pair.imported != null)
-          && ((pair.getter != null) || (pair.setter != null))) {
-        logger.log(TreeLogger.ERROR, "Imported functions may not be combined "
-            + "with bean-style accessors", null);
-        throw new UnableToCompleteException();
-      }
+      error |= pair.validate(this, context);
+    }
 
-      // If there are no methods attached to a task, we've encountered an
-      // internal error.
-      if (!pair.hasMethods()) {
-        logger.log(TreeLogger.ERROR, "No methods for property " + propertyName
-            + ".", null);
-        throw new UnableToCompleteException();
-      }
-
-      // Sanity check that we picked up the right setter
-      if ((pair.getter != null)
-          && (pair.setter != null)
-          && !pair.getter.getReturnType().equals(
-              getSetterParameter(pair.setter).getType())) {
-        logger.log(TreeLogger.ERROR, "Setter has different parameter type "
-            + "from getter for property " + propertyName, null);
-        throw new UnableToCompleteException();
-      }
+    if (error) {
+      throw new UnableToCompleteException();
     }
   }
 
@@ -1147,15 +1128,6 @@ public class JSWrapperGenerator extends Generator {
 
     context = new FragmentGeneratorContext(context);
     context.parentLogger = logger;
-
-    // Exports are taken care of in the object initializer
-    if (task.exported != null) {
-      if (context.readOnly) {
-        logger.log(TreeLogger.WARN, "Cannot export function "
-            + task.exported.getName() + " in read-only wrapper.", null);
-      }
-      return;
-    }
 
     logger.log(TreeLogger.DEBUG, "Implementing task " + context.fieldName, null);
 

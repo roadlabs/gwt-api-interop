@@ -15,6 +15,7 @@
  */
 package com.google.gwt.jsio.rebind;
 
+import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
@@ -25,6 +26,7 @@ import java.lang.reflect.Field;
 /**
  * Defines one or more methods to be implemented by JSWrapperGenerator.
  */
+// XXX Refactor into type-specific subtypes
 class Task {
   JMethod getter;
   JMethod setter;
@@ -44,8 +46,8 @@ class Task {
    */
   public String getFieldName(TreeLogger logger)
       throws UnableToCompleteException {
-    logger =
-        logger.branch(TreeLogger.DEBUG, "Determining field name for Task", null);
+    logger = logger.branch(TreeLogger.DEBUG, "Determining field name for Task",
+        null);
     if (getter != null) {
       return extractFieldName(logger, getter, false);
     } else if (setter != null) {
@@ -77,6 +79,71 @@ class Task {
   }
 
   /**
+   * Validates the task within the specified context.
+   * 
+   * @return <code>true</code> if an error is detected in the task
+   */
+  public boolean validate(JSWrapperGenerator generator,
+      FragmentGeneratorContext context) {
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Validating task", null);
+
+    if ((imported != null) && ((getter != null) || (setter != null))) {
+      logger.log(TreeLogger.ERROR, "Imported functions may not be combined "
+          + "with bean-style accessors", null);
+      return true;
+    }
+
+    // If there are no methods attached to a task, we've encountered an
+    // internal error.
+    if (!hasMethods()) {
+      logger.log(TreeLogger.ERROR, "No methods for task.", null);
+      return true;
+    }
+
+    if (constructor != null) {
+      JClassType returnType = constructor.getReturnType().isClassOrInterface();
+      JClassType jsoType = context.typeOracle.findType(JavaScriptObject.class.getName());
+
+      if (!(jsoType.equals(returnType) || constructor.getEnclosingType().equals(
+          returnType))) {
+        logger.log(TreeLogger.ERROR,
+            "Methods annotated with @gwt.constructor must return a "
+                + "JavaScriptObject or their enclosing class.", null);
+        return true;
+      }
+    }
+
+    // Sanity check that we picked up the right setter
+    if ((getter != null)
+        && (setter != null)
+        && !getter.getReturnType().equals(
+            generator.getSetterParameter(setter).getType())) {
+      logger.log(TreeLogger.ERROR, "Setter " + setter.getName()
+          + " has different parameter type " + "from getter "
+          + getter.getName(), null);
+      return true;
+    }
+
+    if (exported != null) {
+      if (context.readOnly) {
+        // If the interface is read-only, we couldn't add the function linkage
+        logger.log(TreeLogger.ERROR, "Cannot export function "
+            + exported.getName() + " in read-only wrapper.", null);
+        return true;
+
+      } else if (!context.maintainIdentity && !exported.isStatic()) {
+        // If we have no __gwtPeer object, only allow static methods
+        logger.log(TreeLogger.ERROR, "Cannot export instance function "
+            + exported.getName() + " in noIdentity wrapper.", null);
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Determine the correct field name to use for a method.
    */
   protected String extractFieldName(TreeLogger logger, JMethod m,
@@ -96,8 +163,7 @@ class Task {
       // If no gwt.fieldName is specified, see if there's a naming policy
       // defined on the enclosing class.
       JClassType enclosing = m.getEnclosingType();
-      String[][] policyMeta =
-          enclosing.getMetaData(JSWrapperGenerator.NAME_POLICY);
+      String[][] policyMeta = enclosing.getMetaData(JSWrapperGenerator.NAME_POLICY);
       NamePolicy policy;
 
       // If there is no namePolicy or it's not of the desired form, default
@@ -113,7 +179,7 @@ class Task {
         String policyName = policyMeta[0][0];
         try {
           Field f = NamePolicy.class.getDeclaredField(policyName.toUpperCase());
-          policy = (NamePolicy)f.get(null);
+          policy = (NamePolicy) f.get(null);
 
         } catch (IllegalAccessException e) {
           logger.log(TreeLogger.ERROR, "Bad gwt.namePolicy " + policyName, e);
@@ -126,7 +192,7 @@ class Task {
           try {
             Class clazz = Class.forName(policyName);
             if (NamePolicy.class.isAssignableFrom(clazz)) {
-              policy = (NamePolicy)clazz.newInstance();
+              policy = (NamePolicy) clazz.newInstance();
             } else {
               logger.log(TreeLogger.ERROR,
                   "@gwt.namePolicy is not an implementation of NamePolicy",

@@ -110,8 +110,14 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
 
     // Invoke the Java function
     sw.print("return ");
-    sw.print(context.parameterName);
-    sw.print(".@");
+    
+    // Don't need to reference the instance on a static method
+    if (!m.isStatic()) {
+      sw.print(context.parameterName);
+      sw.print(".");
+    }
+    
+    sw.print("@");
     sw.print(m.getEnclosingType().getQualifiedSourceName());
     sw.print("::");
     sw.print(m.getName());
