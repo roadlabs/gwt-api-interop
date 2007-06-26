@@ -22,7 +22,7 @@ import com.google.gwt.junit.client.GWTTestCase;
 import java.util.Iterator;
 
 /**
- * Tests native ivocation capabilities of the wrapper classes.
+ * Tests native invocation capabilities of the wrapper classes.
  */
 public class JSExporterTest extends GWTTestCase {
 

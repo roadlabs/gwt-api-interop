@@ -19,6 +19,7 @@ import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
+import com.google.gwt.core.ext.typeinfo.JField;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
 import com.google.gwt.core.ext.typeinfo.JParameterizedType;
@@ -54,9 +55,38 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     return setter.getParameters()[1];
   }
 
-  protected boolean isJso(TypeOracle oracle, JType type) {
+  protected boolean isJsoOrPeer(TypeOracle oracle, JType type) {
     JClassType jsoType = oracle.findType(JavaScriptObject.class.getName()).isClass();
-    return jsoType.isAssignableFrom(type.isClass());
+    return jsoType.isAssignableFrom(type.isClass())
+        || (PeeringFragmentGenerator.findPeer(oracle, type) != null);
+  }
+
+  /**
+   * Sets the objRef field on a FragmentGeneratorContext to refer to the correct
+   * JavaScriptObject.
+   */
+  protected void setObjRef(FragmentGeneratorContext context, JMethod method)
+      throws UnableToCompleteException {
+    JParameter param = method.getParameters()[0];
+    JClassType paramType = param.getType().isClassOrInterface();
+    JField f;
+
+    if (context.typeOracle.findType(JavaScriptObject.class.getName()).equals(
+        paramType)) {
+      context.objRef = param.getName();
+
+    } else if ((f = PeeringFragmentGenerator.findPeer(context.typeOracle,
+        paramType)) != null) {
+      context.objRef = param.getName() + ".@"
+          + f.getEnclosingType().getQualifiedSourceName() + "::" + OBJ;
+
+    } else {
+      context.parentLogger.branch(TreeLogger.ERROR,
+          "Invalid first parameter type for flyweight imported function. "
+              + "It is not a JavaScriptObject and it lacks a jsoPeer field.",
+          null);
+      throw new UnableToCompleteException();
+    }
   }
 
   /**
@@ -71,7 +101,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     return method.isAbstract()
         && hasBindingTag
         && ((params.length == 1) || (params.length == 2))
-        && isJso(typeOracle, params[0].getType())
+        && isJsoOrPeer(typeOracle, params[0].getType())
         && ((params.length == 1) || (params[1].getType().isClassOrInterface() != null));
   }
 
@@ -97,10 +127,10 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
         && (methodName.startsWith("is"))
         && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
     boolean isGetter = (arguments == 1)
-        && (methodName.startsWith("get") && isJso(typeOracle,
+        && (methodName.startsWith("get") && isJsoOrPeer(typeOracle,
             method.getParameters()[0].getType()));
     boolean isSetter = (arguments == 2)
-        && (methodName.startsWith("set") && isJso(typeOracle,
+        && (methodName.startsWith("set") && isJsoOrPeer(typeOracle,
             method.getParameters()[0].getType()));
     boolean propertyAccessor = isIs || isGetter || isSetter;
 
@@ -181,9 +211,9 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       // If there is a backreference, throw an exception.
       sw.print("if (");
       sw.print(context.parameterName);
-      sw.print(".hasOwnProperty('");
+      sw.print(".");
       sw.print(BACKREF);
-      sw.println("')) {");
+      sw.println(") {");
       sw.indent();
       sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
       sw.outdent();
@@ -292,7 +322,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
       // Write the invocation's parameter list
       sw.print("(");
-      for (int i = getImportOffset(); i < parameters.length; i++) {
+      for (int i = 0; i < parameters.length; i++) {
         sw.print("jso" + i);
         if (i < parameters.length - 1) {
           sw.print(", ");
@@ -333,7 +363,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
-    context.objRef = getter.getParameters()[0].getName();
+    setObjRef(context, getter);
     context.parameterName = context.objRef + "." + context.fieldName;
 
     super.writeGetter(context, getter);
@@ -345,7 +375,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     context = new FragmentGeneratorContext(context);
     // The only imported methods without a leading JSO param are constructors
     if (imported.getParameters().length > 0) {
-      context.objRef = imported.getParameters()[0].getName();
+      setObjRef(context, imported);
     } else {
       context.objRef = null;
     }
@@ -357,7 +387,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
-    context.objRef = setter.getParameters()[0].getName();
+    setObjRef(context, setter);
 
     super.writeSetter(context, setter);
   }

@@ -102,26 +102,80 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     public void setUnboxedShort(JavaScriptObject jso, short value);
   }
+  
+  static class Tree {
+    private static final TreeInterface IMPL = (TreeInterface)GWT.create(TreeInterface.class);
+    
+    static Tree createPeer(JavaScriptObject jso) {
+      if (jso == null) {
+        return null;
+      }
+      
+      Tree toReturn = new Tree(jso);
+      assertSame(toReturn, JSFlyweightWrapper.Util.getJavaPeer(jso));
+      return toReturn;
+    }
+    
+    final JavaScriptObject jsoPeer;
+    
+    Tree() {
+      this(IMPL.construct());
+    }
+    
+    Tree(JavaScriptObject jsoPeer) {
+      this.jsoPeer = jsoPeer;
+      IMPL.bind(jsoPeer, this);
+    }
+    
+    public Tree getLeft() {
+      return IMPL.getLeft(this);
+    }
+    
+    public Tree getRight() {
+      return IMPL.getRight(this);
+    }
+    
+    public int getValue() {
+      return IMPL.getValue(this);
+    }
+    
+    public void setLeft(Tree left) {
+      IMPL.setLeft(this, left);
+    }
+    
+    public void setRight(Tree right) {
+      IMPL.setRight(this, right);
+    }
+    
+    public void setValue(int value) {
+      IMPL.setValue(this, value);
+    }
+  }
   /**
    * @gwt.beanProperties
    */
   static interface TreeInterface extends JSFlyweightWrapper {
     /**
+     * @gwt.binding
+     */
+    public void bind(JavaScriptObject jso, Tree node);
+    
+    /**
      * @gwt.constructor Object
      */
-    public JavaScriptObject construct();
+    public abstract JavaScriptObject construct();
 
-    public JavaScriptObject getLeft(JavaScriptObject jso);
+    public abstract Tree getLeft(Tree parent);
 
-    public JavaScriptObject getRight(JavaScriptObject jso);
+    public abstract Tree getRight(Tree parent);
 
-    public int getValue(JavaScriptObject jso);
+    public abstract int getValue(Tree node);
 
-    public void setLeft(JavaScriptObject jso, JavaScriptObject ti);
+    public abstract void setLeft(Tree parent, Tree left);
 
-    public void setRight(JavaScriptObject jso, JavaScriptObject ti);
+    public abstract void setRight(Tree parent, Tree right);
 
-    public void setValue(JavaScriptObject jso, int value);
+    public abstract void setValue(Tree node, int value);
   }
 
   public String getModuleName() {
@@ -155,45 +209,42 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   public void testObjectGetters() throws JSONWrapperException {
-    TreeInterface treeInterface = (TreeInterface) GWT.create(TreeInterface.class);
+    Tree parent = new Tree();
 
-    JavaScriptObject one = treeInterface.construct();
+    assertNotNull(parent);
+    assertSame(parent, JSFlyweightWrapper.Util.getJavaPeer(parent.jsoPeer));
+    assertNull(parent.getLeft());
+    assertNull(parent.getRight());
 
-    assertTrue(treeInterface != null);
-    assertNull(treeInterface.getLeft(one));
-    assertNull(treeInterface.getRight(one));
+    parent = new Tree(makeTreeData());
 
-    JavaScriptObject two = makeTreeData();
-
-    assertNotNull(treeInterface.getLeft(two));
-    assertNotNull(treeInterface.getRight(two));
-    assertTrue(treeInterface.getValue(two) == 42);
-    assertTrue(treeInterface.getValue(treeInterface.getLeft(two)) == 43);
-    assertTrue(treeInterface.getValue(treeInterface.getRight(two)) == 44);
+    assertNotNull(parent.getLeft());
+    assertNotNull(parent.getRight());
+    assertEquals(42, parent.getValue());
+    assertEquals(43, parent.getLeft().getValue());
+    assertEquals(44, parent.getRight().getValue());
   }
 
   public void testObjectSetters() {
-    TreeInterface treeInterface = (TreeInterface) GWT.create(TreeInterface.class);
-    assertNotNull(treeInterface);
+    Tree one = new Tree();
+    
+    assertNull(one.getLeft());
+    assertNull(one.getRight());
 
-    JavaScriptObject one = treeInterface.construct();
+    Tree two = new Tree();
+    Tree three = new Tree();
 
-    assertNull(treeInterface.getLeft(one));
-    assertNull(treeInterface.getRight(one));
+    one.setValue(1);
+    two.setValue(2);
+    three.setValue(3);
 
-    JavaScriptObject two = treeInterface.construct();
-
-    JavaScriptObject three = treeInterface.construct();
-
-    treeInterface.setValue(one, 1);
-    treeInterface.setValue(two, 2);
-    treeInterface.setValue(three, 3);
-
-    treeInterface.setLeft(one, two);
-    treeInterface.setRight(one, three);
-
-    assertTrue(treeInterface.getValue(treeInterface.getLeft(one)) == 2);
-    assertTrue(treeInterface.getValue(treeInterface.getRight(one)) == 3);
+    one.setLeft(two);
+    one.setRight(three);
+    
+    assertSame(two, one.getLeft());
+    assertSame(three, one.getRight());
+    assertEquals(2, one.getLeft().getValue());
+    assertEquals(3, one.getRight().getValue());
   };
 
   public void testPrimitiveSetters() {
