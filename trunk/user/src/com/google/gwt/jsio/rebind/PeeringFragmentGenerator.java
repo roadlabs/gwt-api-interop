@@ -26,7 +26,28 @@ import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.jsio.client.impl.Extractor;
 import com.google.gwt.user.rebind.SourceWriter;
 
+/**
+ * A FragmentGenerator that allows for an informal peering protocol between
+ * Java objects and their backing JavaScriptObject.
+ */
 class PeeringFragmentGenerator extends FragmentGenerator {
+
+  static JField findPeer(TypeOracle oracle, JType type) {
+    JClassType asClass = type.isClassOrInterface();
+    
+    while (asClass != null) {
+      JField f = asClass.findField(JSFlyweightWrapperGenerator.OBJ);
+      if (f != null
+          && isAssignable(oracle, f.getType().isClassOrInterface(),
+              JavaScriptObject.class)) {
+        return f;
+      }
+      
+      asClass = asClass.getSuperclass();
+    }
+    
+    return null;
+  }
 
   protected JMethod findConstructor(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
@@ -35,7 +56,7 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     }
 
     JMethod m =
-        asClass.findMethod(JSFlyweightWrapperGenerator.CONSTRUCTOR,
+        asClass.findMethod(JSFlyweightWrapperGenerator.CREATE_PEER,
             new JType[] {oracle.findType(JavaScriptObject.class.getName())});
 
     if (m == null || !m.isStatic() || !type.equals(m.getReturnType())) {
@@ -44,37 +65,21 @@ class PeeringFragmentGenerator extends FragmentGenerator {
 
     return m;
   }
-
+  
   protected JField findExtractor(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
-    if (asClass == null) {
-      return null;
-    }
 
-    JField f = asClass.findField(JSFlyweightWrapperGenerator.EXTRACTOR);
-    if (f == null
-        || !isAssignable(oracle, f.getType().isClassOrInterface(),
-            Extractor.class)) {
-      return null;
+    while (asClass != null) {
+      JField f = asClass.findField(JSFlyweightWrapperGenerator.EXTRACTOR);
+      if (f != null
+          && isAssignable(oracle, f.getType().isClassOrInterface(),
+              Extractor.class)) {
+        return f;
+      }
+      asClass = asClass.getSuperclass();
     }
-
-    return f;
-  }
-  
-  protected JField findPeer(TypeOracle oracle, JType type) {
-    JClassType asClass = type.isClassOrInterface();
-    if (asClass == null) {
-      return null;
-    }
-
-    JField f = asClass.findField(JSFlyweightWrapperGenerator.OBJ);
-    if (f == null
-        || !isAssignable(oracle, f.getType().isClassOrInterface(),
-            JavaScriptObject.class)) {
-      return null;
-    }
-
-    return f;
+    
+    return null;
   }
 
   boolean accepts(TypeOracle oracle, JType type) {
@@ -88,8 +93,8 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     if (findConstructor(context.typeOracle, context.returnType) == null) {
       context.parentLogger.log(TreeLogger.ERROR, "The type " +
           context.returnType.getQualifiedSourceName() + " must possess a "
-          + JSFlyweightWrapperGenerator.CONSTRUCTOR
-          + " field to be used as a return type.", null);
+          + JSFlyweightWrapperGenerator.CREATE_PEER
+          + " method to be used as a return type.", null);
       throw new UnableToCompleteException();
     }
     SourceWriter sw = context.sw;
@@ -101,7 +106,7 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     sw.print("@");
     sw.print(context.returnType.getQualifiedSourceName());
     sw.print("::");
-    sw.print(JSFlyweightWrapperGenerator.CONSTRUCTOR);
+    sw.print(JSFlyweightWrapperGenerator.CREATE_PEER);
     sw.print("(Lcom/google/gwt/core/client/JavaScriptObject;)(");
     sw.print(context.parameterName);
     sw.print(")");
@@ -117,7 +122,8 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     }
     SourceWriter sw = context.sw;
 
-    sw.print("@");
+    sw.print(context.parameterName);
+    sw.print(".@");
     sw.print(context.returnType.getQualifiedSourceName());
     sw.print("::");
     sw.print(JSFlyweightWrapperGenerator.OBJ);
@@ -125,8 +131,9 @@ class PeeringFragmentGenerator extends FragmentGenerator {
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-
-    if (findExtractor(context.typeOracle, context.returnType) == null) {
+    JField f = findExtractor(context.typeOracle, context.returnType);
+    
+    if (f == null) {
       context.parentLogger.branch(TreeLogger.ERROR, "The type " +
           context.returnType.getQualifiedSourceName() + " must possess an "
           + JSFlyweightWrapperGenerator.EXTRACTOR
@@ -137,7 +144,7 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     SourceWriter sw = context.sw;
 
     sw.print("@");
-    sw.print(context.returnType.getQualifiedSourceName());
+    sw.print(f.getEnclosingType().getQualifiedSourceName());
     sw.print("::");
     sw.print(JSFlyweightWrapperGenerator.EXTRACTOR);
   }

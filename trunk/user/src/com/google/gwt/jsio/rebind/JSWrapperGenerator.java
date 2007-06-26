@@ -551,9 +551,9 @@ public class JSWrapperGenerator extends Generator {
     if (context.maintainIdentity) {
       // Verify that the incoming object doesn't already have a wrapper object.
       // If there is a backreference, throw an exception.
-      sw.print("if (obj.hasOwnProperty('");
+      sw.print("if (obj.");
       sw.print(BACKREF);
-      sw.println("')) {");
+      sw.println(") {");
       sw.indent();
       sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
       sw.outdent();
@@ -894,16 +894,19 @@ public class JSWrapperGenerator extends Generator {
     sw.println(" /*-{");
     sw.indent();
 
-    // Create a new wrapper object when a wrapper is returned from JS
-    boolean twoStep = fragmentGenerator.fromJSRequiresObject();
-    if (twoStep) {
+    if (returnType.isPrimitive() == null) {
       sw.print("if (");
       sw.print(context.parameterName);
-      sw.print(" == null) {");
+      sw.println(" == null) {");
       sw.indent();
       sw.println("return null;");
       sw.outdent();
       sw.println("}");
+    }
+    
+    // Create a new wrapper object when a wrapper is returned from JS
+    boolean twoStep = fragmentGenerator.fromJSRequiresObject();
+    if (twoStep) {
 
       // Use the backreference if it exists.
       sw.print("var toReturn = ");
@@ -1124,7 +1127,7 @@ public class JSWrapperGenerator extends Generator {
   protected void writeSingleTask(FragmentGeneratorContext context, Task task)
       throws UnableToCompleteException {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing Task", null);
+        "Writing Task " + task.getFieldName(context.parentLogger), null);
 
     context = new FragmentGeneratorContext(context);
     context.parentLogger = logger;

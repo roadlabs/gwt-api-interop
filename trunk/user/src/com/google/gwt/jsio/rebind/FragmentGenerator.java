@@ -34,7 +34,7 @@ abstract class FragmentGenerator {
    * @return <code>true</code> iff <code>type</code> can be assigned to a
    *         type of <code>clazz</code> within the type system
    */
-  protected boolean isAssignable(TypeOracle typeOracle, JClassType type,
+  protected static boolean isAssignable(TypeOracle typeOracle, JClassType type,
       Class clazz) {
 
     return (type.isAssignableTo(typeOracle.findType(clazz.getName())));
