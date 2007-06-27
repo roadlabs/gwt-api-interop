@@ -34,5 +34,6 @@ public abstract class JSFunction {
    * lifetime of the function is at least equal to that of the enclosing object.
    * This object is constructed the first time the JSFunction is used.
    */
-  private JavaScriptObject exportedFunction;
+  // Package access to prevent style warning
+  JavaScriptObject exportedFunction;
 }

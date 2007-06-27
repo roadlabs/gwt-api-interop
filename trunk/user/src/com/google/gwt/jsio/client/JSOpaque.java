@@ -40,7 +40,7 @@ public class JSOpaque {
    * 
    * @return <code>true</code> iff the other JSOpaque has the same reference.
    */
-  public boolean equals(JSOpaque o) {
+  public final boolean equals(JSOpaque o) {
     return reference.equals(o.reference);
   }
 
@@ -69,7 +69,7 @@ public class JSOpaque {
    * @return <code>true</code> if the value represented by the JSOpaque shares
    *         identity with the value represented by <code>o</code>.
    */
-  public native boolean identityEquals(JSOpaque o) /*-{
+  public final native boolean identityEquals(JSOpaque o) /*-{
    return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) ===
    eval(o.@com.google.gwt.jsio.client.JSOpaque::reference);
    }-*/;
@@ -80,7 +80,7 @@ public class JSOpaque {
    * @return <code>true</code> if the value represented by the JSOpaque shares
    *         identity with <code>o</code>
    */
-  public native boolean identityEquals(Object o) /*-{
+  public final native boolean identityEquals(Object o) /*-{
    return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) === o;
    }-*/;
 

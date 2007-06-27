@@ -53,12 +53,6 @@ public class JSWrapperGenerator extends Generator {
   public static final String BEAN_PROPERTIES = "gwt.beanProperties";
 
   /**
-   * Indicates that a flyweight-style method should be used to bind exported
-   * functions from a type into a JavaScriptObject.
-   */
-  public static final String BINDING = "gwt.binding";
-
-  /**
    * Allows JSFunction classes to explicitly specify the function to be
    * exported.
    */
@@ -229,23 +223,11 @@ public class JSWrapperGenerator extends Generator {
           sourceType, NO_IDENTITY));
       fragmentContext.tasks = propertyAccessors.values();
 
-      // Determine the correct expression to use to initialize the object
-      String constructor;
-      String[][] constructorMeta = sourceType.getMetaData(CONSTRUCTOR);
-      String[][] globalMeta = sourceType.getMetaData(GLOBAL);
-      if (globalMeta.length == 1 && globalMeta[0].length == 1) {
-        constructor = globalMeta[0][0];
-      } else if (constructorMeta.length == 1 && constructorMeta[0].length == 1) {
-        constructor = "new " + constructorMeta[0][0] + "()";
-      } else {
-        constructor = "{}";
-      }
-
       // Perform sanity checks on the extracted information
       validateType(propertyAccessors, fragmentContext);
 
       // Write all code that's not implementing methods
-      writeBoilerplate(logger, fragmentContext, constructor);
+      writeBoilerplate(logger, fragmentContext);
 
       // Write the JSO initializer if required
       if (!fragmentContext.readOnly) {
@@ -351,10 +333,18 @@ public class JSWrapperGenerator extends Generator {
     return propertyAccessors;
   }
 
+  /**
+   * Specifies the first parameter of imported methods to pass to the imported
+   * JavaScript function.
+   */
   protected int getImportOffset() {
     return 0;
   }
 
+  /**
+   * Specifies the base interface type so that it will be ignored by
+   * {@link #extractMethods()}.
+   */
   protected String getOperableClassName() {
     return JSWrapper.class.getName();
   }
@@ -376,10 +366,17 @@ public class JSWrapperGenerator extends Generator {
     }
   }
 
+  /**
+   * Extracts the parameter from a setter method that contains the value
+   * to store into the backing object.
+   */
   protected JParameter getSetterParameter(JMethod setter) {
     return setter.getParameters()[0];
   }
 
+  /**
+   * Utility method to check for the presence of a particular metadata tag.
+   */
   protected boolean hasTag(HasMetaData item, String tagName) {
     String[] tags = item.getMetaDataTags();
     for (int i = 0; i < tags.length; i++) {
@@ -397,6 +394,10 @@ public class JSWrapperGenerator extends Generator {
     return false;
   }
 
+  /**
+   * Determines if a method should be treated as an invocation of an underlying
+   * JavaScript constructor function.
+   */
   protected boolean shouldConstruct(TypeOracle typeOracle, JMethod method) {
     boolean methodConstructorTag = hasTag(method, CONSTRUCTOR);
     boolean methodGlobalTag = hasTag(method, GLOBAL);
@@ -471,9 +472,8 @@ public class JSWrapperGenerator extends Generator {
   /**
    * Writes common boilerplate code for all implementations.
    */
-  protected void writeBoilerplate(final TreeLogger logger,
-      final FragmentGeneratorContext context, final String constructor)
-      throws UnableToCompleteException {
+  protected void writeBoilerplate(TreeLogger logger,
+      FragmentGeneratorContext context) throws UnableToCompleteException {
 
     SourceWriter sw = context.sw;
     TypeOracle typeOracle = context.typeOracle;
@@ -492,6 +492,19 @@ public class JSWrapperGenerator extends Generator {
     sw.println("setJavaScriptObject(__nativeInit());");
     sw.outdent();
     sw.println("}");
+
+    // Determine the correct expression to use to initialize the object
+    JClassType asClass = context.returnType.isClassOrInterface();
+    String[][] constructorMeta = asClass.getMetaData(CONSTRUCTOR);
+    String[][] globalMeta = asClass.getMetaData(GLOBAL);
+    String constructor;
+    if (globalMeta.length == 1 && globalMeta[0].length == 1) {
+      constructor = globalMeta[0][0];
+    } else if (constructorMeta.length == 1 && constructorMeta[0].length == 1) {
+      constructor = "new " + constructorMeta[0][0] + "()";
+    } else {
+      constructor = "{}";
+    }
 
     // Initialize native state of the wrapper
     sw.println("private native JavaScriptObject __nativeInit() /*-{");
@@ -609,6 +622,9 @@ public class JSWrapperGenerator extends Generator {
     // a getter in Java that defers to an initializer that's writter in JS.
     boolean twoStep = fragmentGenerator.fromJSRequiresObject();
     if (twoStep) {
+      // var toReturn = <JSNI call to create a new object>
+      // toReturn.setJavaScriptObject
+      // return toReturn;
       sw.print("public native Object");
       sw.println(" fromJS(JavaScriptObject obj) /*-{");
       sw.indent();
@@ -641,6 +657,8 @@ public class JSWrapperGenerator extends Generator {
     sw.println(";");
     sw.outdent();
     sw.println("}-*/;");
+    
+    // Finish the class
     sw.outdent();
     sw.println("};");
   }
@@ -903,7 +921,7 @@ public class JSWrapperGenerator extends Generator {
       sw.outdent();
       sw.println("}");
     }
-    
+
     // Create a new wrapper object when a wrapper is returned from JS
     boolean twoStep = fragmentGenerator.fromJSRequiresObject();
     if (twoStep) {

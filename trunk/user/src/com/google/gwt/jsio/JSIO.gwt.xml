@@ -12,14 +12,15 @@
 <!-- implied. License for the specific language governing permissions and   -->
 <!-- limitations under the License.                                         -->
 
-<!-- JSON parsing support.                                                  -->
+<!-- JavaScript interoperability support.                                   -->
 <!--                                                                        -->
 <module>
-	<inherits name="com.google.gwt.core.Core"/>
+  <inherits name="com.google.gwt.core.Core" />
   <generate-with class="com.google.gwt.jsio.rebind.JSWrapperGenerator">
     <when-type-assignable class="com.google.gwt.jsio.client.JSWrapper" />
   </generate-with>
-  <generate-with class="com.google.gwt.jsio.rebind.JSFlyweightWrapperGenerator">
+  <generate-with
+    class="com.google.gwt.jsio.rebind.JSFlyweightWrapperGenerator">
     <when-type-assignable class="com.google.gwt.jsio.client.JSFlyweightWrapper" />
   </generate-with>
 </module>
