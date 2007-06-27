@@ -113,8 +113,9 @@ class PeeringFragmentGenerator extends FragmentGenerator {
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
-    if (findPeer(context.typeOracle, context.returnType) == null) {
-      context.parentLogger.log(TreeLogger.ERROR, "The type " +
+    JField f = findPeer(context.typeOracle, context.returnType);
+    if (f == null) {
+      context.parentLogger.log(TreeLogger.ERROR, "The type or a supertype of " +
           context.returnType.getQualifiedSourceName() + " must possess a "
           + JSFlyweightWrapperGenerator.OBJ
           + " field to be used as a parameter type.", null);
@@ -124,9 +125,9 @@ class PeeringFragmentGenerator extends FragmentGenerator {
 
     sw.print(context.parameterName);
     sw.print(".@");
-    sw.print(context.returnType.getQualifiedSourceName());
+    sw.print(f.getEnclosingType().getQualifiedSourceName());
     sw.print("::");
-    sw.print(JSFlyweightWrapperGenerator.OBJ);
+    sw.print(f.getName());
   }
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
@@ -134,8 +135,8 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     JField f = findExtractor(context.typeOracle, context.returnType);
     
     if (f == null) {
-      context.parentLogger.branch(TreeLogger.ERROR, "The type " +
-          context.returnType.getQualifiedSourceName() + " must possess an "
+      context.parentLogger.log(TreeLogger.ERROR, "The type or a supertype of " +
+          context.returnType.getQualifiedSourceName() + " must possess a "
           + JSFlyweightWrapperGenerator.EXTRACTOR
           + " field to be used with a JSList", null);
       throw new UnableToCompleteException();
@@ -146,6 +147,6 @@ class PeeringFragmentGenerator extends FragmentGenerator {
     sw.print("@");
     sw.print(f.getEnclosingType().getQualifiedSourceName());
     sw.print("::");
-    sw.print(JSFlyweightWrapperGenerator.EXTRACTOR);
+    sw.print(f.getName());
   }
 }

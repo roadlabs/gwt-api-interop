@@ -106,7 +106,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+    context.parentLogger.branch(TreeLogger.DEBUG,
         "Building boxed value setter statement", null);
     SourceWriter sw = context.sw;
     JClassType returnType = context.returnType.isClassOrInterface();

@@ -28,8 +28,12 @@ import java.util.AbstractList;
 public final class JSListWrapper extends AbstractList implements JSList,
     JSWrapper {
 
+  /**
+   * This is used with nested JSLists.
+   */
   private static class WrappingExtractor implements Extractor {
-    private final Extractor subExtractor;
+    // package protected to avoid style warning, only read from JSNI
+    final Extractor subExtractor;
 
     public WrappingExtractor(Extractor subExtractor) {
       this.subExtractor = subExtractor;
@@ -58,7 +62,10 @@ public final class JSListWrapper extends AbstractList implements JSList,
     return new WrappingExtractor(e);
   }
 
-  private static void throwIndexOutOfBoundsException() {
+  /**
+   * Used by JSNI code to throw an IndexOutOfBoundsException.
+   */
+  static void throwIndexOutOfBoundsException() {
     throw new IndexOutOfBoundsException();
   }
 
@@ -67,7 +74,6 @@ public final class JSListWrapper extends AbstractList implements JSList,
 
   public JSListWrapper(Extractor extractor) {
     this.extractor = extractor;
-    this.arr = arr;
     initNative();
   }
 

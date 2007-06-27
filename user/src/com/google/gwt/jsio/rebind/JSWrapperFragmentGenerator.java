@@ -39,7 +39,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
 
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+    context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value getter statement", null);
     SourceWriter sw = context.sw;
 
@@ -53,7 +53,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+    context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value setter statement", null);
     SourceWriter sw = context.sw;
     sw.print(context.parameterName);

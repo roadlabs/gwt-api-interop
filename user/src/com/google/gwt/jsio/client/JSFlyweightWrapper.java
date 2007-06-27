@@ -30,6 +30,8 @@ public interface JSFlyweightWrapper {
   /**
    * Allows access to flyweight internals.
    */
+  // XXX Given that peered objects can be passed out of JSWrapper-style
+  // interfaces, is it necessary to retain this?
   public static final class Util {
     /**
      * Returns the Java peer Object previously associated with <code>obj</code>

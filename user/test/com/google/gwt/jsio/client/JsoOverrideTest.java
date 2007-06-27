@@ -40,10 +40,11 @@ public class JsoOverrideTest extends GWTTestCase {
     public int add(JavaScriptObject jso, int a, int b);
 
     /**
-     * Because the SubtractOverride is a static utility class, we don't need
-     * to provide an instance of the class when we perform the binding.  Without
-     * a second parameter on the binding method from which to infer the binding
+     * Because the SubtractOverride is a static utility class, we don't need to
+     * provide an instance of the class when we perform the binding. Without a
+     * second parameter on the binding method from which to infer the binding
      * type, we have to rely on a type declaration within the annotation.
+     * 
      * @gwt.binding com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride
      */
     public void bind(JavaScriptObject jso);
@@ -81,6 +82,10 @@ public class JsoOverrideTest extends GWTTestCase {
    */
   abstract static class WrapperMathLib implements JSWrapper {
     /**
+     * Declaring the method to be static removes the dependency on the instance
+     * of WrapperMathLib in the underlying linkage code. This is an optimization
+     * and not a requirement.
+     * 
      * @gwt.exported
      */
     public static int subtract(int a, int b) {

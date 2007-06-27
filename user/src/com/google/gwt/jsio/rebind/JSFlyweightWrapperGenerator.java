@@ -38,6 +38,12 @@ import java.util.Map;
 public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
   /**
+   * Indicates that a flyweight-style method should be used to bind exported
+   * functions from a type into a JavaScriptObject.
+   */
+  public static final String BINDING = "gwt.binding";
+
+  /**
    * The name of a static method that can be implemented in a class so that it
    * can receive a peer object. It must accept a JSO.
    */
@@ -78,7 +84,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     } else if ((f = PeeringFragmentGenerator.findPeer(context.typeOracle,
         paramType)) != null) {
       context.objRef = param.getName() + ".@"
-          + f.getEnclosingType().getQualifiedSourceName() + "::" + OBJ;
+          + f.getEnclosingType().getQualifiedSourceName() + "::" + f.getName();
 
     } else {
       context.parentLogger.branch(TreeLogger.ERROR,
@@ -90,8 +96,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
   }
 
   /**
-   * Determines if the generator should generate an export binding for the
-   * method.
+   * Exporting methods via a flyweight interface is done by binding an instance
+   * of a type (or just the static methods of a type) to a JSO.
    */
   protected boolean shouldBind(TypeOracle typeOracle, JMethod method) {
 
@@ -105,6 +111,9 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
         && ((params.length == 1) || (params[1].getType().isClassOrInterface() != null));
   }
 
+  /**
+   * Methods can never be exported from the flyweight interface.
+   */
   protected boolean shouldExport(TypeOracle typeOracle, JMethod method) {
     return false;
   }
@@ -159,46 +168,37 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.print(" ");
     sw.print(context.parameterName);
 
+    JClassType bindingType = null;
     if (params.length == 2) {
       // Infer the binding type from the second parameter of the binding
       // method.
-      sw.print(", ");
-
+      bindingType = params[1].getType().isClassOrInterface();
       context.objRef = "obj";
-      sw.print(params[1].getType().getQualifiedSourceName());
+      
+      sw.print(", ");
+      sw.print(bindingType.getQualifiedSourceName());
       sw.print(" ");
       sw.print(context.objRef);
-
-      // Extract the exported methods
-      // XXX move method extraction outside of the generator classes
-      JSWrapperGenerator g = new JSWrapperGenerator();
-      context.tasks = g.extractMethods(logger, typeOracle,
-          params[1].getType().isClassOrInterface()).values();
-
     } else if ((bindingMeta.length == 1) && (bindingMeta[0].length == 1)) {
       // Use the binding type specified in the the gwt.binding annotation.
-      JType bindingType = typeOracle.findType(bindingMeta[0][0]);
+      bindingType = typeOracle.findType(bindingMeta[0][0]);
       if (bindingType == null) {
         logger.log(TreeLogger.ERROR, "Could not resolve binding type "
             + bindingMeta[0][0], null);
         throw new UnableToCompleteException();
       }
+    }
 
-      JClassType asClass = bindingType.isClassOrInterface();
-      if (asClass == null) {
-        logger.log(TreeLogger.ERROR, "Binding type " + bindingMeta[0][0]
-            + " is not a class or interface.", null);
-        throw new UnableToCompleteException();
-      }
-
+    if (bindingType != null) {
+      // Extract the exported methods
       // XXX move method extraction outside of the generator classes
       JSWrapperGenerator g = new JSWrapperGenerator();
-      context.tasks = g.extractMethods(logger, typeOracle, asClass).values();
-
+      context.tasks = g.extractMethods(logger, typeOracle, bindingType).values();
     } else {
       logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
       context.tasks = Collections.EMPTY_SET;
     }
+
     sw.println(") /*-{");
     sw.indent();
 
@@ -238,8 +238,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
    * Writes common boilerplate code for all implementations.
    */
   protected void writeBoilerplate(final TreeLogger logger,
-      final FragmentGeneratorContext context, final String constructor)
-      throws UnableToCompleteException {
+      final FragmentGeneratorContext context) throws UnableToCompleteException {
   }
 
   protected void writeConstructor(FragmentGeneratorContext context,
