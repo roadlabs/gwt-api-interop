@@ -26,7 +26,10 @@ import com.google.gwt.jsio.client.JSFunction;
 import com.google.gwt.user.rebind.SourceWriter;
 
 /**
- * Encapsulates accessors for primitive properties.
+ * Exports a Java function as a JavaScript function object. If the JSFunction's
+ * exported method is static and has parameter and return types that require no
+ * wrapping or unwrapping can be used as-is, otherwise a linkage function will
+ * be created to perform the necessary type conversions.
  */
 class JSFunctionFragmentGenerator extends FragmentGenerator {
   /**
@@ -34,9 +37,68 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
    */
   static void writeFunctionForMethod(FragmentGeneratorContext context, JMethod m)
       throws UnableToCompleteException {
-    TreeLogger logger =
-        context.parentLogger.branch(TreeLogger.DEBUG, "Writing function() for "
-            + m.getName(), null);
+    context.parentLogger.branch(TreeLogger.DEBUG, "Writing function() for "
+        + m.getName(), null);
+
+    if (isIdentityFunction(context, m)) {
+      writeIdentityInvocation(context, m);
+    } else {
+      writeLinkageInvocation(context, m);
+    }
+  }
+
+  /**
+   * Determines if the exported method can be used as-is.
+   */
+  private static boolean isIdentityFunction(FragmentGeneratorContext context,
+      JMethod m) throws UnableToCompleteException {
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Determining identity status of " + m.getName(), null);
+
+    boolean identityOnly = m.isStatic();
+    JParameter[] parameters = m.getParameters();
+
+    identityOnly &= context.fragmentGeneratorOracle.findFragmentGenerator(
+        logger, context.typeOracle, m.getReturnType()).isIdentity();
+
+    for (int i = 0; i < parameters.length && identityOnly; i++) {
+      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
+          logger, context.typeOracle, parameters[i].getType());
+      identityOnly &= fragmentGenerator.isIdentity();
+    }
+
+    return identityOnly;
+  }
+
+  /**
+   * Simply prints a JSNI reference to the exported function.
+   */
+  private static void writeIdentityInvocation(FragmentGeneratorContext context,
+      JMethod m) throws UnableToCompleteException {
+    SourceWriter sw = context.sw;
+    JParameter[] parameters = m.getParameters();
+
+    sw.print("@");
+    sw.print(m.getEnclosingType().getQualifiedSourceName());
+    sw.print("::");
+    sw.print(m.getName());
+    sw.print("(");
+
+    // Argument list for the Java invocation
+    for (int i = 0; i < parameters.length; i++) {
+      sw.print(parameters[i].getType().getJNISignature());
+    }
+
+    sw.print(")");
+  }
+
+  /**
+   * Writes a linkage function object that will invoke the exported function.
+   */
+  private static void writeLinkageInvocation(FragmentGeneratorContext context,
+      JMethod m) throws UnableToCompleteException {
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing function() for " + m.getName(), null);
 
     SourceWriter sw = context.sw;
     JParameter[] parameters = m.getParameters();
@@ -52,71 +114,15 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.println(") {");
     sw.indent();
 
-    // Each of the function arguments are assigned to a temporary variable that
-    // holds the Java version of the value.
-    for (int i = 0; i < parameters.length; i++) {
-      sw.print("var java");
-      sw.print(String.valueOf(i));
-      sw.println(";");
-
-      // Create a sub-context to generate the wrap/unwrap logic
-      JType returnType = parameters[i].getType();
-      FragmentGeneratorContext subParams =
-          new FragmentGeneratorContext(context);
-      subParams.returnType = returnType;
-      subParams.objRef = "java" + i;
-      subParams.parameterName = "arg" + i;
-
-      FragmentGenerator fragmentGenerator =
-          context.fragmentGeneratorOracle.findFragmentGenerator(logger,
-              context.typeOracle, returnType);
-      if (fragmentGenerator == null) {
-        logger.log(TreeLogger.ERROR, "No fragment generator for "
-            + returnType.getQualifiedSourceName(), null);
-        throw new UnableToCompleteException();
-      }
-
-      if (fragmentGenerator.fromJSRequiresObject()) {
-        sw.print("if (!arg");
-        sw.print(String.valueOf(i));
-        sw.println(") {");
-        sw.indent();
-        sw.print("java");
-        sw.print(String.valueOf(i));
-        sw.println(" = null;");
-        sw.outdent();
-        sw.println("} else {");
-        sw.indent();
-        sw.print("java");
-        sw.print(String.valueOf(i));
-        sw.print(" = ");
-        fragmentGenerator.writeJSNIObjectCreator(subParams);
-        sw.println(";");
-        sw.print("java");
-        sw.print(String.valueOf(i));
-        sw.print(".");
-        fragmentGenerator.fromJS(subParams);
-        sw.println(";");
-        sw.outdent();
-        sw.println("}");
-      } else {
-        sw.print("java");
-        sw.print(String.valueOf(i));
-        sw.print(" = ");
-        fragmentGenerator.fromJS(subParams);
-        sw.println(";");
-      }
-    }
-
     // Invoke the Java function
     sw.print("return ");
-    
+
     // Don't need to reference the instance on a static method
     if (!m.isStatic()) {
       sw.print(context.parameterName);
       sw.print(".");
     }
-    
+
     sw.print("@");
     sw.print(m.getEnclosingType().getQualifiedSourceName());
     sw.print("::");
@@ -131,9 +137,24 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.print(")(");
 
     for (int i = 0; i < parameters.length; i++) {
-      sw.print("java" + i);
+      // Create a sub-context to generate the wrap/unwrap logic
+      JType returnType = parameters[i].getType();
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
+      subParams.returnType = returnType;
+      subParams.parameterName = "arg" + i;
+
+      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
+          logger, context.typeOracle, returnType);
+      if (fragmentGenerator == null) {
+        logger.log(TreeLogger.ERROR, "No fragment generator for "
+            + returnType.getQualifiedSourceName(), null);
+        throw new UnableToCompleteException();
+      }
+
+      fragmentGenerator.fromJS(subParams);
+
       if (i < parameters.length - 1) {
-        sw.print(", ");
+        sw.println(", ");
       }
     }
 
@@ -166,9 +187,8 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
-    TreeLogger logger =
-        context.parentLogger.branch(TreeLogger.DEBUG,
-            "Writing function() wrapper for JSFunction", null);
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing function() wrapper for JSFunction", null);
 
     SourceWriter sw = context.sw;
     TypeOracle typeOracle = context.typeOracle;
@@ -182,8 +202,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
 
     // XXX this is a hack to support the JSFunction having the same
     // lifetime as the JSFunction object without having to use GWT.create
-    // on every JSFunction object as that would discaurage inline, anonymous
-    // classes.
+    // on every JSFunction object as that would discourage anonymous classes.
 
     sw.print("(");
     sw.print(context.parameterName);

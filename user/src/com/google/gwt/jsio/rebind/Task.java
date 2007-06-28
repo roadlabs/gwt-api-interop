@@ -20,6 +20,7 @@ import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
+import com.google.gwt.jsio.client.JSWrapper;
 
 import java.lang.reflect.Field;
 
@@ -104,12 +105,21 @@ class Task {
     if (constructor != null) {
       JClassType returnType = constructor.getReturnType().isClassOrInterface();
       JClassType jsoType = context.typeOracle.findType(JavaScriptObject.class.getName());
+      JClassType wrapperType = context.typeOracle.findType(JSWrapper.class.getName());
 
       if (!(jsoType.equals(returnType) || constructor.getEnclosingType().equals(
           returnType))) {
         logger.log(TreeLogger.ERROR,
-            "Methods annotated with @gwt.constructor must return a "
-                + "JavaScriptObject or their enclosing class.", null);
+            "Methods annotated with @gwt.constructor or @gwt.global must "
+                + "return a JavaScriptObject or their enclosing class.", null);
+        return true;
+      }
+
+      if (wrapperType.isAssignableFrom(returnType)
+          && JSWrapperGenerator.hasTag(constructor, JSWrapperGenerator.GLOBAL)) {
+        logger.log(TreeLogger.ERROR,
+            "Cannot place @gwt.global annotation on JSWrapper methods."
+                + " Apply to the class or interface instead.", null);
         return true;
       }
     }

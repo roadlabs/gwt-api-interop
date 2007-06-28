@@ -38,10 +38,13 @@ public interface JSWrapper {
   /**
    * Set the JavaScriptObject to be wrapped by the generated class.
    * 
+   * @return the instance of the JSWrapper.
    * @throws MultipleWrapperException if <code>obj</code> is already the
    *           target of another JSWrapper.
    */
-  public void setJavaScriptObject(JavaScriptObject obj)
+  // The JSWrapper instance is returned because it allows wrapper creation
+  // in the generated classes to be a one-liner. See JSWrapperFragmentGenerator.
+  public JSWrapper setJavaScriptObject(JavaScriptObject obj)
       throws MultipleWrapperException;
 
   /**

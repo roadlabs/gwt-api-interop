@@ -35,7 +35,7 @@ class StringFragmentGenerator extends FragmentGenerator {
       return isAssignable(oracle, asClass, String.class);
     }
   }
-
+  
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
@@ -43,6 +43,10 @@ class StringFragmentGenerator extends FragmentGenerator {
     SourceWriter sw = context.sw;
 
     sw.print(context.parameterName);
+  }
+
+  boolean isIdentity() {
+    return true;
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {

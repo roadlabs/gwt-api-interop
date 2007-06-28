@@ -67,10 +67,10 @@ abstract class FragmentGenerator {
       throws UnableToCompleteException;
 
   /**
-   * @return <code>true</code> iff fromJS requires a wrapper object to be
-   *         created in order to expose the value in the Java context.
+   * Subclasses should return <code>true</code> iff the fromJS and toJS
+   * functions don't apply a transformation to the input variable.
    */
-  boolean fromJSRequiresObject() {
+  boolean isIdentity() {
     return false;
   }
 

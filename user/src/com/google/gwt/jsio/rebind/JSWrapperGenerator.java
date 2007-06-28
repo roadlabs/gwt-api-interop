@@ -147,6 +147,19 @@ public class JSWrapperGenerator extends Generator {
   }
 
   /**
+   * Utility method to check for the presence of a particular metadata tag.
+   */
+  static boolean hasTag(HasMetaData item, String tagName) {
+    String[] tags = item.getMetaDataTags();
+    for (int i = 0; i < tags.length; i++) {
+      if (tagName.equals(tags[i])) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
    * Entry point into the Generator.
    */
   public final String generate(TreeLogger logger, GeneratorContext context,
@@ -367,24 +380,11 @@ public class JSWrapperGenerator extends Generator {
   }
 
   /**
-   * Extracts the parameter from a setter method that contains the value
-   * to store into the backing object.
+   * Extracts the parameter from a setter method that contains the value to
+   * store into the backing object.
    */
   protected JParameter getSetterParameter(JMethod setter) {
     return setter.getParameters()[0];
-  }
-
-  /**
-   * Utility method to check for the presence of a particular metadata tag.
-   */
-  protected boolean hasTag(HasMetaData item, String tagName) {
-    String[] tags = item.getMetaDataTags();
-    for (int i = 0; i < tags.length; i++) {
-      if (tagName.equals(tags[i])) {
-        return true;
-      }
-    }
-    return false;
   }
 
   /**
@@ -534,7 +534,7 @@ public class JSWrapperGenerator extends Generator {
 
     // Satisfies JSWrapper and allows generated implementations to
     // efficiently initialize new objects.
-    sw.println("public native void setJavaScriptObject(JavaScriptObject obj) /*-{");
+    sw.println("public native JSWrapper setJavaScriptObject(JavaScriptObject obj) /*-{");
     sw.indent();
 
     if (context.maintainIdentity) {
@@ -594,6 +594,7 @@ public class JSWrapperGenerator extends Generator {
       sw.println(");");
     }
 
+    sw.println("return this;");
     sw.outdent();
     sw.println("}-*/;");
 
@@ -618,35 +619,14 @@ public class JSWrapperGenerator extends Generator {
     subParams.parameterName = "obj";
     FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
         logger, typeOracle, returnType);
-    // We can't create new Java objects from within JSNI blocks, so we implement
-    // a getter in Java that defers to an initializer that's writter in JS.
-    boolean twoStep = fragmentGenerator.fromJSRequiresObject();
-    if (twoStep) {
-      // var toReturn = <JSNI call to create a new object>
-      // toReturn.setJavaScriptObject
-      // return toReturn;
-      sw.print("public native Object");
-      sw.println(" fromJS(JavaScriptObject obj) /*-{");
-      sw.indent();
-      sw.print("var toReturn = ");
-      fragmentGenerator.writeJSNIObjectCreator(subParams);
-      sw.println(";");
-      sw.print("toReturn.");
-      fragmentGenerator.fromJS(subParams);
-      sw.println(";");
-      sw.println("return toReturn;");
-      sw.outdent();
-      sw.println("}-*/;");
 
-    } else {
-      sw.println("public native Object fromJS(JavaScriptObject obj) /*-{");
-      sw.indent();
-      sw.print("return ");
-      fragmentGenerator.fromJS(subParams);
-      sw.println(";");
-      sw.outdent();
-      sw.println("}-*/;");
-    }
+    sw.println("public native Object fromJS(JavaScriptObject obj) /*-{");
+    sw.indent();
+    sw.print("return ");
+    fragmentGenerator.fromJS(subParams);
+    sw.println(";");
+    sw.outdent();
+    sw.println("}-*/;");
 
     // Write the Extracor's toJS function and close the Extractor
     // implementation.
@@ -657,7 +637,7 @@ public class JSWrapperGenerator extends Generator {
     sw.println(";");
     sw.outdent();
     sw.println("}-*/;");
-    
+
     // Finish the class
     sw.outdent();
     sw.println("};");
@@ -702,35 +682,10 @@ public class JSWrapperGenerator extends Generator {
     sw.println(" /*-{");
     sw.indent();
 
-    // Assign the Java parameters to the function to their corresponding
-    // JavaScriptObject values.
-    // var jso0 = <conversion logic for first parameter>;
-    // var jso1 = <conversion logic for second parameter>;
-    // ......
-    for (int i = 0; i < parameters.length; i++) {
-      JType returnType = parameters[i].getType();
-
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
-      subParams.returnType = returnType;
-      subParams.parameterName = parameters[i].getName();
-
-      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
-
-      sw.print("var jso");
-      sw.print(String.valueOf(i));
-      sw.print(" = ");
-      fragmentGenerator.toJS(subParams);
-      sw.println(";");
-    }
-
     // The return type of the function we're importing.
     JType returnType = constructor.getReturnType();
 
-    // Don't bother recording a return value for void invocations.
-    if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
-      sw.print("var jsReturn = ");
-    }
+    sw.print("var jsReturn = ");
 
     // If the imported method is acting as an invocation of a JavaScript
     // constructor, use the new Foo() syntax, otherwise treat is an an
@@ -742,7 +697,23 @@ public class JSWrapperGenerator extends Generator {
     // Write the invocation's parameter list
     sw.print("(");
     for (int i = getImportOffset(); i < parameters.length; i++) {
-      sw.print("jso" + i);
+      // Create a sub-context to generate the wrap/unwrap logic
+      JType subType = parameters[i].getType();
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(
+          context);
+      subParams.returnType = subType;
+      subParams.parameterName = parameters[i].getName();
+
+      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
+          logger, context.typeOracle, subType);
+      if (fragmentGenerator == null) {
+        logger.log(TreeLogger.ERROR, "No fragment generator for "
+            + returnType.getQualifiedSourceName(), null);
+        throw new UnableToCompleteException();
+      }
+
+      fragmentGenerator.toJS(subParams);
+
       if (i < parameters.length - 1) {
         sw.print(", ");
       }
@@ -753,18 +724,7 @@ public class JSWrapperGenerator extends Generator {
     subContext.returnType = returnType;
     subContext.parameterName = "jsReturn";
 
-    FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-        logger, context.typeOracle, returnType);
-
-    sw.print("var toReturn = ");
-    sw.print(context.parameterName);
-
-    fragmentGenerator.fromJS(subContext);
-    sw.println(";");
-
-    sw.print("return ");
-    sw.print(context.objRef);
-    sw.println(";");
+    sw.println("return this.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(jsReturn);");
     sw.outdent();
     sw.println("}-*/;");
   }
@@ -813,10 +773,11 @@ public class JSWrapperGenerator extends Generator {
 
         FragmentGeneratorContext subContext = new FragmentGeneratorContext(
             context);
-        subContext.parameterName = context.parameterName + "." + BACKREF;
+        subContext.parameterName = "this." + BACKREF;
 
         JSFunctionFragmentGenerator.writeFunctionForMethod(subContext,
             task.exported);
+        sw.println(";");
 
       } else {
         // If there is no getter, we don't need to worry about an empty
@@ -830,11 +791,11 @@ public class JSWrapperGenerator extends Generator {
         FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
             logger, context.typeOracle, returnType);
 
-        sw.print("if (!(\"");
-        sw.print(fieldName);
-        sw.print("\" in ");
+        sw.print("if (!");
         sw.print(context.parameterName);
-        sw.println(")) {");
+        sw.print(".hasOwnProperty('");
+        sw.print(fieldName);
+        sw.println("')) {");
         sw.indent();
 
         sw.print(context.parameterName);
@@ -922,24 +883,10 @@ public class JSWrapperGenerator extends Generator {
       sw.println("}");
     }
 
-    // Create a new wrapper object when a wrapper is returned from JS
-    boolean twoStep = fragmentGenerator.fromJSRequiresObject();
-    if (twoStep) {
+    sw.print("return ");
+    fragmentGenerator.fromJS(context);
+    sw.println(";");
 
-      // Use the backreference if it exists.
-      sw.print("var toReturn = ");
-      fragmentGenerator.writeJSNIObjectCreator(context);
-      sw.println(";");
-
-      sw.print("toReturn.");
-      fragmentGenerator.fromJS(context);
-      sw.println(";");
-      sw.println("return toReturn;");
-    } else {
-      sw.print("return ");
-      fragmentGenerator.fromJS(context);
-      sw.println(";");
-    }
     sw.outdent();
     sw.println("}-*/;");
   }
@@ -984,30 +931,8 @@ public class JSWrapperGenerator extends Generator {
     sw.println(" /*-{");
     sw.indent();
 
-    // Assign the Java parameters to the function to their corresponding
-    // JavaScriptObject values.
-    // var jso0 = <conversion logic for first parameter>;
-    // var jso1 = <conversion logic for second parameter>;
-    // ......
-    for (int i = getImportOffset(); i < parameters.length; i++) {
-      JType returnType = parameters[i].getType();
-
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
-      subParams.returnType = returnType;
-      subParams.parameterName = parameters[i].getName();
-
-      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
-
-      sw.print("var jso");
-      sw.print(String.valueOf(i));
-      sw.print(" = ");
-      fragmentGenerator.toJS(subParams);
-      sw.println(";");
-    }
-
     // The return type of the function we're importing.
-    JType returnType = imported.getReturnType();
+    final JType returnType = imported.getReturnType();
 
     // Don't bother recording a return value for void invocations.
     if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
@@ -1032,7 +957,23 @@ public class JSWrapperGenerator extends Generator {
     // Write the invocation's parameter list
     sw.print("(");
     for (int i = getImportOffset(); i < parameters.length; i++) {
-      sw.print("jso" + i);
+      // Create a sub-context to generate the wrap/unwrap logic
+      JType subType = parameters[i].getType();
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(
+          context);
+      subParams.returnType = subType;
+      subParams.parameterName = parameters[i].getName();
+
+      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
+          logger, context.typeOracle, subType);
+      if (fragmentGenerator == null) {
+        logger.log(TreeLogger.ERROR, "No fragment generator for "
+            + returnType.getQualifiedSourceName(), null);
+        throw new UnableToCompleteException();
+      }
+
+      fragmentGenerator.toJS(subParams);
+
       if (i < parameters.length - 1) {
         sw.print(", ");
       }
@@ -1051,13 +992,6 @@ public class JSWrapperGenerator extends Generator {
 
       if (useConstructor) {
         sw.print("var toReturn = this.");
-      } else if (fragmentGenerator.fromJSRequiresObject()) {
-        sw.print("var toReturn = ");
-
-        fragmentGenerator.writeJSNIObjectCreator(subContext);
-        sw.println(";");
-
-        sw.print("toReturn.");
       } else {
         sw.print("var toReturn = ");
       }

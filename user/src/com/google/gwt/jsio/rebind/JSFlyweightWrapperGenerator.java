@@ -132,9 +132,10 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     boolean methodHasBeanTag = hasTag(method, BEAN_PROPERTIES);
     boolean classHasBeanTag = hasTag(enclosing, BEAN_PROPERTIES);
 
-    boolean isIs = (arguments == 0)
+    boolean isIs = (arguments == 1)
         && (methodName.startsWith("is"))
-        && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
+        && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()))
+        && isJsoOrPeer(typeOracle, method.getParameters()[0].getType());
     boolean isGetter = (arguments == 1)
         && (methodName.startsWith("get") && isJsoOrPeer(typeOracle,
             method.getParameters()[0].getType()));
@@ -174,7 +175,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       // method.
       bindingType = params[1].getType().isClassOrInterface();
       context.objRef = "obj";
-      
+
       sw.print(", ");
       sw.print(bindingType.getQualifiedSourceName());
       sw.print(" ");
@@ -204,7 +205,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
     context.returnType = JPrimitiveType.VOID;
 
-    if (context.maintainIdentity) {
+    if (context.maintainIdentity && params.length == 2) {
       // XXX link the Java object to the JSO?
 
       // Verify that the incoming object doesn't already have a wrapper object.
@@ -280,28 +281,6 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.println(" /*-{");
     sw.indent();
 
-    // Assign the Java parameters to the function to their corresponding
-    // JavaScriptObject values.
-    // var jso0 = <conversion logic for first parameter>;
-    // var jso1 = <conversion logic for second parameter>;
-    // ......
-    for (int i = 0; i < parameters.length; i++) {
-      JType returnType = parameters[i].getType();
-
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
-      subParams.returnType = returnType;
-      subParams.parameterName = parameters[i].getName();
-
-      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
-
-      sw.print("var jso");
-      sw.print(String.valueOf(i));
-      sw.print(" = ");
-      fragmentGenerator.toJS(subParams);
-      sw.println(";");
-    }
-
     JType returnType = constructor.getReturnType();
 
     FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
@@ -322,7 +301,26 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       // Write the invocation's parameter list
       sw.print("(");
       for (int i = 0; i < parameters.length; i++) {
-        sw.print("jso" + i);
+        // Create a sub-context to generate the wrap/unwrap logic
+        JType subType = parameters[i].getType();
+        FragmentGeneratorContext subParams = new FragmentGeneratorContext(
+            context);
+        subParams.returnType = subType;
+        subParams.parameterName = parameters[i].getName();
+
+        FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
+            logger, context.typeOracle, subType);
+        if (fragmentGenerator == null) {
+          logger.log(TreeLogger.ERROR, "No fragment generator for "
+              + returnType.getQualifiedSourceName(), null);
+          throw new UnableToCompleteException();
+        }
+
+        fragmentGenerator.fromJS(subParams);
+
+        if (i < parameters.length - 1) {
+          sw.println(", ");
+        }
         if (i < parameters.length - 1) {
           sw.print(", ");
         }

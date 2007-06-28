@@ -33,11 +33,18 @@ public class JsoOverrideTest extends GWTTestCase {
    * This shows the flyweight style. This is tagged as noIdentity to prevent a
    * __gwtPeer field from being assigned to the prototype since the
    * SubtractOverride class is implemented as a utility class.
-   * 
-   * @gwt.noIdentity
    */
   static interface FlyweightMathLib extends JSFlyweightWrapper {
     public int add(JavaScriptObject jso, int a, int b);
+
+    /**
+     * The MultiplyOverride is written with instance methods, so it's necessary
+     * to bind a particular instance of the MultiplyOverride to the JavaScript
+     * API.
+     * 
+     * @gwt.binding
+     */
+    public void bindMultiply(JavaScriptObject jso, MultiplyOverride multiplier);
 
     /**
      * Because the SubtractOverride is a static utility class, we don't need to
@@ -47,14 +54,35 @@ public class JsoOverrideTest extends GWTTestCase {
      * 
      * @gwt.binding com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride
      */
-    public void bind(JavaScriptObject jso);
+    public void bindSubtract(JavaScriptObject jso);
 
     /**
      * @gwt.global $wnd.MathLib.constructor.prototype
      */
     public JavaScriptObject construct();
 
+    public int multiply(JavaScriptObject jso, int a, int b);
+
     public int subtract(JavaScriptObject jso, int a, int b);
+  }
+
+  /**
+   * This class shows how instance methods can be exported into a prototype.
+   */
+  static class MultiplyOverride {
+    int invocations;
+
+    public int getInvocations() {
+      return invocations;
+    }
+
+    /**
+     * @gwt.exported
+     */
+    public int multiply(int x, int y) {
+      invocations++;
+      return x * y;
+    }
   }
 
   /**
@@ -78,7 +106,6 @@ public class JsoOverrideTest extends GWTTestCase {
 
   /**
    * @gwt.global $wnd.MathLib.constructor.prototype
-   * @gwt.noIdentity
    */
   abstract static class WrapperMathLib implements JSWrapper {
     /**
@@ -93,6 +120,15 @@ public class JsoOverrideTest extends GWTTestCase {
     }
 
     public abstract int add(int a, int b);
+
+    /**
+     * Export an instance method as well.
+     * 
+     * @gwt.exported
+     */
+    public int multiply(int a, int b) {
+      return a * b;
+    }
   }
 
   public String getModuleName() {
@@ -106,24 +142,36 @@ public class JsoOverrideTest extends GWTTestCase {
     JavaScriptObject mathJso = flyweightMathLib.construct();
 
     assertEquals(7, flyweightMathLib.add(mathJso, 3, 4));
-    // Show the broken version is still there.
+    // Show the broken version is still there until binding
     assertEquals(0, flyweightMathLib.subtract(mathJso, 10, 5));
+    assertEquals(0, flyweightMathLib.multiply(mathJso, 10, 5));
     // The results from JavaScript agree
     assertEquals(0, invokeSubtract(10, 5));
+    assertEquals(0, invokeMultiply(10, 5));
 
     // Because we're only exporting static methods from SubtractOverride, it's
     // unnecessary to actually provide an instance of a SubtractOverride to the
     // binding. If we did, it would be ignored.
-    flyweightMathLib.bind(mathJso);
+    flyweightMathLib.bindSubtract(mathJso);
+    
+    // Now we'll bind an instance of a MultiplyOverride to the API
+    MultiplyOverride override = new MultiplyOverride();
+    flyweightMathLib.bindMultiply(mathJso, override);
 
     assertEquals(7, flyweightMathLib.add(mathJso, 3, 4));
 
     // Show that the override has taken effect from the flyweight's view
     assertEquals(5, flyweightMathLib.subtract(mathJso, 10, 5));
+    assertEquals(50, flyweightMathLib.multiply(mathJso, 10, 5));
 
     // Methods in JavaScript will also use the replaced method.
     assertEquals(5, invokeSubtract(10, 5));
+    assertEquals(50, invokeMultiply(10, 5));
     assertEquals(5, invokeSubtractOnNewInstance(10, 5));
+    assertEquals(50, invokeMultiplyOnNewInstance(10, 5));
+    
+    // Check that we have statefulness in the bound override.
+    assertEquals(3, override.getInvocations());
   }
 
   public void testWrapperOverride() {
@@ -131,6 +179,7 @@ public class JsoOverrideTest extends GWTTestCase {
 
     // Show that the default, broken implementation is used.
     assertEquals(0, invokeSubtract(10, 5));
+    assertEquals(0, invokeMultiply(10, 5));
 
     WrapperMathLib mathLib = (WrapperMathLib) GWT.create(WrapperMathLib.class);
 
@@ -139,10 +188,13 @@ public class JsoOverrideTest extends GWTTestCase {
 
     // This is a direct Java call
     assertEquals(5, mathLib.subtract(10, 5));
+    assertEquals(50, mathLib.multiply(10, 5));
 
     // Methods in JavaScript will also use the replaced method.
     assertEquals(5, invokeSubtract(10, 5));
     assertEquals(5, invokeSubtractOnNewInstance(10, 5));
+    assertEquals(50, invokeMultiply(10, 5));
+    assertEquals(50, invokeMultiplyOnNewInstance(10, 5));
   }
 
   /**
@@ -154,13 +206,33 @@ public class JsoOverrideTest extends GWTTestCase {
    return a + b;
    }
    
-   // This function is broken, we'll override it in Java
+   // This function is broken, we'll override it in Java with a static method
    MathLib.prototype.subtract = function(a, b) {
+   return 0;
+   }
+   
+   // This function is broken, we'll override it with an instance method
+   MathLib.prototype.multiply = function(a, b) {
    return 0;
    }
    
    $wnd.MathLibConstructor = MathLib;
    $wnd.MathLib = new MathLib();
+   }-*/;
+
+  /**
+   * Invokes the MathLib multiply function from JavaScript.
+   */
+  private native int invokeMultiply(int a, int b) /*-{
+   return $wnd.MathLib.multiply(a, b);
+   }-*/;
+
+  /**
+   * Creates a new instance of MathLib to verify that patching the prototype
+   * will work for new instances of MathLib.
+   */
+  private native int invokeMultiplyOnNewInstance(int a, int b) /*-{
+   return (new $wnd.MathLibConstructor()).multiply(a, b);
    }-*/;
 
   /**
