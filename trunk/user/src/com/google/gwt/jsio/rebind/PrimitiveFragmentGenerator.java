@@ -65,6 +65,10 @@ class PrimitiveFragmentGenerator extends FragmentGenerator {
     sw.print(context.parameterName);
     sw.print(")");
   }
+  
+  boolean isIdentity() {
+    return true;
+  }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,

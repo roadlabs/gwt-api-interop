@@ -146,8 +146,9 @@ public final class JSListWrapper extends AbstractList implements JSList,
    * intentionally not exposed via JSWrapper to prevent the backing JSONObject
    * from changing out from under the wrapper.
    */
-  public void setJavaScriptObject(JavaScriptObject obj) {
+  public JSWrapper setJavaScriptObject(JavaScriptObject obj) {
     arr = obj;
+    return this;
   }
 
   /**

@@ -42,6 +42,7 @@ public class JSONInvokerTest extends GWTTestCase {
 
   /**
    * Testbed class for invocation testing.
+   * 
    * @gwt.beanProperties
    */
   public static interface HelloWrapper extends JSWrapper {
@@ -203,7 +204,7 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testCallback() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
 
     assertEquals(30, wrapper.testCallback(2, 3, new HelloCallbackInt()));
@@ -213,15 +214,16 @@ public class JSONInvokerTest extends GWTTestCase {
     // Verify that the function object returned is the same so that
     // register/unregister APIs will work correctly.
     HelloCallbackInt c1 = new HelloCallbackInt();
-    assertTrue(wrapper.identityEquals(c1, c1));
+    assertTrue("c1 not identical to itself", wrapper.identityEquals(c1, c1));
     HelloCallbackInt c2 = new HelloCallbackInt();
-    assertFalse(wrapper.identityEquals(c1, c2));
+    assertFalse("c1 and c2 should not be identical", wrapper.identityEquals(c1,
+        c2));
   }
 
   public void testInvocation() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(HelloWrapper.class);
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
     assertEquals(42, wrapper.getHello());
     assertEquals("Hello world", wrapper.getParam1());
@@ -262,9 +264,9 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testPassthrough() {
     initializeHello();
 
-    HelloWrapper w1 = (HelloWrapper)GWT.create(HelloWrapper.class);
+    HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);
-    HelloWrapper w2 = (HelloWrapper)GWT.create(HelloWrapper.class);
+    HelloWrapper w2 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w2.constructor("world", 2);
 
     HelloWrapper w3 = w2.passthrough(w1);
@@ -272,7 +274,7 @@ public class JSONInvokerTest extends GWTTestCase {
     assertTrue(w3 instanceof HelloWrapper);
     assertTrue(w2.identityEquals(w1, w3));
 
-    OtherWrapper o1 = (OtherWrapper)GWT.create(OtherWrapper.class);
+    OtherWrapper o1 = (OtherWrapper) GWT.create(OtherWrapper.class);
     OtherWrapper o2 = w2.passthrough(o1);
     assertTrue(o2 instanceof OtherWrapper);
     assertTrue(w2.identityEquals(o1, o2));
@@ -284,7 +286,7 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testSingleton() {
     initializeHello();
 
-    HelloWrapper wrapper = (HelloWrapper)GWT.create(SingletonHello.class);
+    HelloWrapper wrapper = (HelloWrapper) GWT.create(SingletonHello.class);
 
     assertEquals("Singleton", wrapper.getParam1());
     assertEquals(314159, wrapper.getParam2());
@@ -293,7 +295,7 @@ public class JSONInvokerTest extends GWTTestCase {
   public void testStatePreservation() {
     initializeHello();
 
-    StatefulWrapper w1 = (StatefulWrapper)GWT.create(StatefulWrapper.class);
+    StatefulWrapper w1 = (StatefulWrapper) GWT.create(StatefulWrapper.class);
     w1.constructor(null, 0);
     w1.localField = "bad field";
     w1.staticField = "static field";

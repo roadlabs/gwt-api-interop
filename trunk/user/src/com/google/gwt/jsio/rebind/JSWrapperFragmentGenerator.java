@@ -43,13 +43,11 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
         "Building string value getter statement", null);
     SourceWriter sw = context.sw;
 
-    sw.print("@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    sw.print("(");
+    writeJSNIObjectCreator(context);
+    sw.print(").@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
     sw.print(context.parameterName);
     sw.print(")");
-  }
-
-  boolean fromJSRequiresObject() {
-    return true;
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
