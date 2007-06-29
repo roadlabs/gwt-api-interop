@@ -28,6 +28,35 @@ import com.google.gwt.user.rebind.SourceWriter;
  * Encapsulates accessors for List properties.
  */
 class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
+  
+  protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
+      throws UnableToCompleteException {
+    
+    TypeOracle typeOracle = context.typeOracle;
+    SourceWriter sw = context.sw;
+    JParameterizedType listType = context.returnType.isParameterized();
+    JType argumentType = listType.getTypeArgs()[0];
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing JSNI object creator for "
+                + argumentType.getQualifiedSourceName(), null);
+
+    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
+
+    FragmentGenerator fragmentGenerator =
+        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+            typeOracle, argumentType.isClassOrInterface());
+
+    FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
+    subParams.returnType = argumentType;
+
+    fragmentGenerator.writeExtractorJSNIReference(subParams);
+    sw.print(")");
+    sw.print(".@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    sw.print(context.parameterName);
+    sw.print(")");
+  }
+
   boolean accepts(TypeOracle oracle, JType type) {
     JClassType asInterface = type.isInterface();
 
@@ -55,30 +84,6 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     JType argumentType = listType.getTypeArgs()[0];
 
     sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
-
-    FragmentGenerator fragmentGenerator =
-        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
-            typeOracle, argumentType.isClassOrInterface());
-
-    FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
-    subParams.returnType = argumentType;
-
-    fragmentGenerator.writeExtractorJSNIReference(subParams);
-    sw.print(")");
-  }
-
-  void writeJSNIObjectCreator(FragmentGeneratorContext context)
-      throws UnableToCompleteException {
-    TypeOracle typeOracle = context.typeOracle;
-    SourceWriter sw = context.sw;
-    JParameterizedType listType = context.returnType.isParameterized();
-    JType argumentType = listType.getTypeArgs()[0];
-    TreeLogger logger =
-        context.parentLogger.branch(TreeLogger.DEBUG,
-            "Writing JSNI object creator for "
-                + argumentType.getQualifiedSourceName(), null);
-
-    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
     FragmentGenerator fragmentGenerator =
         context.fragmentGeneratorOracle.findFragmentGenerator(logger,
