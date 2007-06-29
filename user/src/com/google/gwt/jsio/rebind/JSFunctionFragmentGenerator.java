@@ -134,8 +134,11 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       sw.print(parameters[i].getType().getJNISignature());
     }
 
-    sw.print(")(");
-
+    sw.println(")(");
+    // Indent the parameters, each on its own like to improve readability
+    sw.indent();
+    sw.indent();
+    
     for (int i = 0; i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType returnType = parameters[i].getType();
@@ -158,9 +161,11 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       }
     }
 
+    sw.outdent();
+    sw.outdent();
     sw.println(");");
     sw.outdent();
-    sw.println("}");
+    sw.print("}");
   }
 
   boolean accepts(TypeOracle typeOracle, JType type) {

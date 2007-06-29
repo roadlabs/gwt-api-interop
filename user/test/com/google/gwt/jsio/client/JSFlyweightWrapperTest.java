@@ -29,6 +29,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface PrimitiveInterface extends JSFlyweightWrapper {
+    
     /**
      * @gwt.constructor Object
      */
@@ -102,51 +103,64 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     public void setUnboxedShort(JavaScriptObject jso, short value);
   }
-  
-  static class Tree {
-    private static final TreeInterface IMPL = (TreeInterface)GWT.create(TreeInterface.class);
+
+  static interface ConstructedInterface extends JSFlyweightWrapper {
+    /**
+     * @gwt.constructor $wnd.ConstructedObject
+     */
+    public JavaScriptObject construct(String a, int b, Tree t);
+
+    public int getInt(JavaScriptObject obj);
+
+    public String getString(JavaScriptObject obj);
     
+    public Tree getTree(JavaScriptObject obj);
+  }
+
+  static class Tree {
+    private static final TreeInterface IMPL = (TreeInterface) GWT.create(TreeInterface.class);
+
     static Tree createPeer(JavaScriptObject jso) {
       if (jso == null) {
         return null;
       }
-      
+
       Tree toReturn = new Tree(jso);
       assertSame(toReturn, JSFlyweightWrapper.Util.getJavaPeer(jso));
       return toReturn;
     }
-    
+
     final JavaScriptObject jsoPeer;
-    
+
     Tree() {
       this(IMPL.construct());
     }
-    
+
     Tree(JavaScriptObject jsoPeer) {
       this.jsoPeer = jsoPeer;
       IMPL.bind(jsoPeer, this);
     }
-    
+
     public Tree getLeft() {
       return IMPL.getLeft(this);
     }
-    
+
     public Tree getRight() {
       return IMPL.getRight(this);
     }
-    
+
     public int getValue() {
       return IMPL.getValue(this);
     }
-    
+
     public void setLeft(Tree left) {
       IMPL.setLeft(this, left);
     }
-    
+
     public void setRight(Tree right) {
       IMPL.setRight(this, right);
     }
-    
+
     public void setValue(int value) {
       IMPL.setValue(this, value);
     }
@@ -159,7 +173,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
      * @gwt.binding
      */
     public void bind(JavaScriptObject jso, Tree node);
-    
+
     /**
      * @gwt.constructor Object
      */
@@ -208,6 +222,21 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertEquals(new Short((short) 44), primitiveInterface.getBoxedShort(jso));
   }
 
+  public void testConstructor() {
+    // Build the constructor function and attach it to the Window.
+    makeConstructedObject();
+    
+    Tree tree = new Tree();
+    tree.setValue(42);
+    
+    ConstructedInterface ci = (ConstructedInterface) GWT.create(ConstructedInterface.class);
+    
+    JavaScriptObject jso = ci.construct("Hello world", 42, tree);
+    assertEquals("Hello world", ci.getString(jso));
+    assertEquals(42, ci.getInt(jso));
+    assertSame(tree, ci.getTree(jso));
+  }
+
   public void testObjectGetters() throws JSONWrapperException {
     Tree parent = new Tree();
 
@@ -227,7 +256,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
   public void testObjectSetters() {
     Tree one = new Tree();
-    
+
     assertNull(one.getLeft());
     assertNull(one.getRight());
 
@@ -240,7 +269,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     one.setLeft(two);
     one.setRight(three);
-    
+
     assertSame(two, one.getLeft());
     assertSame(three, one.getRight());
     assertEquals(2, one.getLeft().getValue());
@@ -322,6 +351,28 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertTrue(0 == primitiveInterface.getUnboxedLong(jso));
     assertTrue(0 == primitiveInterface.getUnboxedShort(jso));
   }
+
+  private native void makeConstructedObject() /*-{
+   function C(str, i, tree) {
+   this.str = str;
+   this.i = i;
+   this.tree = tree;
+   }
+   
+   C.prototype.getInt = function() {
+   return this.i;
+   }
+   
+   C.prototype.getString = function() {
+   return this.str;
+   }
+   
+   C.prototype.getTree = function() {
+   return this.tree;
+   }
+   
+   $wnd.ConstructedObject = C;
+   }-*/;
 
   private native JavaScriptObject makeTreeData() /*-{
    return {value:42, left:{value:43}, right:{value:44}};

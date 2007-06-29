@@ -48,6 +48,10 @@ class JavaScriptObjectFragmentGenerator extends FragmentGenerator {
 
     sw.print(context.parameterName);
   }
+  
+  boolean isIdentity() {
+    return true;
+  }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,

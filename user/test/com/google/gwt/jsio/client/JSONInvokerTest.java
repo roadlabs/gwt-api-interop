@@ -266,6 +266,9 @@ public class JSONInvokerTest extends GWTTestCase {
 
     HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);
+    
+    assertNull(w1.passthrough((HelloWrapper)null));
+    
     HelloWrapper w2 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w2.constructor("world", 2);
 

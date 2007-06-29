@@ -67,33 +67,30 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
 
     sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper");
 
-    // XXX Need to consider the correctness of the Boolean/Number casts
-    // done here.  See PrimitimeFragmentGenerator as well.
-    
     // Just plow through the Boxed types
     if (isAssignable(typeOracle, returnType, Boolean.class)) {
-      sw.print("(Z)(Boolean(");
+      sw.print("(Z)(");
 
     } else if (isAssignable(typeOracle, returnType, Byte.class)) {
-      sw.print("(B)(Number(");
+      sw.print("(B)(");
 
     } else if (isAssignable(typeOracle, returnType, Character.class)) {
-      sw.print("(C)(Number(");
+      sw.print("(C)(");
 
     } else if (isAssignable(typeOracle, returnType, Double.class)) {
-      sw.print("(D)(Number(");
+      sw.print("(D)(");
 
     } else if (isAssignable(typeOracle, returnType, Float.class)) {
-      sw.print("(F)(Number(");
+      sw.print("(F)(");
 
     } else if (isAssignable(typeOracle, returnType, Integer.class)) {
-      sw.print("(I)(Number(");
+      sw.print("(I)(");
 
     } else if (isAssignable(typeOracle, returnType, Long.class)) {
-      sw.print("(J)(Number(");
+      sw.print("(J)(");
 
     } else if (isAssignable(typeOracle, returnType, Short.class)) {
-      sw.print("(S)(Number(");
+      sw.print("(S)(");
 
     } else {
       logger.log(TreeLogger.ERROR, "Unknown boxed type "
@@ -102,7 +99,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
     }
 
     sw.print(context.parameterName);
-    sw.println("))");
+    sw.print(")");
   }
 
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {

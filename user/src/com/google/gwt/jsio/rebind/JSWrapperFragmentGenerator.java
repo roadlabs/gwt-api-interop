@@ -27,6 +27,30 @@ import com.google.gwt.user.rebind.SourceWriter;
  * Encapsulates accessors for JSWrapper properties.
  */
 class JSWrapperFragmentGenerator extends FragmentGenerator {
+  protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
+      throws UnableToCompleteException {
+    SourceWriter sw = context.sw;
+    JClassType returnType = context.returnType.isClassOrInterface();
+
+    sw.print("@");
+    sw.print(context.qualifiedTypeName);
+    sw.print("::");
+    sw.print("__create__");
+    sw.print(returnType.getQualifiedSourceName().replaceAll("\\.", "_"));
+    sw.print("()()");
+    sw.print(".@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    sw.print(context.parameterName);
+    sw.print(")");
+
+    context.creatorFixups.add(returnType);
+  }
+
+  protected void writeJSNIValue(FragmentGeneratorContext context)
+      throws UnableToCompleteException {
+    SourceWriter sw = context.sw;
+    sw.print(".@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()()");
+  }
+
   boolean accepts(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
 
@@ -37,25 +61,34 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     }
   }
 
-  void fromJS(FragmentGeneratorContext context)
+  final void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value getter statement", null);
     SourceWriter sw = context.sw;
 
-    sw.print("(");
-    writeJSNIObjectCreator(context);
-    sw.print(").@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    // arg == null ? null : (arg.__gwtPeer || <new object>.setJSO(arg));
+
     sw.print(context.parameterName);
+    sw.print(" == null ? null : ");
+    sw.print("(");
+    sw.print(context.parameterName);
+    sw.print(".");
+    sw.print(JSWrapperGenerator.BACKREF);
+    sw.print(" || ");
+    writeJSNIObjectCreator(context);
     sw.print(")");
   }
 
-  void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
+  final void toJS(FragmentGeneratorContext context)
+      throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value setter statement", null);
     SourceWriter sw = context.sw;
     sw.print(context.parameterName);
-    sw.print(".@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()()");
+    sw.print(" == null ? null : ");
+    sw.print(context.parameterName);
+    writeJSNIValue(context);
   }
 
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
@@ -71,24 +104,5 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     sw.print("()().@com.google.gwt.jsio.client.JSWrapper::getExtractor()()");
 
     context.creatorFixups.add(elementType);
-  }
-
-  void writeJSNIObjectCreator(FragmentGeneratorContext context)
-      throws UnableToCompleteException {
-    SourceWriter sw = context.sw;
-    JClassType returnType = context.returnType.isClassOrInterface();
-
-    sw.print(context.parameterName);
-    sw.print(".");
-    sw.print(JSWrapperGenerator.BACKREF);
-    sw.print(" || ");
-    sw.print("@");
-    sw.print(context.qualifiedTypeName);
-    sw.print("::");
-    sw.print("__create__");
-    sw.print(returnType.getQualifiedSourceName().replaceAll("\\.", "_"));
-    sw.print("()()");
-    
-    context.creatorFixups.add(returnType);
   }
 }

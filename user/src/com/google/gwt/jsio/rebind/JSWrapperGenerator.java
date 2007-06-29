@@ -699,8 +699,7 @@ public class JSWrapperGenerator extends Generator {
     for (int i = getImportOffset(); i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType subType = parameters[i].getType();
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(
-          context);
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
       subParams.returnType = subType;
       subParams.parameterName = parameters[i].getName();
 
@@ -742,6 +741,7 @@ public class JSWrapperGenerator extends Generator {
 
     FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
     subContext.parameterName = "jso";
+    writeMethodBindings(subContext);
     writeEmptyFieldInitializers(subContext);
 
     sw.outdent();
@@ -756,8 +756,8 @@ public class JSWrapperGenerator extends Generator {
   protected void writeEmptyFieldInitializers(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing field initializers", null);
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG, "Writing field initializers",
+        null);
 
     for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
       final Task task = (Task) i.next();
@@ -765,21 +765,7 @@ public class JSWrapperGenerator extends Generator {
 
       // Exported methods are always re-exported to ensure correct object
       // linkage.
-      if (task.exported != null) {
-        sw.print(context.parameterName);
-        sw.print(".");
-        sw.print(fieldName);
-        sw.print(" = ");
-
-        FragmentGeneratorContext subContext = new FragmentGeneratorContext(
-            context);
-        subContext.parameterName = "this." + BACKREF;
-
-        JSFunctionFragmentGenerator.writeFunctionForMethod(subContext,
-            task.exported);
-        sw.println(";");
-
-      } else {
+      if (task.exported == null) {
         // If there is no getter, we don't need to worry about an empty
         // field initializer.
         if (task.getter == null) {
@@ -873,16 +859,6 @@ public class JSWrapperGenerator extends Generator {
     sw.println(" /*-{");
     sw.indent();
 
-    if (returnType.isPrimitive() == null) {
-      sw.print("if (");
-      sw.print(context.parameterName);
-      sw.println(" == null) {");
-      sw.indent();
-      sw.println("return null;");
-      sw.outdent();
-      sw.println("}");
-    }
-
     sw.print("return ");
     fragmentGenerator.fromJS(context);
     sw.println(";");
@@ -939,28 +915,16 @@ public class JSWrapperGenerator extends Generator {
       sw.print("var jsReturn = ");
     }
 
-    // If the imported method is acting as an invocation of a JavaScript
-    // constructor, use the new Foo() syntax, otherwise treat is an an
-    // invocation on a field on the underlying JSO.
-    String[][] constructorMeta = imported.getMetaData(CONSTRUCTOR);
-    boolean useConstructor = (constructorMeta.length == 1)
-        && (constructorMeta[0].length == 1);
-    if (useConstructor) {
-      sw.print("new ");
-      sw.print(constructorMeta[0][0]);
-    } else {
-      sw.print(context.objRef);
-      sw.print(".");
-      sw.print(context.fieldName);
-    }
+    sw.print(context.objRef);
+    sw.print(".");
+    sw.print(context.fieldName);
 
     // Write the invocation's parameter list
     sw.print("(");
     for (int i = getImportOffset(); i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType subType = parameters[i].getType();
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(
-          context);
+      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
       subParams.returnType = subType;
       subParams.parameterName = parameters[i].getName();
 
@@ -990,20 +954,41 @@ public class JSWrapperGenerator extends Generator {
       FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
           logger, context.typeOracle, returnType);
 
-      if (useConstructor) {
-        sw.print("var toReturn = this.");
-      } else {
-        sw.print("var toReturn = ");
-      }
+      sw.print("return ");
 
       fragmentGenerator.fromJS(subContext);
       sw.println(";");
-      sw.print("return ");
-      sw.println(useConstructor ? "this;" : "toReturn;");
     }
 
     sw.outdent();
     sw.println("}-*/;");
+  }
+
+  protected void writeMethodBindings(FragmentGeneratorContext context)
+      throws UnableToCompleteException {
+    SourceWriter sw = context.sw;
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing method bindings initializers", null);
+
+    for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
+      final Task task = (Task) i.next();
+      final String fieldName = task.getFieldName(logger);
+
+      if (task.exported != null) {
+        sw.print(context.parameterName);
+        sw.print(".");
+        sw.print(fieldName);
+        sw.print(" = ");
+
+        FragmentGeneratorContext subContext = new FragmentGeneratorContext(
+            context);
+        subContext.parameterName = "this." + BACKREF;
+
+        JSFunctionFragmentGenerator.writeFunctionForMethod(subContext,
+            task.exported);
+        sw.println(";");
+      }
+    }
   }
 
   /**

@@ -20,6 +20,8 @@ import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
+import com.google.gwt.core.ext.typeinfo.JParameter;
+import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.jsio.client.JSWrapper;
 
 import java.lang.reflect.Field;
@@ -88,6 +90,7 @@ class Task {
       FragmentGeneratorContext context) {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Validating task", null);
+    JClassType jsoType = context.typeOracle.findType(JavaScriptObject.class.getName());
 
     if ((imported != null) && ((getter != null) || (setter != null))) {
       logger.log(TreeLogger.ERROR, "Imported functions may not be combined "
@@ -104,7 +107,6 @@ class Task {
 
     if (constructor != null) {
       JClassType returnType = constructor.getReturnType().isClassOrInterface();
-      JClassType jsoType = context.typeOracle.findType(JavaScriptObject.class.getName());
       JClassType wrapperType = context.typeOracle.findType(JSWrapper.class.getName());
 
       if (!(jsoType.equals(returnType) || constructor.getEnclosingType().equals(
@@ -146,6 +148,22 @@ class Task {
         // If we have no __gwtPeer object, only allow static methods
         logger.log(TreeLogger.ERROR, "Cannot export instance function "
             + exported.getName() + " in noIdentity wrapper.", null);
+        return true;
+      }
+    }
+
+    if (binding != null) {
+      if (!JPrimitiveType.VOID.equals(binding.getReturnType().isPrimitive())) {
+        logger.log(TreeLogger.ERROR,
+            "Binding functions must have a void type.", null);
+        return true;
+      }
+
+      JParameter[] params = binding.getParameters();
+      if (params.length == 0 ||
+          !jsoType.isAssignableFrom(params[0].getType().isClassOrInterface())) {
+        logger.log(TreeLogger.ERROR, "The first parameter of a binding method "
+            + "must be a JavaScriptObject", null);
         return true;
       }
     }

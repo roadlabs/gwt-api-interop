@@ -29,7 +29,6 @@ import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.jsio.client.JSFlyweightWrapper;
 import com.google.gwt.user.rebind.SourceWriter;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -190,19 +189,10 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       }
     }
 
-    if (bindingType != null) {
-      // Extract the exported methods
-      // XXX move method extraction outside of the generator classes
-      JSWrapperGenerator g = new JSWrapperGenerator();
-      context.tasks = g.extractMethods(logger, typeOracle, bindingType).values();
-    } else {
-      logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
-      context.tasks = Collections.EMPTY_SET;
-    }
-
     sw.println(") /*-{");
     sw.indent();
 
+    // A binding should have been declared void
     context.returnType = JPrimitiveType.VOID;
 
     if (context.maintainIdentity && params.length == 2) {
@@ -230,6 +220,16 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     }
 
     writeEmptyFieldInitializers(context);
+    
+    if (bindingType != null) {
+      // Extract the exported methods
+      // XXX move method extraction outside of the generator classes
+      JSWrapperGenerator g = new JSWrapperGenerator();
+      context.tasks = g.extractMethods(logger, typeOracle, bindingType).values();
+      writeMethodBindings(context);
+    } else {
+      logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
+    }
 
     sw.outdent();
     sw.println("}-*/;");
@@ -288,7 +288,9 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     subContext.parameterName = "jsReturn";
     subContext.objRef = "jsReturn";
 
-    sw.print("var jsReturn = ");
+    sw.print("var ");
+    sw.print(subContext.objRef);
+    sw.print(" = ");
 
     if (hasTag(constructor, CONSTRUCTOR)) {
       // If the imported method is acting as an invocation of a JavaScript
@@ -316,21 +318,17 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
           throw new UnableToCompleteException();
         }
 
-        fragmentGenerator.fromJS(subParams);
+        fragmentGenerator.toJS(subParams);
 
-        if (i < parameters.length - 1) {
-          sw.println(", ");
-        }
         if (i < parameters.length - 1) {
           sw.print(", ");
         }
       }
-      sw.println(");");
+      sw.print(")");
 
     } else if (hasTag(constructor, GLOBAL)) {
       String[][] globalMeta = constructor.getMetaData(GLOBAL);
       sw.print(globalMeta[0][0]);
-      sw.println(";");
 
     } else {
       logger.log(TreeLogger.ERROR,
@@ -338,12 +336,14 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
           null);
       throw new UnableToCompleteException();
     }
+    sw.println(";");
 
     writeEmptyFieldInitializers(subContext);
-
+    
     sw.print("return ");
     sw.print(subContext.objRef);
     sw.println(";");
+
     sw.outdent();
     sw.println("}-*/;");
   }
@@ -370,11 +370,15 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       JMethod imported) throws UnableToCompleteException {
 
     context = new FragmentGeneratorContext(context);
-    // The only imported methods without a leading JSO param are constructors
+
+    // It's invalid to have an imported method without a leading JSO object
     if (imported.getParameters().length > 0) {
       setObjRef(context, imported);
     } else {
-      context.objRef = null;
+      context.parentLogger.branch(TreeLogger.ERROR,
+          "Imported methods in a flyweight interface must have a leading "
+              + "JavaScriptObject parameter", null);
+      throw new UnableToCompleteException();
     }
 
     super.writeImported(context, imported);

@@ -434,6 +434,9 @@ public class JSONWrapperTest extends GWTTestCase {
     pw.setB(10);
     assertEquals(pw.multiply(),
         ((PartialWrapper)ai2.getPartialWrappers().get(0)).multiply());
+    
+    ai2.setPartialWrappers(null);
+    assertNull(ai2.getPartialWrappers());
   }
 
   public void testMultipleWrapperException() {
@@ -502,6 +505,10 @@ public class JSONWrapperTest extends GWTTestCase {
 
     assertTrue(ti1.getLeft().getValue() == 2);
     assertTrue(ti1.getRight().getValue() == 3);
+    
+    ti1.setLeft(null);
+    assertNull(ti1.getLeft());
+    assertSame(ti3, ti1.getRight());
   }
 
   public void testPartialWrapper() throws JSONWrapperException {

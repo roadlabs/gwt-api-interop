@@ -15,7 +15,6 @@
  */
 package com.google.gwt.jsio.rebind;
 
-import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JType;
@@ -86,16 +85,4 @@ abstract class FragmentGenerator {
    */
   abstract void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException;
-
-  /**
-   * Generate a JSNI statement that creates an Object that is suitable for being
-   * passed into a two-step {@link #fromJS(FragmentGeneratorContext)} statement.
-   */
-  void writeJSNIObjectCreator(FragmentGeneratorContext context)
-      throws UnableToCompleteException {
-    context.parentLogger.log(TreeLogger.ERROR,
-        "Should not call writeJSNIObjectCreator on non-two-step generator",
-        null);
-    throw new UnableToCompleteException();
-  }
 }
