@@ -54,6 +54,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       JMethod m) throws UnableToCompleteException {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Determining identity status of " + m.getName(), null);
+    FragmentGeneratorOracle fgo = context.fragmentGeneratorOracle;
 
     boolean identityOnly = m.isStatic();
     JParameter[] parameters = m.getParameters();
@@ -62,8 +63,8 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
         logger, context.typeOracle, m.getReturnType()).isIdentity();
 
     for (int i = 0; i < parameters.length && identityOnly; i++) {
-      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-          logger, context.typeOracle, parameters[i].getType());
+      FragmentGenerator fragmentGenerator = fgo.findFragmentGenerator(logger,
+          context.typeOracle, parameters[i].getType());
       identityOnly &= fragmentGenerator.isIdentity();
     }
 
@@ -102,6 +103,9 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
 
     SourceWriter sw = context.sw;
     JParameter[] parameters = m.getParameters();
+    FragmentGeneratorOracle fgo = context.fragmentGeneratorOracle;
+    FragmentGenerator returnFragmentGenerator = fgo.findFragmentGenerator(
+        logger, context.typeOracle, m.getReturnType());
 
     sw.print("function(");
     for (int i = 0; i < parameters.length; i++) {
@@ -114,8 +118,11 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.println(") {");
     sw.indent();
 
-    // Invoke the Java function
-    sw.print("return ");
+    if (returnFragmentGenerator.isIdentity()) {
+      sw.print("return ");
+    } else {
+      sw.print("var javaReturn = ");
+    }
 
     // Don't need to reference the instance on a static method
     if (!m.isStatic()) {
@@ -138,7 +145,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     // Indent the parameters, each on its own like to improve readability
     sw.indent();
     sw.indent();
-    
+
     for (int i = 0; i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType returnType = parameters[i].getType();
@@ -146,8 +153,8 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       subParams.returnType = returnType;
       subParams.parameterName = "arg" + i;
 
-      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
+      FragmentGenerator fragmentGenerator = fgo.findFragmentGenerator(logger,
+          context.typeOracle, returnType);
       if (fragmentGenerator == null) {
         logger.log(TreeLogger.ERROR, "No fragment generator for "
             + returnType.getQualifiedSourceName(), null);
@@ -164,6 +171,17 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.outdent();
     sw.outdent();
     sw.println(");");
+
+    if (!returnFragmentGenerator.isIdentity()) {
+      FragmentGeneratorContext returnContext = new FragmentGeneratorContext(
+          context);
+      returnContext.parameterName = "javaReturn";
+      returnContext.returnType = m.getReturnType();
+      sw.print("return ");
+      returnFragmentGenerator.toJS(returnContext);
+      sw.println(";");
+    }
+
     sw.outdent();
     sw.print("}");
   }
@@ -205,9 +223,9 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
       throw new UnableToCompleteException();
     }
 
-    // XXX this is a hack to support the JSFunction having the same
-    // lifetime as the JSFunction object without having to use GWT.create
-    // on every JSFunction object as that would discourage anonymous classes.
+    // This is to support the JSFunction having the same lifetime as the
+    // JSFunction object without having to use GWT.create on every JSFunction
+    // object as that would discourage anonymous classes.
 
     sw.print("(");
     sw.print(context.parameterName);

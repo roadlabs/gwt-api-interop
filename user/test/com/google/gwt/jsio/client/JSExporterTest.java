@@ -61,8 +61,8 @@ public class JSExporterTest extends GWTTestCase {
   }
 
   /**
-   * Demonstrates how Java objects of a type with gwt.exported annotations
-   * can have methods bound to a JavaScriptObject.
+   * Demonstrates how Java objects of a type with gwt.exported annotations can
+   * have methods bound to a JavaScriptObject.
    */
   static interface MathFlyweightWrapper extends JSFlyweightWrapper {
     /**
@@ -72,7 +72,7 @@ public class JSExporterTest extends GWTTestCase {
      * @gwt.binding
      */
     public void bind(JavaScriptObject obj, MathMethods m);
-    
+
     /**
      * @gwt.constructor Object
      */
@@ -100,9 +100,9 @@ public class JSExporterTest extends GWTTestCase {
   }
 
   /**
-   * Demonstrates how gwt.exported interfaces allow objects provided by
-   * third parties to be attached to a JSO.  The only thing special about
-   * this interface is the presence of gwt.exported tags.
+   * Demonstrates how gwt.exported interfaces allow objects provided by third
+   * parties to be attached to a JSO. The only thing special about this
+   * interface is the presence of gwt.exported tags.
    */
   static interface MathMethods {
     /**
@@ -121,6 +121,81 @@ public class JSExporterTest extends GWTTestCase {
      * @gwt.typeArgs numbers <java.lang.Integer>
      */
     public int sum(JSList numbers);
+  }
+
+  /**
+   * Used to test exported methods that are declared to return a peering Java
+   * object.
+   */
+  static class SimpleList {
+    private static final SimpleListFlyweight flyweight = (SimpleListFlyweight) GWT.create(SimpleListFlyweight.class);
+    private final SimpleList next;
+    private final int value;
+
+    private JavaScriptObject jsoPeer;
+
+    SimpleList(SimpleList next, int value) {
+      this.next = next;
+      this.value = value;
+      jsoPeer = flyweight.create();
+      flyweight.bind(jsoPeer, this);
+    }
+
+    /**
+     * @gwt.exported
+     */
+    public SimpleList getNext() {
+      return next;
+    }
+
+    /**
+     * @gwt.exported
+     */
+    public int getValue() {
+      return value;
+    }
+
+    protected static interface SimpleListFlyweight extends JSFlyweightWrapper {
+      /**
+       * @gwt.binding
+       */
+      public void bind(JavaScriptObject obj, SimpleList list);
+
+      /**
+       * @gwt.constructor $wnd.Object
+       */
+      public JavaScriptObject create();
+    }
+  }
+
+  /**
+   * Used to test exported methods that return a JSWrapper subclass.
+   */
+  abstract static class SimpleListWrapper implements JSWrapper {
+    private SimpleListWrapper next;
+    private int value;
+
+    /**
+     * @gwt.exported
+     */
+    public SimpleListWrapper getNext() {
+      return next;
+    }
+
+    /**
+     * @gwt.exported
+     */
+    public int getValue() {
+      return value;
+    }
+
+    public void setNext(SimpleListWrapper next) {
+      this.next = next;
+    }
+
+    public void setValue(int value) {
+      this.value = value;
+    }
   }
 
   public String getModuleName() {
@@ -148,6 +223,36 @@ public class JSExporterTest extends GWTTestCase {
     assertEquals(10, invokeAdd(obj, 3, 7));
   }
 
+  public void testExportedReturningObjectsFlyweight() {
+    SimpleList start = null;
+
+    for (int i = 0; i < 6; i++) {
+      start = new SimpleList(start, i);
+      assertTrue(testMethod(start.jsoPeer, "getNext"));
+      assertTrue(testMethod(start.jsoPeer, "getValue"));
+    }
+
+    assertEquals(15, foldSum(start.jsoPeer));
+  }
+
+  public void testExportedReturningObjectsWrapper() {
+    SimpleListWrapper start = null;
+
+    for (int i = 0; i < 6; i++) {
+      SimpleListWrapper previous = (SimpleListWrapper) GWT.create(SimpleListWrapper.class);
+      previous.setNext(start);
+      previous.setValue(i);
+      start = previous;
+
+      assertTrue(testMethod(start.getJavaScriptObject(), "getNext"));
+      assertTrue(testMethod(start.getJavaScriptObject(), "getValue"));
+      assertFalse(testMethod(start.getJavaScriptObject(), "setNext"));
+      assertFalse(testMethod(start.getJavaScriptObject(), "setValue"));
+    }
+
+    assertEquals(15, foldSum(start.getJavaScriptObject()));
+  }
+
   public void testSub() {
     ExportedMethods export = (ExportedMethods) GWT.create(ExportedMethods.class);
     JavaScriptObject obj = export.getJavaScriptObject();
@@ -161,7 +266,7 @@ public class JSExporterTest extends GWTTestCase {
     ExportedMethods export = (ExportedMethods) GWT.create(ExportedMethods.class);
     assertEquals(15, invokeSum(export.getJavaScriptObject()));
   }
-  
+
   public void testSumFlyweight() {
     MathFlyweightWrapper wrapper = (MathFlyweightWrapper) GWT.create(MathFlyweightWrapper.class);
     MathImpl impl = new MathImpl();
@@ -170,6 +275,15 @@ public class JSExporterTest extends GWTTestCase {
     wrapper.bind(jso, impl);
     assertEquals(15, invokeSum(jso));
   }
+
+  private native int foldSum(JavaScriptObject obj) /*-{
+   var toReturn = 0;
+   while (obj) {
+   toReturn = toReturn + obj.getValue();
+   obj = obj.getNext();
+   }
+   return toReturn;
+   }-*/;
 
   private native int invokeAdd(JavaScriptObject jso, int a, int b) /*-{
    return jso.add(a, b);
@@ -186,5 +300,4 @@ public class JSExporterTest extends GWTTestCase {
   private native boolean testMethod(JavaScriptObject obj, String methodName) /*-{
    return methodName in obj;
    }-*/;
-
 }
