@@ -90,7 +90,8 @@ public final class JSListWrapper extends AbstractList implements JSList,
    }-*/;
 
   public native void clear() /*-{
-   this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr = [];
+   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+   arr.splice(0, arr.length);
    }-*/;
 
   public native Object get(int index) /*-{
