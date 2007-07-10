@@ -38,10 +38,11 @@ public class JSExporterTest extends GWTTestCase {
     }
 
     /**
+     * This is final to ensure that we aren't excluding non-overridable methods.
      * @gwt.exported
      * @gwt.fieldName sub
      */
-    public int subtract(int a, int b) {
+    public final int subtract(int a, int b) {
       return a - b;
     }
 
@@ -84,7 +85,10 @@ public class JSExporterTest extends GWTTestCase {
       return a + b;
     }
 
-    public int subtract(int a, int b) {
+    /**
+     * Final to ensure that we're not excluding non-overridable methods.
+     */
+    public final int subtract(int a, int b) {
       return a - b;
     }
 

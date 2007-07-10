@@ -29,12 +29,10 @@ import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
 import com.google.gwt.user.rebind.SourceWriter;
 
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -124,29 +122,6 @@ public class JSWrapperGenerator extends Generator {
   protected static final FragmentGeneratorOracle FRAGMENT_ORACLE = new FragmentGeneratorOracle();
 
   /**
-   * Utility method to extract the bean-style property name from a method.
-   * 
-   * @return The property name if the method's name looks like a bean property,
-   *         otherwise the method's name.
-   */
-  protected static String getPropertyNameFromMethod(JMethod method) {
-    String methodName = method.getName();
-
-    if (methodName.startsWith("get")) {
-      return methodName.substring(3);
-
-    } else if (methodName.startsWith("set")) {
-      return methodName.substring(3);
-
-    } else if (methodName.startsWith("is")) {
-      return methodName.substring(2);
-
-    } else {
-      return methodName;
-    }
-  }
-
-  /**
    * Utility method to check for the presence of a particular metadata tag.
    */
   static boolean hasTag(HasMetaData item, String tagName) {
@@ -217,8 +192,8 @@ public class JSWrapperGenerator extends Generator {
       final SourceWriter sw = f.createSourceWriter(context, out);
 
       // Get a Map<String, Task>
-      final Map propertyAccessors = extractMethods(logger, typeOracle,
-          sourceType);
+      final Map propertyAccessors = TaskFactory.extractMethods(logger,
+          typeOracle, sourceType, getPolicy());
 
       // Create the base context to be used during generation
       FragmentGeneratorContext fragmentContext = new FragmentGeneratorContext();
@@ -260,93 +235,6 @@ public class JSWrapperGenerator extends Generator {
   }
 
   /**
-   * Popupulate propertyAccessors from an array of JMethods.
-   */
-  protected final Map extractMethods(TreeLogger logger,
-      final TypeOracle typeOracle, final JClassType clazz)
-      throws UnableToCompleteException {
-    logger = logger.branch(TreeLogger.DEBUG, "Extracting methods from "
-        + clazz.getName(), null);
-
-    // Value to return
-    final Map propertyAccessors = new HashMap();
-
-    // Iterate over all methods that the generated subclass could override
-    final JMethod[] methods = clazz.getOverridableMethods();
-    for (int i = 0; i < methods.length; i++) {
-      final JMethod m = methods[i];
-      final String methodName = m.getName();
-      logger.log(TreeLogger.DEBUG, "Examining " + m.toString(), null);
-
-      // Look for methods that are to be exported by the presence of
-      // the gwt.exported annotation.
-      if (shouldExport(typeOracle, m)) {
-        Task task = getPropertyPair(propertyAccessors,
-            m.getReadableDeclaration());
-        task.exported = m;
-        logger.log(TreeLogger.DEBUG, "Added as export", null);
-        continue;
-      }
-
-      if (shouldBind(typeOracle, m)) {
-        Task task = getPropertyPair(propertyAccessors,
-            m.getReadableDeclaration());
-        task.binding = m;
-        logger.log(TreeLogger.DEBUG, "Added as binding", null);
-        continue;
-      }
-
-      // Ignore concrete methods and those methods that are not declared in
-      // a subtype of JSWrapper.
-      if (!shouldImplement(typeOracle, m)) {
-        logger.log(TreeLogger.DEBUG, "Ignoring method " + m.toString(), null);
-        continue;
-      }
-
-      if (shouldConstruct(typeOracle, m)) {
-        // getReadableDeclaration is used so that overloaded methods will
-        // be stored with distinct keys.
-        Task task = getPropertyPair(propertyAccessors,
-            m.getReadableDeclaration());
-        task.constructor = m;
-        logger.log(TreeLogger.DEBUG, "Using constructor/global override", null);
-
-        // Enable bypassing of name-determination logic with the presence of the
-        // @gwt.imported annotation
-      } else if (shouldImport(typeOracle, m)) {
-        // getReadableDeclaration is used so that overloaded methods will
-        // be stored with distinct keys.
-        Task task = getPropertyPair(propertyAccessors,
-            m.getReadableDeclaration());
-        task.imported = m;
-        logger.log(TreeLogger.DEBUG, "Using import override", null);
-
-        // Look for setFoo()
-      } else if (methodName.startsWith("set")) {
-        String propertyName = getPropertyNameFromMethod(m);
-        Task task = getPropertyPair(propertyAccessors, propertyName);
-        task.setter = m;
-        logger.log(TreeLogger.DEBUG, "Determined this is a setter", null);
-
-        // Look for getFoo() or isFoo()
-      } else if ((methodName.startsWith("get") || methodName.startsWith("is"))) {
-        String propertyName = getPropertyNameFromMethod(m);
-        Task task = getPropertyPair(propertyAccessors, propertyName);
-        task.getter = m;
-        logger.log(TreeLogger.DEBUG, "Determined this is a getter", null);
-
-        // We could not make a decision on what should be done with the method.
-      } else {
-        logger.log(TreeLogger.ERROR, "Could not decide on implementation of "
-            + m.getName(), null);
-        throw new UnableToCompleteException();
-      }
-    }
-
-    return propertyAccessors;
-  }
-
-  /**
    * Specifies the first parameter of imported methods to pass to the imported
    * JavaScript function.
    */
@@ -354,29 +242,8 @@ public class JSWrapperGenerator extends Generator {
     return 0;
   }
 
-  /**
-   * Specifies the base interface type so that it will be ignored by
-   * {@link #extractMethods()}.
-   */
-  protected String getOperableClassName() {
-    return JSWrapper.class.getName();
-  }
-
-  /**
-   * Utility method to access a Map of String, Tasks.
-   * 
-   * @param propertyAccessors The Map to operate on
-   * @param property The name of the property
-   * @return A Task in the given map; created if it does not exist
-   */
-  protected Task getPropertyPair(Map propertyAccessors, String property) {
-    if (propertyAccessors.containsKey(property)) {
-      return (Task) propertyAccessors.get(property);
-    } else {
-      final Task pair = new Task();
-      propertyAccessors.put(property, pair);
-      return pair;
-    }
+  protected TaskFactory.Policy getPolicy() {
+    return TaskFactory.WRAPPER_POLICY;
   }
 
   /**
@@ -385,66 +252,6 @@ public class JSWrapperGenerator extends Generator {
    */
   protected JParameter getSetterParameter(JMethod setter) {
     return setter.getParameters()[0];
-  }
-
-  /**
-   * Determines if the generator should generate a binding for the method.
-   */
-  protected boolean shouldBind(TypeOracle typeOracle, JMethod method) {
-    return false;
-  }
-
-  /**
-   * Determines if a method should be treated as an invocation of an underlying
-   * JavaScript constructor function.
-   */
-  protected boolean shouldConstruct(TypeOracle typeOracle, JMethod method) {
-    boolean methodConstructorTag = hasTag(method, CONSTRUCTOR);
-    boolean methodGlobalTag = hasTag(method, GLOBAL);
-
-    return methodConstructorTag || methodGlobalTag;
-  }
-
-  /**
-   * Determines if the generator should generate an export binding for the
-   * method.
-   */
-  protected boolean shouldExport(TypeOracle typeOracle, JMethod method) {
-    return hasTag(method, EXPORTED);
-  }
-
-  /**
-   * Determines if the generator should implement a particular method. A method
-   * will be implemented only if it is abstract and defined in a class derived
-   * from JSWrapper
-   */
-  protected boolean shouldImplement(TypeOracle typeOracle, JMethod method) {
-    JClassType enclosing = method.getEnclosingType();
-
-    return method.isAbstract()
-        && !enclosing.equals(typeOracle.findType(getOperableClassName()));
-  }
-
-  /**
-   * Determines if the generator should generate an import binding for the
-   * method.
-   */
-  protected boolean shouldImport(TypeOracle typeOracle, JMethod method) {
-    JClassType enclosing = method.getEnclosingType();
-    String methodName = method.getName();
-    int arguments = method.getParameters().length;
-
-    boolean hasImportTag = hasTag(method, IMPORTED);
-    boolean methodHasBeanTag = hasTag(method, BEAN_PROPERTIES);
-    boolean classHasBeanTag = hasTag(enclosing, BEAN_PROPERTIES);
-    boolean isIs = (arguments == 0)
-        && (methodName.startsWith("is"))
-        && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
-    boolean isGetter = (arguments == 0) && (methodName.startsWith("get"));
-    boolean isSetter = (arguments == 1) && (methodName.startsWith("set"));
-    boolean propertyAccessor = isIs || isGetter || isSetter;
-
-    return !(methodHasBeanTag || (propertyAccessor && !hasImportTag && classHasBeanTag));
   }
 
   /**
@@ -735,14 +542,18 @@ public class JSWrapperGenerator extends Generator {
       final Map propertyAccessors, final FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
+    JClassType returnType = context.returnType.isClassOrInterface();
 
     sw.println("private native void __initializeEmptyFields(JavaScriptObject jso) /*-{");
     sw.indent();
 
     FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
     subContext.parameterName = "jso";
-    writeMethodBindings(subContext);
     writeEmptyFieldInitializers(subContext);
+
+    subContext.tasks = TaskFactory.extractMethods(logger,
+        subContext.typeOracle, returnType, TaskFactory.EXPORTER_POLICY).values();
+    writeMethodBindings(subContext);
 
     sw.outdent();
     sw.println("}-*/;");
@@ -756,44 +567,40 @@ public class JSWrapperGenerator extends Generator {
   protected void writeEmptyFieldInitializers(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG, "Writing field initializers",
-        null);
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Writing field initializers", null);
 
     for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
       final Task task = (Task) i.next();
       final String fieldName = task.getFieldName(logger);
 
-      // Exported methods are always re-exported to ensure correct object
-      // linkage.
-      if (task.exported == null) {
-        // If there is no getter, we don't need to worry about an empty
-        // field initializer.
-        if (task.getter == null) {
-          continue;
-        }
-
-        final JType returnType = task.getter.getReturnType();
-
-        FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-            logger, context.typeOracle, returnType);
-
-        sw.print("if (!");
-        sw.print(context.parameterName);
-        sw.print(".hasOwnProperty('");
-        sw.print(fieldName);
-        sw.println("')) {");
-        sw.indent();
-
-        sw.print(context.parameterName);
-        sw.print(".");
-        sw.print(fieldName);
-        sw.print(" = ");
-        sw.print(fragmentGenerator.defaultValue(context.typeOracle, returnType));
-        sw.println(";");
-
-        sw.outdent();
-        sw.println("}");
+      // If there is no getter, we don't need to worry about an empty
+      // field initializer.
+      if (task.getter == null) {
+        continue;
       }
+
+      final JType returnType = task.getter.getReturnType();
+
+      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
+          logger, context.typeOracle, returnType);
+
+      sw.print("if (!");
+      sw.print(context.parameterName);
+      sw.print(".hasOwnProperty('");
+      sw.print(fieldName);
+      sw.println("')) {");
+      sw.indent();
+
+      sw.print(context.parameterName);
+      sw.print(".");
+      sw.print(fieldName);
+      sw.print(" = ");
+      sw.print(fragmentGenerator.defaultValue(context.typeOracle, returnType));
+      sw.println(";");
+
+      sw.outdent();
+      sw.println("}");
     }
   }
 

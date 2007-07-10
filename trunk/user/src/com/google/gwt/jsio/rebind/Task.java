@@ -241,7 +241,7 @@ class Task {
       }
 
       // Execute the conversion
-      String propertyName = JSWrapperGenerator.getPropertyNameFromMethod(m);
+      String propertyName = TaskFactory.getPropertyNameFromMethod(m);
       return policy.convert(propertyName);
 
     } else if (meta[0].length == 1) {

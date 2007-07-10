@@ -26,7 +26,6 @@ import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
-import com.google.gwt.jsio.client.JSFlyweightWrapper;
 import com.google.gwt.user.rebind.SourceWriter;
 
 import java.util.Map;
@@ -52,18 +51,12 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     return 1;
   }
 
-  protected String getOperableClassName() {
-    return JSFlyweightWrapper.class.getName();
+  protected TaskFactory.Policy getPolicy() {
+    return TaskFactory.FLYWEIGHT_POLICY;
   }
 
   protected JParameter getSetterParameter(JMethod setter) {
     return setter.getParameters()[1];
-  }
-
-  protected boolean isJsoOrPeer(TypeOracle oracle, JType type) {
-    JClassType jsoType = oracle.findType(JavaScriptObject.class.getName()).isClass();
-    return jsoType.isAssignableFrom(type.isClass())
-        || (PeeringFragmentGenerator.findPeer(oracle, type) != null);
   }
 
   /**
@@ -92,59 +85,6 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
           null);
       throw new UnableToCompleteException();
     }
-  }
-
-  /**
-   * Exporting methods via a flyweight interface is done by binding an instance
-   * of a type (or just the static methods of a type) to a JSO.
-   */
-  protected boolean shouldBind(TypeOracle typeOracle, JMethod method) {
-
-    boolean hasBindingTag = hasTag(method, BINDING);
-    JParameter[] params = method.getParameters();
-
-    return method.isAbstract()
-        && hasBindingTag
-        && ((params.length == 1) || (params.length == 2))
-        && isJsoOrPeer(typeOracle, params[0].getType())
-        && ((params.length == 1) || (params[1].getType().isClassOrInterface() != null));
-  }
-
-  /**
-   * Methods can never be exported from the flyweight interface.
-   */
-  protected boolean shouldExport(TypeOracle typeOracle, JMethod method) {
-    return false;
-  }
-
-  /**
-   * Determines if the generator should generate an import binding for the
-   * method. XXX extract just the arguments checks?
-   */
-  protected boolean shouldImport(TypeOracle typeOracle, JMethod method) {
-    JClassType enclosing = method.getEnclosingType();
-    String methodName = method.getName();
-    int arguments = method.getParameters().length;
-
-    boolean hasBindingTag = hasTag(method, BINDING);
-    boolean hasImportTag = hasTag(method, IMPORTED);
-    boolean methodHasBeanTag = hasTag(method, BEAN_PROPERTIES);
-    boolean classHasBeanTag = hasTag(enclosing, BEAN_PROPERTIES);
-
-    boolean isIs = (arguments == 1)
-        && (methodName.startsWith("is"))
-        && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()))
-        && isJsoOrPeer(typeOracle, method.getParameters()[0].getType());
-    boolean isGetter = (arguments == 1)
-        && (methodName.startsWith("get") && isJsoOrPeer(typeOracle,
-            method.getParameters()[0].getType()));
-    boolean isSetter = (arguments == 2)
-        && (methodName.startsWith("set") && isJsoOrPeer(typeOracle,
-            method.getParameters()[0].getType()));
-    boolean propertyAccessor = isIs || isGetter || isSetter;
-
-    return !(hasBindingTag || methodHasBeanTag || (propertyAccessor
-        && !hasImportTag && classHasBeanTag));
   }
 
   protected void writeBinding(FragmentGeneratorContext context, JMethod binding)
@@ -220,12 +160,11 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     }
 
     writeEmptyFieldInitializers(context);
-    
+
     if (bindingType != null) {
       // Extract the exported methods
-      // XXX move method extraction outside of the generator classes
-      JSWrapperGenerator g = new JSWrapperGenerator();
-      context.tasks = g.extractMethods(logger, typeOracle, bindingType).values();
+      context.tasks = TaskFactory.extractMethods(logger, typeOracle,
+          bindingType, TaskFactory.EXPORTER_POLICY).values();
       writeMethodBindings(context);
     } else {
       logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
@@ -339,7 +278,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.println(";");
 
     writeEmptyFieldInitializers(subContext);
-    
+
     sw.print("return ");
     sw.print(subContext.objRef);
     sw.println(";");
