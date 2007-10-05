@@ -28,6 +28,7 @@ import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.user.rebind.SourceWriter;
 
+import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -73,10 +74,12 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
         paramType)) {
       context.objRef = param.getName();
 
-    } else if ((f = PeeringFragmentGenerator.findPeer(context.typeOracle,
-        paramType)) != null) {
-      context.objRef = param.getName() + ".@"
-          + f.getEnclosingType().getQualifiedSourceName() + "::" + f.getName();
+    } else if ((f =
+        PeeringFragmentGenerator.findPeer(context.typeOracle, paramType)) != null) {
+      context.objRef =
+          param.getName() + ".@"
+              + f.getEnclosingType().getQualifiedSourceName() + "::"
+              + f.getName();
 
     } else {
       context.parentLogger.branch(TreeLogger.ERROR,
@@ -89,8 +92,9 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
   protected void writeBinding(FragmentGeneratorContext context, JMethod binding)
       throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing binding function", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing binding function", null);
     context = new FragmentGeneratorContext(context);
     context.parentLogger = logger;
 
@@ -98,7 +102,10 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     TypeOracle typeOracle = context.typeOracle;
     String[][] bindingMeta = binding.getMetaData(BINDING);
 
-    sw.print("public native void ");
+    // Write the java half to add assertions to the code. These will be elided
+    // in web mode, and the method become a pure delegation, allowing it to
+    // be removed completely
+    sw.print("public void ");
     sw.print(binding.getName());
     sw.print("(");
     JParameter[] params = binding.getParameters();
@@ -129,6 +136,47 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       }
     }
 
+    sw.println(") {");
+    sw.indent();
+
+    for (Iterator i = context.tasks.iterator(); i.hasNext();) {
+      Task t = (Task) i.next();
+      if (t.imported != null) {
+        String fieldName = t.getFieldName(logger);
+        sw.print("assert JSONWrapperUtil.hasField(");
+        sw.print(context.parameterName);
+        sw.print(", \"");
+        sw.print(fieldName);
+        sw.print("\") : \"Backing JSO missing imported function ");
+        sw.print(fieldName);
+        sw.println("\";");
+      }
+    }
+
+    sw.print(binding.getName());
+    sw.print("Native (");
+    sw.print(context.parameterName);
+    if (params.length == 2) {
+      sw.print(",");
+      sw.print(context.objRef);
+    }
+    sw.println(");");
+    sw.outdent();
+    sw.println("}");
+
+    // Write the native half to perform the actual binding operations
+    sw.print("public native void ");
+    sw.print(binding.getName());
+    sw.print("Native (");
+    sw.print(params[0].getType().getQualifiedSourceName());
+    sw.print(" ");
+    sw.print(context.parameterName);
+    if (params.length == 2) {
+      sw.print(", ");
+      sw.print(bindingType.getQualifiedSourceName());
+      sw.print(" ");
+      sw.print(context.objRef);
+    }
     sw.println(") /*-{");
     sw.indent();
 
@@ -146,7 +194,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       sw.print(BACKREF);
       sw.println(") {");
       sw.indent();
-      sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
+      sw
+          .println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
       sw.outdent();
       sw.println("}");
 
@@ -163,11 +212,13 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
     if (bindingType != null) {
       // Extract the exported methods
-      context.tasks = TaskFactory.extractMethods(logger, typeOracle,
-          bindingType, TaskFactory.EXPORTER_POLICY).values();
+      context.tasks =
+          TaskFactory.extractMethods(logger, typeOracle, bindingType,
+              TaskFactory.EXPORTER_POLICY).values();
       writeMethodBindings(context);
     } else {
-      logger.log(TreeLogger.WARN, "Not binding to any particular type.", null);
+      logger.log(TreeLogger.DEBUG,
+          "Not binding methods to any particular type.", null);
     }
 
     sw.outdent();
@@ -184,8 +235,9 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
   protected void writeConstructor(FragmentGeneratorContext context,
       JMethod constructor) throws UnableToCompleteException {
 
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing constructor " + constructor.getName(), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing constructor "
+            + constructor.getName(), null);
     SourceWriter sw = context.sw;
 
     JParameter[] parameters = constructor.getParameters();
@@ -244,13 +296,14 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       for (int i = 0; i < parameters.length; i++) {
         // Create a sub-context to generate the wrap/unwrap logic
         JType subType = parameters[i].getType();
-        FragmentGeneratorContext subParams = new FragmentGeneratorContext(
-            context);
+        FragmentGeneratorContext subParams =
+            new FragmentGeneratorContext(context);
         subParams.returnType = subType;
         subParams.parameterName = parameters[i].getName();
 
-        FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-            logger, context.typeOracle, subType);
+        FragmentGenerator fragmentGenerator =
+            context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+                context.typeOracle, subType);
         if (fragmentGenerator == null) {
           logger.log(TreeLogger.ERROR, "No fragment generator for "
               + returnType.getQualifiedSourceName(), null);

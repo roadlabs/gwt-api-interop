@@ -121,6 +121,16 @@ public class JSONInvokerTest extends GWTTestCase {
   }
 
   /**
+   * Ensures an assertion fails when constructor method called.
+   */
+  public static interface MissingMethodWrapper extends HelloWrapper {
+    /**
+     * @gwt.import
+     */
+    public void missingMethod();
+  }
+
+  /**
    * @gwt.global $wnd.SingletonHello
    */
   public static interface SingletonHello extends HelloWrapper {
@@ -256,6 +266,31 @@ public class JSONInvokerTest extends GWTTestCase {
     }
   }
 
+  public void testMissingMethod() {
+    if (GWT.isScript()) {
+      // This test does not make sense in web mode due to lack of asserts
+      return;
+    }
+    
+    initializeHello();
+    
+    try {
+      MissingMethodWrapper wrapper =
+        (MissingMethodWrapper) GWT.create(MissingMethodWrapper.class);
+      wrapper.constructor("Hello world", 99);
+      fail("Expected failed assertion on missing method. "
+          + "Did you run with -ea?");
+    } catch (RuntimeException e) {
+      if (e.getCause() instanceof AssertionError) {
+        // Expected behavior because the AssertionError hits the browser/JVM
+        // boundary.  The JSNI constructor method invokes setJSO() which is
+        // where the AssertionError is generated.
+      } else {
+        throw e;
+      }
+    }
+  }
+
   /**
    * Ensure that wrapped objects returned from a native JS API are returned
    * correctly and have the correct identity semantics for the underlying
@@ -266,9 +301,9 @@ public class JSONInvokerTest extends GWTTestCase {
 
     HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);
-    
-    assertNull(w1.passthrough((HelloWrapper)null));
-    
+
+    assertNull(w1.passthrough((HelloWrapper) null));
+
     HelloWrapper w2 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w2.constructor("world", 2);
 
