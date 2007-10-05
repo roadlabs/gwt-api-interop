@@ -181,6 +181,10 @@ public class JSONWrapperUtil {
    return x;
    }-*/;
   
+  public static native boolean hasField(JavaScriptObject jso, String fieldName) /*-{
+    return fieldName in jso;
+  }-*/;
+  
   /**
    * Utility method for JSWrapper to throw an exception.
    */

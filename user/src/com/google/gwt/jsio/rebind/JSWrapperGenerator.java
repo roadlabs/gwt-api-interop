@@ -119,7 +119,8 @@ public class JSWrapperGenerator extends Generator {
   /**
    * Singleton instance of the FragmentGeneratorOracle for the system.
    */
-  protected static final FragmentGeneratorOracle FRAGMENT_ORACLE = new FragmentGeneratorOracle();
+  protected static final FragmentGeneratorOracle FRAGMENT_ORACLE =
+      new FragmentGeneratorOracle();
 
   /**
    * Utility method to check for the presence of a particular metadata tag.
@@ -154,12 +155,13 @@ public class JSWrapperGenerator extends Generator {
 
     // Pick a name for the generated class to not conflict. Enclosing class
     // names must be preserved.
-    final String generatedSimpleSourceName = "__"
-        + sourceType.getName().replaceAll("\\.", "__") + "Impl";
+    final String generatedSimpleSourceName =
+        "__" + sourceType.getName().replaceAll("\\.", "__") + "Impl";
 
     // Begin writing the generated source.
-    final ClassSourceFileComposerFactory f = new ClassSourceFileComposerFactory(
-        sourceType.getPackage().getName(), generatedSimpleSourceName);
+    final ClassSourceFileComposerFactory f =
+        new ClassSourceFileComposerFactory(sourceType.getPackage().getName(),
+            generatedSimpleSourceName);
 
     // Pull in source imports
     f.addImport(GWT.class.getName());
@@ -183,8 +185,9 @@ public class JSWrapperGenerator extends Generator {
     }
 
     // All source gets written through this Writer
-    final PrintWriter out = context.tryCreate(logger,
-        sourceType.getPackage().getName(), generatedSimpleSourceName);
+    final PrintWriter out =
+        context.tryCreate(logger, sourceType.getPackage().getName(),
+            generatedSimpleSourceName);
 
     // If an implementation already exists, we don't need to do any work
     if (out != null) {
@@ -192,8 +195,9 @@ public class JSWrapperGenerator extends Generator {
       final SourceWriter sw = f.createSourceWriter(context, out);
 
       // Get a Map<String, Task>
-      final Map propertyAccessors = TaskFactory.extractMethods(logger,
-          typeOracle, sourceType, getPolicy());
+      final Map propertyAccessors =
+          TaskFactory.extractMethods(logger, typeOracle, sourceType,
+              getPolicy());
 
       // Create the base context to be used during generation
       FragmentGeneratorContext fragmentContext = new FragmentGeneratorContext();
@@ -207,8 +211,8 @@ public class JSWrapperGenerator extends Generator {
       fragmentContext.returnType = sourceType;
       fragmentContext.creatorFixups = new HashSet();
       fragmentContext.readOnly = hasTag(sourceType, READONLY);
-      fragmentContext.maintainIdentity = !(fragmentContext.readOnly || hasTag(
-          sourceType, NO_IDENTITY));
+      fragmentContext.maintainIdentity =
+          !(fragmentContext.readOnly || hasTag(sourceType, NO_IDENTITY));
       fragmentContext.tasks = propertyAccessors.values();
 
       // Perform sanity checks on the extracted information
@@ -264,7 +268,8 @@ public class JSWrapperGenerator extends Generator {
     // exception
     boolean error = false;
 
-    for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
+    for (final Iterator i = propertyAccessors.entrySet().iterator(); i
+        .hasNext();) {
       final Map.Entry entry = (Map.Entry) i.next();
       final Task pair = (Task) entry.getValue();
 
@@ -310,7 +315,18 @@ public class JSWrapperGenerator extends Generator {
     } else if (constructorMeta.length == 1 && constructorMeta[0].length == 1) {
       constructor = "new " + constructorMeta[0][0] + "()";
     } else {
-      constructor = "{}";
+      boolean hasImports = false;
+      for (Iterator i = context.tasks.iterator(); i.hasNext() && !hasImports;) {
+        Task t = (Task) i.next();
+        hasImports |= t.imported != null;
+      }
+
+      if (!hasImports) {
+        // Probably a JSON or pojo-style object
+        constructor = "{}";
+      } else {
+        constructor = "null";
+      }
     }
 
     // Initialize native state of the wrapper
@@ -333,7 +349,8 @@ public class JSWrapperGenerator extends Generator {
 
     // Defer actual parsing to JSONWrapperUtil to take advantage of using
     // a common function implementation between generated classes.
-    sw.println("public void setJSONData(String data) throws JSONWrapperException {");
+    sw.println("public void setJSONData(String data)");
+    sw.println("throws JSONWrapperException {");
     sw.indent();
     sw.println("setJavaScriptObject(JSONWrapperUtil.evaluate(data));");
     sw.outdent();
@@ -341,7 +358,33 @@ public class JSWrapperGenerator extends Generator {
 
     // Satisfies JSWrapper and allows generated implementations to
     // efficiently initialize new objects.
-    sw.println("public native JSWrapper setJavaScriptObject(JavaScriptObject obj) /*-{");
+    // Method declaration
+    sw.print("public JSWrapper setJavaScriptObject(");
+    sw.println("JavaScriptObject obj) {");
+    sw.indent();
+
+    sw.println("if (obj != null) {");
+    sw.indent();
+    for (Iterator i = context.tasks.iterator(); i.hasNext();) {
+      Task t = (Task) i.next();
+      if (t.imported != null) {
+        String fieldName = t.getFieldName(logger);
+        sw.print("assert JSONWrapperUtil.hasField(obj, \"");
+        sw.print(fieldName);
+        sw.print("\") : \"Backing JSO missing imported function ");
+        sw.print(fieldName);
+        sw.println("\";");
+      }
+    }
+    sw.outdent();
+    sw.println("}");
+    sw.print("return setJavaScriptObjectNative(obj);");
+    sw.outdent();
+    sw.println("}");
+
+    // Method declaration
+    sw.print("public native JSWrapper setJavaScriptObjectNative(");
+    sw.println("JavaScriptObject obj) /*-{");
     sw.indent();
 
     if (context.maintainIdentity) {
@@ -362,9 +405,9 @@ public class JSWrapperGenerator extends Generator {
     // If the incoming JSO is null or undefined, reset the JSWrapper
     sw.println("if (!obj) {");
     sw.indent();
-    sw.print("obj = this.@");
-    sw.print(context.qualifiedTypeName);
-    sw.println("::__nativeInit()();");
+    sw.print(context.objRef);
+    sw.println(" = null;");
+    sw.println("return this;");
     sw.outdent();
     sw.println("}");
 
@@ -375,7 +418,8 @@ public class JSWrapperGenerator extends Generator {
       sw.print(BACKREF);
       sw.println(") {");
       sw.indent();
-      sw.println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
+      sw
+          .println("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();");
       sw.outdent();
       sw.println("}");
     }
@@ -396,7 +440,8 @@ public class JSWrapperGenerator extends Generator {
       // Initialize any other fields if the JSWrapper is read-write
       sw.print("this.@");
       sw.print(context.qualifiedTypeName);
-      sw.print("::__initializeEmptyFields(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+      sw
+          .print("::__initializeEmptyFields(Lcom/google/gwt/core/client/JavaScriptObject;)(");
       sw.print(context.objRef);
       sw.println(");");
     }
@@ -424,8 +469,9 @@ public class JSWrapperGenerator extends Generator {
     sw.indent();
     FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
     subParams.parameterName = "obj";
-    FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-        logger, typeOracle, returnType);
+    FragmentGenerator fragmentGenerator =
+        context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+            typeOracle, returnType);
 
     sw.println("public native Object fromJS(JavaScriptObject obj) /*-{");
     sw.indent();
@@ -453,8 +499,9 @@ public class JSWrapperGenerator extends Generator {
   protected void writeConstructor(FragmentGeneratorContext context,
       JMethod constructor) throws UnableToCompleteException {
 
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing constructor " + constructor.getName(), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing constructor "
+            + constructor.getName(), null);
     SourceWriter sw = context.sw;
 
     JParameter[] parameters = constructor.getParameters();
@@ -506,12 +553,14 @@ public class JSWrapperGenerator extends Generator {
     for (int i = getImportOffset(); i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType subType = parameters[i].getType();
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
+      FragmentGeneratorContext subParams =
+          new FragmentGeneratorContext(context);
       subParams.returnType = subType;
       subParams.parameterName = parameters[i].getName();
 
-      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-          logger, context.typeOracle, subType);
+      FragmentGenerator fragmentGenerator =
+          context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+              context.typeOracle, subType);
       if (fragmentGenerator == null) {
         logger.log(TreeLogger.ERROR, "No fragment generator for "
             + returnType.getQualifiedSourceName(), null);
@@ -530,7 +579,8 @@ public class JSWrapperGenerator extends Generator {
     subContext.returnType = returnType;
     subContext.parameterName = "jsReturn";
 
-    sw.println("return this.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(jsReturn);");
+    sw
+        .println("return this.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(jsReturn);");
     sw.outdent();
     sw.println("}-*/;");
   }
@@ -544,15 +594,17 @@ public class JSWrapperGenerator extends Generator {
     SourceWriter sw = context.sw;
     JClassType returnType = context.returnType.isClassOrInterface();
 
-    sw.println("private native void __initializeEmptyFields(JavaScriptObject jso) /*-{");
+    sw
+        .println("private native void __initializeEmptyFields(JavaScriptObject jso) /*-{");
     sw.indent();
 
     FragmentGeneratorContext subContext = new FragmentGeneratorContext(context);
     subContext.parameterName = "jso";
     writeEmptyFieldInitializers(subContext);
 
-    subContext.tasks = TaskFactory.extractMethods(logger,
-        subContext.typeOracle, returnType, TaskFactory.EXPORTER_POLICY).values();
+    subContext.tasks =
+        TaskFactory.extractMethods(logger, subContext.typeOracle, returnType,
+            TaskFactory.EXPORTER_POLICY).values();
     writeMethodBindings(subContext);
 
     sw.outdent();
@@ -567,8 +619,9 @@ public class JSWrapperGenerator extends Generator {
   protected void writeEmptyFieldInitializers(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing field initializers", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing field initializers", null);
 
     for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
       final Task task = (Task) i.next();
@@ -582,8 +635,9 @@ public class JSWrapperGenerator extends Generator {
 
       final JType returnType = task.getter.getReturnType();
 
-      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
+      FragmentGenerator fragmentGenerator =
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
 
       sw.print("if (!");
       sw.print(context.parameterName);
@@ -635,15 +689,17 @@ public class JSWrapperGenerator extends Generator {
   protected void writeGetter(FragmentGeneratorContext context, JMethod getter)
       throws UnableToCompleteException {
 
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing getter " + getter.getName(), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing getter "
+            + getter.getName(), null);
     TypeOracle typeOracle = context.typeOracle;
     SourceWriter sw = context.sw;
 
     final JType returnType = getter.getReturnType();
 
-    FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-        logger, typeOracle, context.returnType);
+    FragmentGenerator fragmentGenerator =
+        FRAGMENT_ORACLE.findFragmentGenerator(logger, typeOracle,
+            context.returnType);
 
     sw.print("public native ");
     sw.print(returnType.getQualifiedSourceName());
@@ -677,8 +733,9 @@ public class JSWrapperGenerator extends Generator {
   protected void writeImported(FragmentGeneratorContext context,
       JMethod imported) throws UnableToCompleteException {
 
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing import " + imported.getName(), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing import "
+            + imported.getName(), null);
     SourceWriter sw = context.sw;
 
     // Simplifies the rest of writeImported
@@ -731,12 +788,14 @@ public class JSWrapperGenerator extends Generator {
     for (int i = getImportOffset(); i < parameters.length; i++) {
       // Create a sub-context to generate the wrap/unwrap logic
       JType subType = parameters[i].getType();
-      FragmentGeneratorContext subParams = new FragmentGeneratorContext(context);
+      FragmentGeneratorContext subParams =
+          new FragmentGeneratorContext(context);
       subParams.returnType = subType;
       subParams.parameterName = parameters[i].getName();
 
-      FragmentGenerator fragmentGenerator = context.fragmentGeneratorOracle.findFragmentGenerator(
-          logger, context.typeOracle, subType);
+      FragmentGenerator fragmentGenerator =
+          context.fragmentGeneratorOracle.findFragmentGenerator(logger,
+              context.typeOracle, subType);
       if (fragmentGenerator == null) {
         logger.log(TreeLogger.ERROR, "No fragment generator for "
             + returnType.getQualifiedSourceName(), null);
@@ -753,13 +812,14 @@ public class JSWrapperGenerator extends Generator {
 
     // Wrap the return type in the correct Java type. Void returns are ignored
     if (!JPrimitiveType.VOID.equals(returnType.isPrimitive())) {
-      FragmentGeneratorContext subContext = new FragmentGeneratorContext(
-          context);
+      FragmentGeneratorContext subContext =
+          new FragmentGeneratorContext(context);
       subContext.returnType = returnType;
       subContext.parameterName = "jsReturn";
 
-      FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-          logger, context.typeOracle, returnType);
+      FragmentGenerator fragmentGenerator =
+          FRAGMENT_ORACLE.findFragmentGenerator(logger, context.typeOracle,
+              returnType);
 
       sw.print("return ");
 
@@ -774,8 +834,9 @@ public class JSWrapperGenerator extends Generator {
   protected void writeMethodBindings(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing method bindings initializers", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Writing method bindings initializers", null);
 
     for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
       final Task task = (Task) i.next();
@@ -787,8 +848,8 @@ public class JSWrapperGenerator extends Generator {
         sw.print(fieldName);
         sw.print(" = ");
 
-        FragmentGeneratorContext subContext = new FragmentGeneratorContext(
-            context);
+        FragmentGeneratorContext subContext =
+            new FragmentGeneratorContext(context);
         subContext.parameterName = "this." + BACKREF;
 
         JSFunctionFragmentGenerator.writeFunctionForMethod(subContext,
@@ -804,10 +865,11 @@ public class JSWrapperGenerator extends Generator {
    */
   protected void writeMethods(FragmentGeneratorContext context,
       Map propertyAccessors) throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing methods", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing methods", null);
 
-    for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
+    for (final Iterator i = propertyAccessors.entrySet().iterator(); i
+        .hasNext();) {
 
       final Map.Entry entry = (Map.Entry) i.next();
       final Task task = (Task) entry.getValue();
@@ -822,15 +884,17 @@ public class JSWrapperGenerator extends Generator {
   protected void writeSetter(FragmentGeneratorContext context, JMethod setter)
       throws UnableToCompleteException {
 
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing setter " + setter.getName(), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing setter "
+            + setter.getName(), null);
     TypeOracle typeOracle = context.typeOracle;
     SourceWriter sw = context.sw;
 
     JType parameterType = context.returnType;
 
-    FragmentGenerator fragmentGenerator = FRAGMENT_ORACLE.findFragmentGenerator(
-        logger, typeOracle, context.returnType);
+    FragmentGenerator fragmentGenerator =
+        FRAGMENT_ORACLE.findFragmentGenerator(logger, typeOracle,
+            context.returnType);
     if (fragmentGenerator == null) {
       throw new UnableToCompleteException();
     }
@@ -870,13 +934,15 @@ public class JSWrapperGenerator extends Generator {
 
   protected void writeSingleTask(FragmentGeneratorContext context, Task task)
       throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Writing Task " + task.getFieldName(context.parentLogger), null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG, "Writing Task "
+            + task.getFieldName(context.parentLogger), null);
 
     context = new FragmentGeneratorContext(context);
     context.parentLogger = logger;
 
-    logger.log(TreeLogger.DEBUG, "Implementing task " + context.fieldName, null);
+    logger
+        .log(TreeLogger.DEBUG, "Implementing task " + context.fieldName, null);
 
     if (task.getter != null) {
       context.returnType = task.getter.getReturnType();

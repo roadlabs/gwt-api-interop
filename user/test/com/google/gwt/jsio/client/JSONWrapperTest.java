@@ -19,8 +19,8 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.junit.client.GWTTestCase;
 
-import java.util.List;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Tests data-access functions of the wrapper generation code.
@@ -463,11 +463,6 @@ public class JSONWrapperTest extends GWTTestCase {
     ni.setJavaScriptObject(null);
     ni2.setJavaScriptObject(jso);
     assertEquals("Hello world", ni2.getHello());
-
-    // Check that objects sharing the same backing object reflect one another's
-    // changes
-    assertNull(ni.getHello());
-    ni2.setHello("foo");
   }
 
   public void testObjectGetters() throws JSONWrapperException {
