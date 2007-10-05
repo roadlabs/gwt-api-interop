@@ -58,13 +58,20 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
 
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Building value getter statement", null);
+    TreeLogger logger =
+        context.parentLogger.branch(TreeLogger.DEBUG,
+            "Building value getter statement", null);
 
     SourceWriter sw = context.sw;
     TypeOracle typeOracle = context.typeOracle;
     JClassType returnType = context.returnType.isClassOrInterface();
 
+    // Don't use "x || null" expression because the value may be boolean false
+    sw.print("(");
+    sw.print(context.parameterName);
+    sw.print(" == null || ");
+    sw.print(context.parameterName);
+    sw.print(" == undefined) ? null : ");
     sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper");
 
     // Just plow through the Boxed types
