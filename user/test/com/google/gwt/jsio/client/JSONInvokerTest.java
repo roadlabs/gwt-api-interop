@@ -60,6 +60,12 @@ public class JSONInvokerTest extends GWTTestCase {
     public HelloWrapper constructor(String param1, int param2);
 
     public int getHello();
+    
+    /**
+     * @gwt.imported true
+     * @gwt.fieldName returnUndefined
+     */
+    public Integer getIntegerAsUndefined();
 
     /**
      * @gwt.typeArgs <java.lang.Integer>
@@ -131,11 +137,16 @@ public class JSONInvokerTest extends GWTTestCase {
   }
 
   /**
+   * This is a blank interface just to be used as a reference type.
+   */
+  public static interface OtherWrapper extends JSWrapper {
+  }
+
+  /**
    * @gwt.global $wnd.SingletonHello
    */
   public static interface SingletonHello extends HelloWrapper {
   }
-
   /**
    * Tests state-preserving behavior across the JS/Java boundary.
    */
@@ -147,11 +158,6 @@ public class JSONInvokerTest extends GWTTestCase {
      * This field will always emit a warning.
      */
     String localField;
-  }
-  /**
-   * This is a blank interface just to be used as a reference type.
-   */
-  public static interface OtherWrapper extends JSWrapper {
   }
 
   /**
@@ -176,6 +182,10 @@ public class JSONInvokerTest extends GWTTestCase {
    
    Hello.prototype.increment = function() {
    this.hello++;
+   }
+   
+   Hello.prototype.returnUndefined = function() {
+   return undefined;
    }
    
    Hello.prototype.setHello = function(a) {
@@ -228,6 +238,17 @@ public class JSONInvokerTest extends GWTTestCase {
     HelloCallbackInt c2 = new HelloCallbackInt();
     assertFalse("c1 and c2 should not be identical", wrapper.identityEquals(c1,
         c2));
+  }
+
+  /**
+   * Ensure that undefined maps to null when returning a boxed primitive.
+   */
+  public void testIntegerAsUndefined() {
+    initializeHello();
+
+    HelloWrapper w = (HelloWrapper) GWT.create(HelloWrapper.class);
+    w.constructor("Hello world", 99);
+    assertNull(w.getIntegerAsUndefined());
   }
 
   public void testInvocation() {
@@ -290,7 +311,7 @@ public class JSONInvokerTest extends GWTTestCase {
       }
     }
   }
-
+  
   /**
    * Ensure that wrapped objects returned from a native JS API are returned
    * correctly and have the correct identity semantics for the underlying
