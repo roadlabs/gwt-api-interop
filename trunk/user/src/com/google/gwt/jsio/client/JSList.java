@@ -22,5 +22,5 @@ import java.util.List;
  * type is a JavaScript array-like object.  It must be at all times
  * accompanied by a <code>gwt.typeArgs</code> annotation.
  */
-public interface JSList extends List {
+public interface JSList<T> extends List<T> {
 }
