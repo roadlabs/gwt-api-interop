@@ -17,7 +17,6 @@ package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
-import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
@@ -28,10 +27,10 @@ import com.google.gwt.user.rebind.SourceWriter;
  * Encapsulates accessors for List properties.
  */
 class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
-  
+
   protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-    
+
     TypeOracle typeOracle = context.typeOracle;
     SourceWriter sw = context.sw;
     JParameterizedType listType = context.returnType.isParameterized();
@@ -41,7 +40,8 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
             "Writing JSNI object creator for "
                 + argumentType.getQualifiedSourceName(), null);
 
-    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
+    sw
+        .print("@com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
     FragmentGenerator fragmentGenerator =
         context.fragmentGeneratorOracle.findFragmentGenerator(logger,
@@ -52,18 +52,19 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
 
     fragmentGenerator.writeExtractorJSNIReference(subParams);
     sw.print(")");
-    sw.print(".@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
+    sw
+        .print(".@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(");
     sw.print(context.parameterName);
     sw.print(")");
   }
 
   boolean accepts(TypeOracle oracle, JType type) {
-    JClassType asInterface = type.isInterface();
+    JParameterizedType asInterface = type.isParameterized();
 
     if (asInterface == null) {
       return false;
     } else {
-      return isAssignable(oracle, asInterface, JSList.class);
+      return isAssignable(oracle, asInterface.getRawType(), JSList.class);
       // return oracle.findType(JSList.class.getName()).equals(asInterface);
     }
   }
@@ -83,7 +84,8 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     JParameterizedType listType = context.returnType.isParameterized();
     JType argumentType = listType.getTypeArgs()[0];
 
-    sw.print("@com.google.gwt.jsio.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
+    sw
+        .print("@com.google.gwt.jsio.client.impl.JSListWrapper::createExtractor(Lcom/google/gwt/jsio/client/impl/Extractor;)(");
 
     FragmentGenerator fragmentGenerator =
         context.fragmentGeneratorOracle.findFragmentGenerator(logger,
