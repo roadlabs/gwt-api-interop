@@ -1,0 +1,19 @@
+BE FOREWARNED:
+  This project should be considered experimental, AS-IS,  and generally unsupported at this time.  That said, feel free to file bugs in the project's issue tracker.
+
+Project homepage:
+  http://code.google.com/p/gwt-api-interop/
+
+To link this into your existing GWT checkout:
+  cd user/src/com/google/gwt/
+  svn ps svn:externals 'jsio http://gwt-api-interop.googlecode.com/svn/trunk/user/src/com/google/gwt/jsio/' .
+  <repeat for user/tests, if desired>
+  cd <checkout root>
+  svn update
+
+You'll now track future updates to the interop package when you do an svn update.
+
+The sample HelloMaps application demonstrates how the interop package can be used with Google Maps.  Refer to Hello.gwt.xml for instructions on obtaining a Google Maps API key.
+
+Enjoy.
+  -BobV.
