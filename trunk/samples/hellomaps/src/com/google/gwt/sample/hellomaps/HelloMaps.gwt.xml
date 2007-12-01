@@ -15,12 +15,15 @@
 <module>
 	<inherits name="com.google.gwt.user.User"/>
 	<inherits name="com.google.gwt.jsio.JSIO"/>
-	<entry-point class="com.google.gwt.sample.hello.client.Hello"/>
-	<!-- Replace the string XYZZY with a Google Maps API key obtained from:
+	<entry-point class="com.google.gwt.sample.hellomaps.client.HelloMaps"/>
+	<!--
+	    Load the Google Maps API as an external script.  This URL will work in
+	    hosted mode or when serving from "localhost".  To run this sample on a
+	    real site, you must obtain a Google Maps API key from:
+		
 		http://www.google.com/apis/maps/signup.html
 
-	     To make hosted mode work, specify the web site URL as
-		http://localhost:8888/com.google.gwt.sample.hello.Hello/
+	    Replace "XYXXY" below with a valid key.
 	-->
 	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=XYZZY" />
 </module>

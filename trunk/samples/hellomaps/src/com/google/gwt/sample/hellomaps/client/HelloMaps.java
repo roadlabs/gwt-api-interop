@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.sample.hello.client;
+package com.google.gwt.sample.hellomaps.client;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.user.client.ui.Button;
@@ -28,8 +28,7 @@ import com.google.gwt.user.client.ui.Widget;
 /**
  * HelloMaps application.
  */
-public class Hello implements EntryPoint {
-  
+public class HelloMaps implements EntryPoint {
 
   public void onModuleLoad() {
 
@@ -39,32 +38,31 @@ public class Hello implements EntryPoint {
       }
     });
     RootPanel.get().add(create);
-    
     createMap();
   }
-  
+
   private void createMap() {
+    // Set the map up in a Dialog box, just for fun.
+    final DialogBox dialog = new DialogBox(false, false);
     final Map theMap = new Map();
-    
     TextBox tb = new TextBox();
     tb.addKeyboardListener(new KeyboardListenerAdapter() {
       public void onKeyPress(Widget sender, char keyCode, int modifiers) {
         if (keyCode == KEY_ENTER) {
           theMap.setLocation(((TextBox)sender).getText());
+        } else if (keyCode == KEY_ESCAPE) {
+          dialog.removeFromParent();
         }
       }
     });
     tb.setWidth("100%");
     
     VerticalPanel vp = new VerticalPanel();
-    
     vp.add(tb);
     vp.add(theMap);
-    
-    // Set the map up in a Dialog box, just for fun.
-    DialogBox dialog = new DialogBox(false, false);
+
     dialog.setText("Drag me!");
     dialog.setWidget(vp);
-    dialog.show();
+    dialog.center();
   }
 }
