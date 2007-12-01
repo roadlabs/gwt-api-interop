@@ -13,13 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.google.gwt.sample.hello.client;
+package com.google.gwt.sample.hellomaps.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.jsio.client.JSFunction;
 import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.WindowCloseListener;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.SimplePanel;
 
@@ -27,6 +28,18 @@ import com.google.gwt.user.client.ui.SimplePanel;
  * Encapsulates a Google Map UI.
  */
 public class Map extends Composite {
+
+  static {
+    Window.addWindowCloseListener(new WindowCloseListener() {
+      public native void onWindowClosed() /*-{
+        $wnd.GUnload && $wnd.GUnload();
+      }-*/;
+
+      public String onWindowClosing() {
+        return null;
+      }
+    });
+  }
 
   /**
    * Polymorphism works just fine. Again, the name of this interface has no
@@ -135,8 +148,8 @@ public class Map extends Composite {
   }
 
   // GWT.create the Map and geocoding service
-  final GoogleMap map = (GoogleMap)GWT.create(GoogleMap.class);
-  final Geocoder geocoder = (Geocoder)GWT.create(Geocoder.class);
+  final GoogleMap map = (GoogleMap) GWT.create(GoogleMap.class);
+  final Geocoder geocoder = (Geocoder) GWT.create(Geocoder.class);
 
   public Map() {
     final SimplePanel panel = new SimplePanel();
@@ -145,11 +158,11 @@ public class Map extends Composite {
     map.construct(panel.getElement());
 
     // Add some standard controllers
-    map.addControl((GControl)GWT.create(GSmallMapControl.class));
-    map.addControl((GControl)GWT.create(GMapTypeControl.class));
+    map.addControl((GControl) GWT.create(GSmallMapControl.class));
+    map.addControl((GControl) GWT.create(GMapTypeControl.class));
 
     // Create a position wrapper
-    final GLatLng center = (GLatLng)GWT.create(GLatLng.class);
+    final GLatLng center = (GLatLng) GWT.create(GLatLng.class);
     // Set the position of the wrapper (Palto Alto)
     center.construct(37.4419, -122.1419);
 
