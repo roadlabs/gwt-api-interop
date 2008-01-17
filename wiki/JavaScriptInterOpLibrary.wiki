@@ -42,9 +42,6 @@ The behavior of the generated classes may be altered by the presence of various 
 || `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally, {@link com.google.gwt.jsio.client.JSWrapper#setJavaScriptObject} will no longer throw {@link com.google.gwt.jsio.client.MultipleWrapperException}.  ||
 || `gwt.readOnly`	||Class 	||This prevents the generated JSWrapper implementation from containing any code that will modify the underlying !JavaScriptObject. This implies `gwt.noIdentity`. Invoking a bean-style getter when the underlying !JavaScriptObject does not contain a value for the property will result in undefined behavior. ||
 
-== Generated Code ==
-
-TODO: Show code generated from an example JSWrapper use case
 
 ==JSWrapper Examples==
 
@@ -114,11 +111,11 @@ abstract class MixedWrapper implements JSWrapper {
 The following demonstrates how to use the new wrapper:
 
 {{{
-MixedWrapper wrapper = (MixedWrapper)GWT.create(MixedWrapper.class);
-wrapper.setJSONData("{a:2, b:5}");
-Window.alert(wrapper.multiply());
-wrapper.setB(10);
-Window.alert(wrapper.multiply());
+  MixedWrapper wrapper = (MixedWrapper)GWT.create(MixedWrapper.class);
+  wrapper.setJSONData("{a:2, b:5}");
+  Window.alert(wrapper.multiply());
+  wrapper.setB(10);
+  Window.alert(wrapper.multiply());
 }}}
 
 Running the code would show you the value `10` in the first window, then `20` in the second window.
@@ -222,6 +219,102 @@ Now to use the wrapper, you need to use GWT.create() to invoke the JSIO generato
 
 }}}
 
+== Generated Code ==
+
+The code below is the output of the JSIO `JSWrapper` generator for
+the `TestThingo` interface:
+
+{{{
+package com.example.gwt.client;
+
+import com.google.gwt.jsio.client.impl.*;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.jsio.client.*;
+import com.google.gwt.core.client.GWT;
+
+public class __TextThingoImpl implements com.example.gwt.client.TextThingo {
+  private JavaScriptObject jsoPeer;
+  public __TextThingoImpl() {
+    setJavaScriptObject(__nativeInit());
+  }
+  private native JavaScriptObject __nativeInit() /*-{
+    return null;
+  }-*/;
+
+  public JavaScriptObject getJavaScriptObject() {
+    return jsoPeer;
+  }
+
+  public void setJSONData(String data)  throws JSONWrapperException {
+    setJavaScriptObject(JSONWrapperUtil.evaluate(data));
+  }
+
+  public JSWrapper setJavaScriptObject(JavaScriptObject obj) {
+    if (obj != null) {
+      assert JSONWrapperUtil.hasField(obj, "show") : "Backing JSO missing imported function show";
+    }
+    return setJavaScriptObjectNative(obj);
+  }
+
+  public native JSWrapper setJavaScriptObjectNative(JavaScriptObject obj) /*-{
+    if (this.@com.example.gwt.client.__TextThingoImpl::jsoPeer) {
+      delete this.@com.example.gwt.client.__TextThingoImpl::jsoPeer.__gwtPeer;
+    }
+    if (!obj) {
+      this.@com.example.gwt.client.__TextThingoImpl::jsoPeer = null;
+      return this;
+    }
+    if (obj.__gwtPeer) {
+      @com.google.gwt.jsio.client.impl.JSONWrapperUtil::throwMultipleWrapperException()();
+    }
+    this.@com.example.gwt.client.__TextThingoImpl::jsoPeer = obj;
+    this.@com.example.gwt.client.__TextThingoImpl::jsoPeer.__gwtPeer = this;
+    this.@com.example.gwt.client.__TextThingoImpl::__initializeEmptyFields(Lcom/google/gwt/core/client/JavaScriptObject;)(this.@com.example.gwt.client.__TextThingoImpl::jsoPeer);
+    return this;
+  }-*/;
+
+  public final Extractor getExtractor() {
+    return __extractor;
+  }
+
+  private final static Extractor __extractor = new Extractor() {public native Object fromJS(JavaScriptObject obj) /*-{
+      return obj == null ? null : (obj.__gwtPeer || @com.example.gwt.client.__TextThingoImpl::__create__com_example_gwt_client_TextThingo()().@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(obj));
+    }-*/;
+    public native JavaScriptObject toJS(Object obj) /*-{
+      return obj == null ? null : obj.@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()();
+    }-*/;
+  };
+
+  private native void __initializeEmptyFields(JavaScriptObject jso) /*-{
+    if (!jso.hasOwnProperty('textValue')) {
+      jso.textValue = null;
+    }
+  }-*/;
+
+  public native void show() /*-{
+    this.@com.example.gwt.client.__TextThingoImpl::jsoPeer.show();
+  }-*/;
+
+  public native java.lang.String getTextValue() /*-{
+    return this.@com.example.gwt.client.__TextThingoImpl::jsoPeer.textValue;
+  }-*/;
+
+  public native void setTextValue(java.lang.String value) /*-{
+    this.@com.example.gwt.client.__TextThingoImpl::jsoPeer.textValue = value;
+  }-*/;
+
+  public native com.example.gwt.client.TextThingo construct(com.google.gwt.user.client.Element container, java.lang.String value) /*-{
+    var jsReturn = new $wnd.TextThingo(container, value);
+    return this.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(jsReturn);
+  }-*/;
+
+  private static com.example.gwt.client.TextThingo __create__com_example_gwt_client_TextThingo() {
+    return (com.example.gwt.client.TextThingo)GWT.create(com.example.gwt.client.TextThingo.class);
+  }
+}
+}}}
+
+
 =JSFlyweightWrapper interface=
 
 The JSFlyweightWrapper generates code so that mutliple objects can share the same functions.  This cuts down on memory usage.
@@ -243,7 +336,11 @@ New Methods:
 ==Example JSFlyweightWrapper==
 
 
-The following example shows how to create a wrapper to the !TextThingo !JavaScript API above using the JSFlyweight interface.  The code is similar, but a static instance of the generated class is created and stored within the Flyweight object.  Note that each accessor method contains a `JavaScriptObject` as the first parameter:
+The following example shows how to create a wrapper to the !TextThingo
+!JavaScript API above using the JSFlyweight interface and a
+constructor function.
+
+The code is similar to the `JSWrapper` example, but a static instance of the generated class is created and stored within the Flyweight object.  Note that each accessor method contains a `JavaScriptObject` as the first parameter:
 
 {{{
 /**
@@ -293,6 +390,7 @@ object.
   }
 }}}
 
+== Generated Code ==
 The following listing shows the output of the `JSFlyweightWrapper`
 generator.  It is much simpler than its `JSWrapper` counterpart, and
 more easily optimized by the compiler.
