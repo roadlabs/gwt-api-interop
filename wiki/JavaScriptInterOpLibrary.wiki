@@ -1,7 +1,7 @@
-#summary The JavaScript Interoperability (JSIO) library simplifies binding a JavaScript API to GWT
+#summary The !JavaScript Interoperability (JSIO) library simplifies binding a !JavaScript API to GWT
 = Introduction =
 
-This document describes the JavaScript Interoperability( JSIO) library for the Google Web Toolkit (GWT).  These classes are for importing existing JavaScript APIs and exporting Java functions to be used JavaScript code.
+This document describes the !JavaScript Interoperability( JSIO) library for the Google Web Toolkit (GWT).  These classes are for importing existing !JavaScript APIs and exporting Java functions to be used !JavaScript code.
 
 Using this library, the GWT compiler can automatically generate:
 
@@ -33,12 +33,12 @@ The behavior of the generated classes may be altered by the presence of various 
 
 ||Annotation 	        ||Location 	||Description ||
 || `gwt.beanProperties`    ||Class, Method || Indicates that methods that look like bean-style property setters (methods that begin with the prefix `get`, `set`, or `is`) should be generated so as to read and write object properties rather than import functions. This is most useful with JSON-style objects. The setting may by applied on a per-method basis in an imported class and may by overridden on a per-method basis by `gwt.imported`. If the backing object does not contain data for a property accessor, null, 0, ' ', false, or an empty {@link com.google.gwt.jsio.client.JSList} will be returned. ||
-|| `gwt.constructor` 	||Class, Method  || The annotation `gwt.constructor` may be applied to a class to specify a JavaScript function to execute when constructing a JSWrapper to use as the initial backing object. A JavaScript Date object could be created by using the value $wnd.Date. If the gwt.constructor annotation is applied to a method within a JSWrapper and the method invoked, the parameters of the method will be passed to the named global function and the resulting JavaScript object will be used as the backing object. ||
-|| `gwt.exported` 	||Method 	||Individual Java functions may be exported to JavaScript callers by declaring a gwt.exported annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' NamePolicy or a `gwt.fieldName` annotation on the method. When applied at the class level to a {@link com.google.gwt.jsio.client.JSFunction}, it specifies which of the methods declared within to type to export as a JavaScript Function object.||
-|| `gwt.fieldName` 	||Method 	||When implementing a bean property accessor, the default NamePolicy will be used unless a `gwt.fieldName` annotation appears on the property's getter or setter. This is also used with imported and exported functions to specify the object property to attach to.||
+|| `gwt.constructor` 	||Class, Method  || The annotation `gwt.constructor` may be applied to a class to specify a !JavaScript function to execute when constructing a JSWrapper to use as the initial backing object. A !JavaScript Date object could be created by using the value $wnd.Date. If the gwt.constructor annotation is applied to a method within a JSWrapper and the method invoked, the parameters of the method will be passed to the named global function and the resulting !JavaScript object will be used as the backing object. ||
+|| `gwt.exported` 	||Method 	||Individual Java functions may be exported to !JavaScript callers by declaring a gwt.exported annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' !NamePolicy or a `gwt.fieldName` annotation on the method. When applied at the class level to a {@link com.google.gwt.jsio.client.JSFunction}, it specifies which of the methods declared within to type to export as a !JavaScript Function object.||
+|| `gwt.fieldName` 	||Method 	||When implementing a bean property accessor, the default !NamePolicy will be used unless a `gwt.fieldName` annotation appears on the property's getter or setter. This is also used with imported and exported functions to specify the object property to attach to.||
 || `gwt.global` 	||Class 	||The annotation `gwt.global` is similar to gwt.constructor, however it may be applied only at the class level and the value is interpreted as a globally-accessible object name, rather than a function. ||
 || `gwt.imported` 	||Method 	||This is an override for methods within classes annotated with `gwt.beanProperties`.||
-|| `gwt.namePolicy` 	||Class 	||Specifies the default transformation to use when converting bean property accessor function names to fields on the underlying !JavaScriptObject. The valid values for the namePolicy are the field names on the {@link com.google.gwt.jsio.rebind.NamePolicy} class, or the name of a class that implements NamePolicy.||
+|| `gwt.namePolicy` 	||Class 	||Specifies the default transformation to use when converting bean property accessor function names to fields on the underlying !JavaScriptObject. The valid values for the namePolicy are the field names on the {@link com.google.gwt.jsio.rebind.!NamePolicy} class, or the name of a class that implements !NamePolicy.||
 || `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally, {@link com.google.gwt.jsio.client.JSWrapper#setJavaScriptObject} will no longer throw {@link com.google.gwt.jsio.client.MultipleWrapperException}.  ||
 || `gwt.readOnly`	||Class 	||This prevents the generated JSWrapper implementation from containing any code that will modify the underlying !JavaScriptObject. This implies `gwt.noIdentity`. Invoking a bean-style getter when the underlying !JavaScriptObject does not contain a value for the property will result in undefined behavior. ||
 
@@ -48,17 +48,17 @@ TODO: Show code generated from an example JSWrapper use case
 
 ==JSWrapper Examples==
 
-The following examples demonstrate how to write an interface that maps onto a JavaScript object to access it from GWT code.
+The following examples demonstrate how to write an interface that maps onto a !JavaScript object to access it from GWT code.
 
 
 === Hello World using JSWrapper ===
 
-This simple example demonstrates how to access a property in a JavaScript Object (JSO).
+This simple example demonstrates how to access a property in a !JavaScript Object (JSO).
 
 {{{
 /*
  * HelloJSIO.java
- * A simple wrapper around a single JavaScript object property named 'hello'
+ * A simple wrapper around a single !JavaScript object property named 'hello'
  */
 
 /**
@@ -73,13 +73,13 @@ Window.alert(hello.getHello());
 }}}
 
 
-=== Mixing Access to JavaScript Object with other methods ===
+=== Mixing Access to !JavaScript Object with other methods ===
 
 The following example uses several JSIO features:
 
  * Some bean accessor methods are created.
  * A concrete Java method is defined in the JSO.
- * A JavaScript function is imported from JavaScript to Java.
+ * A !JavaScript function is imported from !JavaScript to Java.
 
 {{{
 /**
@@ -97,7 +97,7 @@ abstract class MixedWrapper implements JSWrapper {
   public abstract int setB();
 
   // Method that is implemented in Java that will be translated to 
-  // JavaScript and set in the JavaScript Object.
+  // !JavaScript and set in the !JavaScript Object.
   public int multiply() {
     return getA() * getB();
   }
@@ -123,12 +123,108 @@ Window.alert(wrapper.multiply());
 
 Running the code would show you the value `10` in the first window, then `20` in the second window.
 
+== Instantiating a JavaScript object using a construtor ==
+
+If you have a JavaScript library that is written in an object oriented fashion, you can map a function in a JSWrapper class to the JavaScript constructor instead of using the `setJSONData()` or `setJavaScriptObject()`.
+
+Suppose you wanted to access the following JavaScript API:
+
+{{{
+
+// Create a new TextThingo object
+// e - bounding box element to attach to
+// value - a string to display
+function TextThingo (e, value) {
+  this.textValue = value;
+  this.text = document.createElement("span");
+  e.appendChild(this.text);
+}
+
+// Display the current value in the TextThingo object
+TextThingo.prototype.show = function () {
+  // remove all children
+  while (this.text.FirstChild) {
+    this.text.removeChild(text.firstChild());
+  }
+  this.text.appendChild(document.createTextNode(this.textValue));
+}
+}}}
+
+This API would be used in JavaScript as follows:
+
+{{{
+  var t = new TextThingo (document.getElementById("elementId"), "Hello World!");
+  t.textValue = "Goodbye Cruel World!";
+  t.show();
+}}}
+
+And the resulting web page would display the text, "Goodbye Cruel World" in an element decared with ID "elementId" in the host HTML page. 
+
+Now, we will wrap the API using JSIO so we can access it from GWT.  The following code shows how to wrap the constructor, the start() method, and create bean accessors to the textValue property:
+
+{{{
+/**
+ * @gwt.beanProperties
+ */
+public interface TextThingo extends JSWrapper {
+
+  /**
+   * @gwt.constructor $wnd.TextThingo
+   */
+  public TextThingo construct(Element container, String value);
+
+  /* Automatically created bean method to access option property */
+  public void setTextValue(String value); 
+
+  /* Automatically created bean method to access option property */
+  public String getTextValue();
+
+  /* Maps to the JavaScript start() function on the TextThingo object */
+  public void show();
+
+}
+}}}
+
+You will need to add the JSIO `<inherits>` line to your _<module>_`.gwt.xml` file.
+
+{{{
+<module>
+
+  <!-- Inherit the core Web Toolkit stuff.                  -->
+  <inherits name='com.google.gwt.user.User' />
+  <inherits name='com.google.gwt.jsio.JSIO' />
+  
+  <!-- Specify the app entry point class.                   -->
+  <entry-point class='com.example.gwt.client.JSWrapperExample' />
+
+</module>
+
+}}}
+
+Now to use the wrapper, you need to use GWT.create() to invoke the JSIO generators, then run the `construct()` method to instantiate the JavaScript object:
+
+{{{
+  private TextThingo textThingo;
+
+  void onModuleLoad () {
+    Panel s = new SimplePanel();
+    textThingo = GWT.create(TextThingo.class);
+ 
+    // Don't call any other methods in the new object until the 'construct' method is called.
+    textThingo.construct(s.getElement(), "Hello World!");
+
+    textThingo.setTextValue("Goodbye Cruel World!");
+    textThingo.show();
+
+    // Add the panel containing the text thingo to the interface.
+    RootPanel.get("elementId").add(s);
+  }
+
+}}}
 
 =JSFlyweightWrapper interface=
 
 The JSFlyweightWrapper generates code so that mutliple objects can share the same functions.  This cuts down on memory usage.
-
-TODO: Show code generated from an example JSFlyweightWrapper use case
 
 The tags are pretty much the same as JSWrapper, but you'll want to look at anything with a jsoPeer instance field.
 
@@ -141,10 +237,94 @@ New Annotations:
 New Methods:
  
 || Method Name  || Description ||
-|| `createPeer()` || Used to initialize the generated instance with a JavaScript object. ||
+|| `createPeer()` || Used to initialize the generated instance with a !JavaScript object. ||
 
 
 ==Example JSFlyweightWrapper==
 
+
+The following example shows how to create a wrapper to the !TextThingo !JavaScript API above using the JSFlyweight interface.  The code is similar, but a static instance of the generated class is created and stored within the Flyweight object.  Note that each accessor method contains a `JavaScriptObject` as the first parameter:
+
 {{{
+/**
+ * @gwt.beanProperties
+ */
+public interface TextThingoFW extends JSFlyweightWrapper {
+
+  public static final TextThingoFW impl = 
+    (TextThingoFW) GWT.create(TextThingoFW.class);
+  
+  /**
+   * @gwt.constructor $wnd.TextThingo
+   */
+  public JavaScriptObject construct(Element container, String value);
+
+  /* Automatically created bean method to access option property */
+  public String getTextValue(JavaScriptObject jsoPeer);
+
+  /* Automatically created bean method to access option property */
+  public void setTextValue(JavaScriptObject jsoPeer, String value);
+
+  /* Maps to the JavaScript start() function on the TextThingo object */
+  public void show(JavaScriptObject jsoPeer);
+}
 }}}
+
+Now, to use the API, you access the generated instance through the
+`impl` static variable.  The constructor will return a native
+JavaScriptObject which you must use each time you wish to access the
+object. 
+
+{{{
+  private JavaScriptObject jsoPeer;
+
+  public void onModuleLoad() {
+    Panel s = new SimplePanel();
+    
+    // Create an instance of a TextThingo in JavaScript, store away the resulting
+    // JavaScript object for future calls through the TextThingoFW interface.
+    jsoPeer = TextThingoFW.impl.construct(s.getElement(), "Hello Flyweight World!");   
+    
+    TextThingoFW.impl.setTextValue(jsoPeer, "Goodbye Cruel Flyweight World!");
+    TextThingoFW.impl.show(jsoPeer);
+
+    // Add the panel containing the text thingo to the interface.
+    RootPanel.get("elementId").add(s);
+  }
+}}}
+
+The following listing shows the output of the `JSFlyweightWrapper`
+generator.  It is much simpler than its `JSWrapper` counterpart, and
+more easily optimized by the compiler.
+
+{{{
+package com.example.gwt.client;
+
+import com.google.gwt.jsio.client.impl.*;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.jsio.client.*;
+import com.google.gwt.core.client.GWT;
+
+public class __TextThingoFWImpl implements com.example.gwt.client.TextThingoFW {
+  public native java.lang.String getTextValue(com.google.gwt.core.client.JavaScriptObject jsoPeer) /*-{
+    return jsoPeer.textValue;
+  }-*/;
+
+  public native void setTextValue(com.google.gwt.core.client.JavaScriptObject jsoPeer, java.lang.String value) /*-{
+    jsoPeer.textValue = value;
+  }-*/;
+
+  public native com.google.gwt.core.client.JavaScriptObject construct(com.google.gwt.user.client.Element container, java.lang.String value) /*-{
+    var jsReturn = new $wnd.TextThingo(container, value);
+    if (!jsReturn.hasOwnProperty('textValue')) {
+      jsReturn.textValue = null;
+    }
+    return jsReturn;
+  }-*/;
+
+  public native void show(com.google.gwt.core.client.JavaScriptObject jsoPeer) /*-{
+    jsoPeer.show();
+  }-*/;
+}
+}}}
+
