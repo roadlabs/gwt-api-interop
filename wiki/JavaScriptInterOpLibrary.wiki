@@ -5,41 +5,43 @@ This document describes the !JavaScript Interoperability( JSIO) library for the 
 
 Using this library, the GWT compiler can automatically generate:
 
-    * Linkage to functions defined within a `{@link com.google.gwt.core.client.JavaScriptObject}`
+    * Linkage to functions defined within a [http://google-web-toolkit.googlecode.com/svn/javadoc/1.4/com/google/gwt/core/client/JavaScriptObject.html com.google.gwt.core.client.JavaScriptObject]
     * Exports of Java functions to be made available to !JavaScript callers
     * Accessors for bean-style properties
 
-Developers extend `JSWrapper` or` JSFlyweightWrappe`r to create interface definitions to access the !JavaScript object.  To use the interface, the GWT deferred binding mechanism `GWT.create()` is invoked to return an instance of the interface created through automatically generated code.
+Developers extend `JSWrapper` or `JSFlyweightWrapper` to create interface definitions to access the !JavaScript object.  To use the interface, the GWT deferred binding mechanism `GWT.create()` is invoked to return an instance of the interface created through automatically generated code.
 
 =JSWrapper interface=
 
-Any method defined in an interface that extends `{@link com.google.gwt.jsio.client.JSWrapper}` or an abstract method in a class that implements {@link com.google.gwt.jsio.client.JSWrapper} will be acted upon by the compiler. The default behavior is to invoke an identically-named method on the underlying {@link com.google.gwt.core.client.JavaScriptObject}. This behavior may be altered by the presence of various annotations on the class and its methods.
+Any method defined in an interface that extends [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html com.google.gwt.jsio.client.JSWrapper] or an abstract method in a class that implements  [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html com.google.gwt.jsio.client.JSWrapper] will be acted upon by the compiler. The default behavior is to invoke an identically-named method on the underlying [http://google-web-toolkit.googlecode.com/svn/javadoc/1.4/com/google/gwt/core/client/JavaScriptObject.html com.google.gwt.core.client.JavaScriptObject]. This behavior may be altered by the presence of various annotations on the class and its methods.
 
 The parameter and return types supported by JSWrapper are:
 
     * primitive
     * boxed primitive
-    * {@link java.lang.String}
-    * {@link com.google.gwt.jsio.client.JSFunction}
-    * {@link com.google.gwt.jsio.client.JSWrapper}
-    * {@link com.google.gwt.jsio.client.JSList} having a compatible component type specified with the gwt.typeArgs annotation
-    * {@link com.google.gwt.core.client.JavaScriptObject} and subtypes
-    * {@link com.google.gwt.jsio.client.JSOpaque} as a method parameter only.
+    * java.lang.String
+    * [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSFunction.html com.google.gwt.jsio.client.JSFunction]
+    * [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html com.google.gwt.jsio.client.JSWrapper[
+    *
+[http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSList.html
+com.google.gwt.jsio.client.JSList] having a compatible component type specified with the gwt.typeArgs annotation
+    * [http://google-web-toolkit.googlecode.com/svn/javadoc/1.4/com/google/gwt/core/client/JavaScriptObject.html com.google.gwt.core.client.JavaScriptObject] and subtypes
+    * [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSOpaque.html com.google.gwt.jsio.client.JSOpaque] as a method parameter only.
 
-In the general case, there may be at most one {@link com.google.gwt.jsio.client.JSWrapper} associated with a {@link com.google.gwt.core.client.JavaScriptObject}. This allows the JSWrapper to maintain an object identity equivalent to that of the underlying !JavaScriptObject. This is done by adding an additional property, `__gwtObject`, to the !JavaScriptObject.
+In the general case, there may be at most one [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html com.google.gwt.jsio.client.JSWrapper] associated with a [http://google-web-toolkit.googlecode.com/svn/javadoc/1.4/com/google/gwt/core/client/JavaScriptObject.html com.google.gwt.core.client.JavaScriptObject JavaScriptObject]. This allows the JSWrapper to maintain an object identity equivalent to that of the underlying !JavaScriptObject. This is done by adding an additional property, `__gwtObject`, to the !JavaScriptObject.
 Annotations
 
 The behavior of the generated classes may be altered by the presence of various @gwt annotations.
 
 ||Annotation 	        ||Location 	||Description ||
-|| `gwt.beanProperties`    ||Class, Method || Indicates that methods that look like bean-style property setters (methods that begin with the prefix `get`, `set`, or `is`) should be generated so as to read and write object properties rather than import functions. This is most useful with JSON-style objects. The setting may by applied on a per-method basis in an imported class and may by overridden on a per-method basis by `gwt.imported`. If the backing object does not contain data for a property accessor, null, 0, ' ', false, or an empty {@link com.google.gwt.jsio.client.JSList} will be returned. ||
+|| `gwt.beanProperties`    ||Class, Method || Indicates that methods that look like bean-style property setters (methods that begin with the prefix `get`, `set`, or `is`) should be generated so as to read and write object properties rather than import functions. This is most useful with JSON-style objects. The setting may by applied on a per-method basis in an imported class and may by overridden on a per-method basis by `gwt.imported`. If the backing object does not contain data for a property accessor, null, 0, ' ', false, or an empty [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSList.html com.google.gwt.jsio.client.JSList] will be returned. ||
 || `gwt.constructor` 	||Class, Method  || The annotation `gwt.constructor` may be applied to a class to specify a !JavaScript function to execute when constructing a JSWrapper to use as the initial backing object. A !JavaScript Date object could be created by using the value $wnd.Date. If the gwt.constructor annotation is applied to a method within a JSWrapper and the method invoked, the parameters of the method will be passed to the named global function and the resulting !JavaScript object will be used as the backing object. ||
-|| `gwt.exported` 	||Method 	||Individual Java functions may be exported to !JavaScript callers by declaring a gwt.exported annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' !NamePolicy or a `gwt.fieldName` annotation on the method. When applied at the class level to a {@link com.google.gwt.jsio.client.JSFunction}, it specifies which of the methods declared within to type to export as a !JavaScript Function object.||
+|| `gwt.exported` 	||Method 	||Individual Java functions may be exported to !JavaScript callers by declaring a `gwt.exported` annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' !NamePolicy or a `gwt.fieldName` annotation on the method. When applied at the class level to a [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSFunction.html com.google.gwt.jsio.client.JSFunction], it specifies which of the methods declared within to type to export as a !JavaScript Function object.||
 || `gwt.fieldName` 	||Method 	||When implementing a bean property accessor, the default !NamePolicy will be used unless a `gwt.fieldName` annotation appears on the property's getter or setter. This is also used with imported and exported functions to specify the object property to attach to.||
 || `gwt.global` 	||Class 	||The annotation `gwt.global` is similar to gwt.constructor, however it may be applied only at the class level and the value is interpreted as a globally-accessible object name, rather than a function. ||
 || `gwt.imported` 	||Method 	||This is an override for methods within classes annotated with `gwt.beanProperties`.||
-|| `gwt.namePolicy` 	||Class 	||Specifies the default transformation to use when converting bean property accessor function names to fields on the underlying !JavaScriptObject. The valid values for the namePolicy are the field names on the {@link com.google.gwt.jsio.rebind.!NamePolicy} class, or the name of a class that implements !NamePolicy.||
-|| `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally, {@link com.google.gwt.jsio.client.JSWrapper#setJavaScriptObject} will no longer throw {@link com.google.gwt.jsio.client.MultipleWrapperException}.  ||
+|| `gwt.namePolicy` 	||Class 	||Specifies the default transformation to use when converting bean property accessor function names to fields on the underlying !JavaScriptObject. The valid values for the namePolicy are the field names on the `com.google.gwt.jsio.rebind.NamePolicy` class, or the name of a class that implements !NamePolicy.||
+|| `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally,  [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html#setJavaScriptObject() com.google.gwt.jsio.client.JSWrapper] com.google.gwt.jsio.client.JSWrapper.setJavaScriptObject()] will no longer throw [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/MultipleWrapperException.html com.google.gwt.jsio.client.MultipleWrapperException].  ||
 || `gwt.readOnly`	||Class 	||This prevents the generated JSWrapper implementation from containing any code that will modify the underlying !JavaScriptObject. This implies `gwt.noIdentity`. Invoking a bean-style getter when the underlying !JavaScriptObject does not contain a value for the property will result in undefined behavior. ||
 
 
@@ -317,7 +319,7 @@ public class __TextThingoImpl implements com.example.gwt.client.TextThingo {
 
 =JSFlyweightWrapper interface=
 
-The JSFlyweightWrapper generates code so that mutliple objects can share the same functions.  This cuts down on memory usage.
+The http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSFlyweightWrapper.html com.google.gwt.jsio.client.JSFlyweightWrapper] generates code so that mutliple objects can share the same functions.  This cuts down on memory usage.
 
 The tags are pretty much the same as JSWrapper, but you'll want to look at anything with a jsoPeer instance field.
 
@@ -333,7 +335,7 @@ New Methods:
 || `createPeer()` || Used to initialize the generated instance with a !JavaScript object. ||
 
 
-==Example JSFlyweightWrapper==
+== Example JSFlyweightWrapper ==
 
 
 The following example shows how to create a wrapper to the !TextThingo
@@ -426,3 +428,6 @@ public class __TextThingoFWImpl implements com.example.gwt.client.TextThingoFW {
 }
 }}}
 
+= Class Documentation =
+
+[http://gwt-api-interop.googlecode.com/svn/javadoc/index.html Javadoc Index]
