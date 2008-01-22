@@ -1,0 +1,195 @@
+#summary Example code using JSFlyweightWrapper
+ 
+= JSIO JSWrapper JSFlyweight Example code =
+
+The following example shows how to create a wrapper to the !TextThingo !JavaScript API above using the JSFlyweightWrapper interface and a constructor function.
+
+=== Interface definition ===
+
+The code is similar to the `JSWrapper` example, but a static instance of the generated class is created and stored within the Flyweight object.  Note that each accessor method contains a `JavaScriptObject` as the first parameter:
+
+{{{
+/**
+ * @gwt.beanProperties
+ */
+public interface TextThingoFW extends JSFlyweightWrapper {
+
+  public static final TextThingoFW impl = 
+    (TextThingoFW) GWT.create(TextThingoFW.class);
+  
+  /**
+   * @gwt.constructor $wnd.TextThingo
+   */
+  public JavaScriptObject construct(Element container, String value);
+
+  /* Automatically created bean method to access option property */
+  public String getTextValue(JavaScriptObject jsoPeer);
+
+  /* Automatically created bean method to access option property */
+  public void setTextValue(JavaScriptObject jsoPeer, String value);
+
+  /* Maps to the JavaScript start() function on the TextThingo object */
+  public void show(JavaScriptObject jsoPeer);
+}
+}}}
+
+
+=== Instantiating the Interface with Deferred Binding ===
+
+
+Now, to use the API, you access the generated instance through the
+`impl` static variable.  The constructor will return a native
+JavaScriptObject which you must use each time you wish to access the
+object. 
+
+{{{
+  private JavaScriptObject jsoPeer;
+
+  public void onModuleLoad() {
+    Panel s = new SimplePanel();
+    
+    // Create an instance of a TextThingo in JavaScript, store away the resulting
+    // JavaScript object for future calls through the TextThingoFW interface.
+    jsoPeer = TextThingoFW.impl.construct(s.getElement(), "Hello Flyweight World!");   
+    
+    TextThingoFW.impl.setTextValue(jsoPeer, "Goodbye Cruel Flyweight World!");
+    TextThingoFW.impl.show(jsoPeer);
+
+    // Add the panel containing the text thingo to the interface.
+    RootPanel.get("elementId").add(s);
+  }
+}}}
+
+== Using a callback with !JSFlyweightWrapper ==
+
+Consider the following !JavaScript API that takes a function as a parameter to some methods:
+
+=== !JavaScript API ===
+
+{{{
+// Example of a JavaScript API that requires a callback function
+
+// Constructor for the ThreeButton object
+// e - element ot attach the three buttons to
+// cb - callback to use whenever the buttons are pressed
+// button1Name - string to use for text in button 1
+// button2Name - string to use for text in button 2
+function TwoButton (e, cb, button1Name, button2Name) {
+
+  this.id = "TwoButton";
+  
+  this.button1 = document.createElement("button");
+  button1Name = 
+    button1Name !== undefined ? button1Name : "One";
+  this.button1.appendChild(document.createTextNode(button1Name));
+ 
+  this.button2 = document.createElement("button");
+  button2Name = 
+      button2Name !== undefined ? button2Name : "Two"; 
+  this.button2.name = this.button2.value;
+
+  this.button2.appendChild(document.createTextNode(button2Name));
+  
+  e.appendChild(this.button1);
+  e.appendChild(this.button2);
+  
+  this.addCallback(cb);
+}
+
+// Change the callback function
+// cb - callback to use whenever the buttons are pressed. 
+//      Replaces the previous setting
+TwoButton.prototype.addCallback = function (cb) {
+
+  // Create a closure to use to invoke the callback function.  
+  var meCb = function (buttonNumber) { cb (buttonNumber); };
+  this.button1.onclick = function () { meCb(1) };
+  this.button2.onclick = function () { meCb(2) };
+}
+
+}}}
+
+=== Interface Definition ===
+
+A JavaScript API that takes a function as a parameter requires creating a subclass of the `JSFunction` class.  The definition of `TwoButtonCallback` below allows the JavaScript API to invoke a Java function as a callback.
+
+Note that we are fortunate in this instance, as the callback function's parameters consists only of JSIO compatible types.  See the rules for which types are compatible in the description of the `JSWrapper` interface above.
+
+{{{
+/**
+ * A wrapper for the TwoButton JavaScript API.  This API requires
+ * a callback function which we wish to specify in Java.
+ */
+public interface TwoButtonFW extends JSFlyweightWrapper {
+
+  /**
+   * A definition of a callback class.  Must extend JSFunction
+   */
+  public abstract static class TwoButtonCallback extends JSFunction {
+    public abstract void callback (int buttonNumber);
+  }
+  
+  public static final TwoButtonFW impl = 
+    (TwoButtonFW) GWT.create(TwoButtonFW.class);
+  
+  /**
+   * @gwt.constructor $wnd.TwoButton
+   */
+  public JavaScriptObject construct(
+      Element container, TwoButtonCallback cb, String buttonOneText, 
+      String buttonTwoText);
+  
+  /**
+   * @gwt.beanProperties
+   */
+  public String getId(JavaScriptObject jsoPeer);
+  
+  public void addCallback (JavaScriptObject jsoPeer, TwoButtonCallback cb);
+  
+}
+}}}
+
+=== Instantiating the Interface ===
+
+The following code demonstrates how to use the TwoButtonFW interface:
+
+{{{
+/**
+ * This example shows how to use the wrapper class for the TwoButton JavaScript
+ * API.  It instantiates an instance of TwoButton.  Each time the callback is
+ * invoked, an alert window is display, then the callback is swaped between 
+ * cb1 and cb2.
+ */
+public class JSFlyweightWrapperCallbackExample implements EntryPoint {
+
+  private JavaScriptObject jsoPeer;
+  private TwoButtonCallback cb2;
+  private TwoButtonCallback cb1;
+
+  public void onModuleLoad() {
+    Panel s = new SimplePanel();
+
+    cb1 = new TwoButtonCallback() {
+      @Override
+      public void callback(int buttonNumber) {
+        Window.alert("Got TwoButton Callback for button: " + buttonNumber);
+        TwoButtonFW.impl.addCallback(jsoPeer, cb2);
+      }
+    };
+
+    cb2 = new TwoButtonCallback() {
+      @Override
+      public void callback(int buttonNumber) {
+        Window.alert("Replaced callback. Got button: " + buttonNumber);
+        TwoButtonFW.impl.addCallback(jsoPeer, cb1);
+      }
+    };
+
+    jsoPeer = TwoButtonFW.impl.construct(s.getElement(), cb1, "Button One (1)",
+        "Button Two (2)");
+
+    // Add the panel containing the TwoButton object to the interface.
+    RootPanel.get("elementId").add(s);
+  }
+}
+}}}
