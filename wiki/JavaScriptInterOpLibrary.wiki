@@ -1,4 +1,4 @@
-#summary The !JavaScript Interoperability (JSIO) library simplifies binding a !JavaScript API to GWT
+#summary The JavaScript Interoperability (JSIO) library simplifies binding a JavaScript API to GWT
 = Introduction =
 
 This document describes the !JavaScript Interoperability( JSIO) library for the Google Web Toolkit (GWT).  These classes are for importing existing !JavaScript APIs and exporting Java functions to be used !JavaScript code.
