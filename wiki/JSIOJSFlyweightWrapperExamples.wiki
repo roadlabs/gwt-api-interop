@@ -60,7 +60,7 @@ object.
   }
 }}}
 
-== Using a callback with !JSFlyweightWrapper ==
+== Using a callback with JSFlyweightWrapper ==
 
 Consider the following !JavaScript API that takes a function as a parameter to some methods:
 
