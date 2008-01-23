@@ -64,7 +64,7 @@ object.
 
 Consider the following !JavaScript API that takes a function as a parameter to some methods:
 
-=== !JavaScript API ===
+=== JavaScript API ===
 
 {{{
 // Example of a JavaScript API that requires a callback function
@@ -111,7 +111,7 @@ TwoButton.prototype.addCallback = function (cb) {
 
 === Interface Definition ===
 
-A JavaScript API that takes a function as a parameter requires creating a subclass of the `JSFunction` class.  The definition of `TwoButtonCallback` below allows the JavaScript API to invoke a Java function as a callback.
+A !JavaScript API that takes a function as a parameter requires creating a subclass of the `JSFunction` class.  The definition of `TwoButtonCallback` below allows the !JavaScript API to invoke a Java function as a callback.
 
 Note that we are fortunate in this instance, as the callback function's parameters consists only of JSIO compatible types.  See the rules for which types are compatible in the description of the `JSWrapper` interface above.
 
