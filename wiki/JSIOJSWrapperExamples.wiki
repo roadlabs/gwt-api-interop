@@ -190,17 +190,13 @@ A.prototype.myMethod = function (b) {
   window.alert(b.retrieveMessage());
 }
 
-function B () {
-  this.dummy = "bar";
-}
-
 //  Example invocation using the above API.
 //
 var count = 0;
 
 function invokeApi () {
   var a = new A();
-  var b = new B();
+  var b = new Object();
   b.retrieveMessage = function () { 
      count++; 
      return "Hello World! "+count; 
@@ -241,7 +237,7 @@ import com.google.gwt.jsio.client.JSWrapper;
 
 /**
  * 
- * @gwt.constructor $wnd.B
+ * @gwt.constructor Object
  *
  */
 public abstract class B implements JSWrapper {
