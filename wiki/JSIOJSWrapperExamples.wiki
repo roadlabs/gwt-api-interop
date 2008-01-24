@@ -10,20 +10,21 @@ The following examples demonstrate how to write an interface that maps onto a !J
 This simple example demonstrates how to access a property in a !JavaScript Object (JSO).
 
 {{{
-/*
- * HelloJSIO.java
- * A simple wrapper around a single !JavaScript object property named 'hello'
- */
+  /*
+   * HelloJSIO.java
+   * A simple wrapper around a single !JavaScript object property named 'hello'
+   */
 
-/**
- * @gwt.beanProperties
- */
-interface HelloWrapper extends JSWrapper {
-  public String getHello();
-}
-HelloWrapper hello = (HelloWrapper)GWT.create(HelloWrapper.class);
-hello.setJSONData("{hello:'Hello world'}");
-Window.alert(hello.getHello());
+  /**
+  * @gwt.beanProperties
+  */
+  interface HelloWrapper extends JSWrapper {
+    public String getHello();
+  }
+
+  HelloWrapper hello = (HelloWrapper)GWT.create(HelloWrapper.class);
+  hello.setJSONData("{hello:'Hello World!'}");
+  Window.alert(hello.getHello());
 }}}
 
 
