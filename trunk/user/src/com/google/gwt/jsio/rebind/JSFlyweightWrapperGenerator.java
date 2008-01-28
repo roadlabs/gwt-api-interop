@@ -66,6 +66,13 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
    */
   protected void setObjRef(FragmentGeneratorContext context, JMethod method)
       throws UnableToCompleteException {
+    JParameter[] paramList = method.getParameters();
+    if (paramList.length == 0) {
+      context.parentLogger.branch(TreeLogger.ERROR,
+          "No parameters specified for method "+ method.getName()
+              +"().  (First parameter must be a JavaScriptObject.)", null);
+      throw new UnableToCompleteException();
+    }
     JParameter param = method.getParameters()[0];
     JClassType paramType = param.getType().isClassOrInterface();
     JField f;
