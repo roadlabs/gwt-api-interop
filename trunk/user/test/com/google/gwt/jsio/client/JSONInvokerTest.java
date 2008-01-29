@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -50,57 +50,57 @@ public class JSONInvokerTest extends GWTTestCase {
      * These functions test using variable numbers of parameters to the same
      * underlying JS function.
      */
-    public int add(int toAdd);
+    int add(int toAdd);
 
-    public int add(int toAdd, int second);
+    int add(int toAdd, int second);
 
     /**
      * @gwt.constructor $wnd.Hello
      */
-    public HelloWrapper constructor(String param1, int param2);
+    HelloWrapper constructor(String param1, int param2);
 
-    public int getHello();
+    int getHello();
     
     /**
      * @gwt.imported true
      * @gwt.fieldName returnUndefined
      */
-    public Integer getIntegerAsUndefined();
+    Integer getIntegerAsUndefined();
 
     /**
      * @gwt.typeArgs <java.lang.Integer>
      */
-    public JSList getNumbers();
+    JSList getNumbers();
 
-    public String getParam1();
+    String getParam1();
 
-    public int getParam2();
+    int getParam2();
 
     /**
      * Test that the function returned from a JSFunction is the same object
      * between invocations.
      */
-    public boolean identityEquals(HelloCallbackInt a, HelloCallbackInt b);
+    boolean identityEquals(HelloCallbackInt a, HelloCallbackInt b);
 
-    public boolean identityEquals(JSWrapper a, JSWrapper b);
+    boolean identityEquals(JSWrapper a, JSWrapper b);
 
-    public void increment();
+    void increment();
 
     /**
      * Test that a JSWrapper can be passed through and returned from a native
      * code block.
      */
-    public HelloWrapper passthrough(HelloWrapper w);
+    HelloWrapper passthrough(HelloWrapper w);
 
-    public OtherWrapper passthrough(OtherWrapper w);
+    OtherWrapper passthrough(OtherWrapper w);
 
-    public StatefulWrapper passthrough(StatefulWrapper w);
+    StatefulWrapper passthrough(StatefulWrapper w);
 
     /**
      * @gwt.typeArgs arr <java.lang.Integer>
      * @gwt.typeArgs <java.lang.Integer>
      */
-    public JSList reverseNumbers(JSList arr);
+    JSList reverseNumbers(JSList arr);
 
     /**
      * Don't implement this as a bean function, but make a call out to the js
@@ -108,21 +108,21 @@ public class JSONInvokerTest extends GWTTestCase {
      * 
      * @gwt.imported true
      */
-    public void setHello(int hello);
+    void setHello(int hello);
 
     /**
      * Alias test.
      * 
      * @gwt.fieldName sub
      */
-    public int subtract(int toSubtract);
+    int subtract(int toSubtract);
 
-    public int testCallback(int a, int b, HelloCallbackInt c);
+    int testCallback(int a, int b, HelloCallbackInt c);
 
     /**
      * @gwt.fieldName testCallback
      */
-    public Integer testCallbackBoxed(Integer a, Integer b,
+    Integer testCallbackBoxed(Integer a, Integer b,
         HelloCallbackInteger c);
   }
 
@@ -133,7 +133,7 @@ public class JSONInvokerTest extends GWTTestCase {
     /**
      * @gwt.import
      */
-    public void missingMethod();
+    void missingMethod();
   }
 
   /**

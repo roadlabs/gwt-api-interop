@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,7 @@ class FragmentGeneratorOracle {
       TypeOracle oracle, JType type) throws UnableToCompleteException {
 
     for (Iterator i = fragmentGenerators.iterator(); i.hasNext();) {
-      FragmentGenerator g = (FragmentGenerator)i.next();
+      FragmentGenerator g = (FragmentGenerator) i.next();
 
       if (g.accepts(oracle, type)) {
         return g;

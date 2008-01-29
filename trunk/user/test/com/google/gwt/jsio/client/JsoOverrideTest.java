@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,7 +35,7 @@ public class JsoOverrideTest extends GWTTestCase {
    * SubtractOverride class is implemented as a utility class.
    */
   static interface FlyweightMathLib extends JSFlyweightWrapper {
-    public int add(JavaScriptObject jso, int a, int b);
+    int add(JavaScriptObject jso, int a, int b);
 
     /**
      * The MultiplyOverride is written with instance methods, so it's necessary
@@ -44,7 +44,7 @@ public class JsoOverrideTest extends GWTTestCase {
      * 
      * @gwt.binding
      */
-    public void bindMultiply(JavaScriptObject jso, MultiplyOverride multiplier);
+    void bindMultiply(JavaScriptObject jso, MultiplyOverride multiplier);
 
     /**
      * Because the SubtractOverride is a static utility class, we don't need to
@@ -54,16 +54,16 @@ public class JsoOverrideTest extends GWTTestCase {
      * 
      * @gwt.binding com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride
      */
-    public void bindSubtract(JavaScriptObject jso);
+    void bindSubtract(JavaScriptObject jso);
 
     /**
      * @gwt.global $wnd.MathLib.constructor.prototype
      */
-    public JavaScriptObject construct();
+    JavaScriptObject construct();
 
-    public int multiply(JavaScriptObject jso, int a, int b);
+    int multiply(JavaScriptObject jso, int a, int b);
 
-    public int subtract(JavaScriptObject jso, int a, int b);
+    int subtract(JavaScriptObject jso, int a, int b);
   }
 
   /**
