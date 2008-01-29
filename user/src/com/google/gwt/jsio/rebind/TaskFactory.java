@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,43 +45,43 @@ public class TaskFactory {
      * Specifies the base interface type so that it will be ignored by
      * {@link #extractMethods()}.
      */
-    public Collection getOperableMethods(TypeOracle oracle, JClassType clazz);
+    Collection getOperableMethods(TypeOracle oracle, JClassType clazz);
 
     /**
      * Exporting methods via a flyweight interface is done by binding an
      * instance of a type (or just the static methods of a type) to a JSO.
      */
-    public boolean shouldBind(TypeOracle oracle, JMethod m);
+    boolean shouldBind(TypeOracle oracle, JMethod m);
 
     /**
      * Determines if a method should be treated as an invocation of an
      * underlying JavaScript constructor function.
      */
-    public boolean shouldConstruct(TypeOracle oracle, JMethod m);
+    boolean shouldConstruct(TypeOracle oracle, JMethod m);
 
     /**
      * Determines if the generator should generate an export binding for the
      * method.
      */
-    public boolean shouldExport(TypeOracle oracle, JMethod m);
+    boolean shouldExport(TypeOracle oracle, JMethod m);
 
     /**
      * Determines if the generator should implement a particular method. A
      * method will be implemented only if it is abstract and defined in a class
      * derived from JSWrapper
      */
-    public boolean shouldImplement(TypeOracle oracle, JMethod m);
+    boolean shouldImplement(TypeOracle oracle, JMethod m);
 
     /**
      * Determines if the generator should generate an import binding for the
      * method.
      */
-    public boolean shouldImport(TypeOracle oracle, JMethod m);
+    boolean shouldImport(TypeOracle oracle, JMethod m);
   }
 
   /**
-   * This policy only checks to see if methods are tagged with gwt.exported.
-   * All other methods will be ignored under this policy.
+   * This policy only checks to see if methods are tagged with gwt.exported. All
+   * other methods will be ignored under this policy.
    */
   private static class ExporterPolicy implements Policy {
     public Collection getOperableMethods(TypeOracle oracle, JClassType clazz) {
@@ -100,7 +100,7 @@ public class TaskFactory {
 
         for (Iterator j = Arrays.asList(clazz.getMethods()).iterator(); j.hasNext();) {
           JMethod m = (JMethod) j.next();
-          
+
           // We add a stripped declaration so that changes which don't affect
           // the overall signature will be overwritten by the methods in the
           // leaf type.
@@ -132,10 +132,10 @@ public class TaskFactory {
       return false;
     }
   }
-  
+
   /**
    * A variation on WrapperPolicy that handles the different signatures of
-   * flyweight-style methods.  Adds binding tasks.
+   * flyweight-style methods. Adds binding tasks.
    */
   private static class FlyweightPolicy extends WrapperPolicy {
     public boolean shouldBind(TypeOracle typeOracle, JMethod method) {
@@ -254,6 +254,7 @@ public class TaskFactory {
 
   /**
    * Populate propertyAccessors from an array of JMethods.
+   * 
    * @return A Map of Strings to Tasks.
    */
   public static Map extractMethods(TreeLogger logger, TypeOracle typeOracle,
@@ -377,7 +378,7 @@ public class TaskFactory {
       return pair;
     }
   }
-  
+
   /**
    * Utility class.
    */

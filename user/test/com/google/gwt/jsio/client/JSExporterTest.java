@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,12 +73,12 @@ public class JSExporterTest extends GWTTestCase {
      * 
      * @gwt.binding
      */
-    public void bind(JavaScriptObject obj, MathMethods m);
+    void bind(JavaScriptObject obj, MathMethods m);
 
     /**
      * @gwt.constructor Object
      */
-    public JavaScriptObject construct();
+    JavaScriptObject construct();
   }
 
   static class MathImpl implements MathMethods {
@@ -113,28 +113,28 @@ public class JSExporterTest extends GWTTestCase {
     /**
      * @gwt.exported
      */
-    public int add(int a, int b);
+    int add(int a, int b);
 
     /**
      * @gwt.exported
      * @gwt.fieldName sub
      */
-    public int subtract(int a, int b);
+    int subtract(int a, int b);
 
     /**
      * @gwt.exported
      * @gwt.typeArgs numbers <java.lang.Integer>
      */
-    public int sum(JSList numbers);
+    int sum(JSList numbers);
   }
 
   static interface MissingMethodInterface extends JSFlyweightWrapper {
     /**
      * @gwt.binding
      */
-    public void bind(JavaScriptObject jso);
+    void bind(JavaScriptObject jso);
 
-    public void missingMethod(JavaScriptObject jso);
+    void missingMethod(JavaScriptObject jso);
   }
 
   /**
@@ -146,16 +146,15 @@ public class JSExporterTest extends GWTTestCase {
       /**
        * @gwt.binding
        */
-      public void bind(JavaScriptObject obj, SimpleList list);
+      void bind(JavaScriptObject obj, SimpleList list);
 
       /**
        * @gwt.constructor $wnd.Object
        */
-      public JavaScriptObject create();
+      JavaScriptObject create();
     }
 
-    private static final SimpleListFlyweight flyweight =
-        (SimpleListFlyweight) GWT.create(SimpleListFlyweight.class);
+    private static final SimpleListFlyweight flyweight = (SimpleListFlyweight) GWT.create(SimpleListFlyweight.class);
     private final SimpleList next;
 
     private final int value;
@@ -219,16 +218,14 @@ public class JSExporterTest extends GWTTestCase {
   }
 
   public void testAdd() {
-    ExportedMethods export =
-        (ExportedMethods) GWT.create(ExportedMethods.class);
+    ExportedMethods export = (ExportedMethods) GWT.create(ExportedMethods.class);
     JavaScriptObject obj = export.getJavaScriptObject();
 
     testAddJSO(obj);
   }
 
   public void testAddFlyweight() {
-    MathFlyweightWrapper wrapper =
-        (MathFlyweightWrapper) GWT.create(MathFlyweightWrapper.class);
+    MathFlyweightWrapper wrapper = (MathFlyweightWrapper) GWT.create(MathFlyweightWrapper.class);
     MathImpl impl = new MathImpl();
 
     JavaScriptObject jso = wrapper.construct();
@@ -257,8 +254,7 @@ public class JSExporterTest extends GWTTestCase {
     SimpleListWrapper start = null;
 
     for (int i = 0; i < 6; i++) {
-      SimpleListWrapper previous =
-          (SimpleListWrapper) GWT.create(SimpleListWrapper.class);
+      SimpleListWrapper previous = (SimpleListWrapper) GWT.create(SimpleListWrapper.class);
       previous.setNext(start);
       previous.setValue(i);
       start = previous;
@@ -277,9 +273,8 @@ public class JSExporterTest extends GWTTestCase {
       // This test does not make sense in web mode because there are no asserts
       return;
     }
-    
-    MissingMethodInterface i =
-        (MissingMethodInterface) GWT.create(MissingMethodInterface.class);
+
+    MissingMethodInterface i = (MissingMethodInterface) GWT.create(MissingMethodInterface.class);
     try {
       i.bind(createObject());
       fail("Should have failed on an assertion.  Did you run with -ea?");
@@ -289,8 +284,7 @@ public class JSExporterTest extends GWTTestCase {
   }
 
   public void testSub() {
-    ExportedMethods export =
-        (ExportedMethods) GWT.create(ExportedMethods.class);
+    ExportedMethods export = (ExportedMethods) GWT.create(ExportedMethods.class);
     JavaScriptObject obj = export.getJavaScriptObject();
 
     assertTrue(testMethod(obj, "sub"));
@@ -299,14 +293,12 @@ public class JSExporterTest extends GWTTestCase {
   }
 
   public void testSum() {
-    ExportedMethods export =
-        (ExportedMethods) GWT.create(ExportedMethods.class);
+    ExportedMethods export = (ExportedMethods) GWT.create(ExportedMethods.class);
     assertEquals(15, invokeSum(export.getJavaScriptObject()));
   }
 
   public void testSumFlyweight() {
-    MathFlyweightWrapper wrapper =
-        (MathFlyweightWrapper) GWT.create(MathFlyweightWrapper.class);
+    MathFlyweightWrapper wrapper = (MathFlyweightWrapper) GWT.create(MathFlyweightWrapper.class);
     MathImpl impl = new MathImpl();
 
     JavaScriptObject jso = wrapper.construct();

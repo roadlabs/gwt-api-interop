@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,92 +29,92 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface PrimitiveInterface extends JSFlyweightWrapper {
-    
+
     /**
      * @gwt.constructor Object
      */
-    public JavaScriptObject construct();
+    JavaScriptObject construct();
 
-    public Boolean getBoxedBoolean(JavaScriptObject jso);
+    Boolean getBoxedBoolean(JavaScriptObject jso);
 
-    public Byte getBoxedByte(JavaScriptObject jso);
+    Byte getBoxedByte(JavaScriptObject jso);
 
-    public Character getBoxedChar(JavaScriptObject jso);
+    Character getBoxedChar(JavaScriptObject jso);
 
-    public Double getBoxedDouble(JavaScriptObject jso);
+    Double getBoxedDouble(JavaScriptObject jso);
 
-    public Float getBoxedFloat(JavaScriptObject jso);
+    Float getBoxedFloat(JavaScriptObject jso);
 
-    public Integer getBoxedInt(JavaScriptObject jso);
+    Integer getBoxedInt(JavaScriptObject jso);
 
-    public Long getBoxedLong(JavaScriptObject jso);
+    Long getBoxedLong(JavaScriptObject jso);
 
-    public Short getBoxedShort(JavaScriptObject jso);
+    Short getBoxedShort(JavaScriptObject jso);
 
-    public String getHello(JavaScriptObject jso);
+    String getHello(JavaScriptObject jso);
 
-    public boolean getUnboxedBoolean(JavaScriptObject jso);
+    boolean getUnboxedBoolean(JavaScriptObject jso);
 
-    public byte getUnboxedByte(JavaScriptObject jso);
+    byte getUnboxedByte(JavaScriptObject jso);
 
-    public char getUnboxedChar(JavaScriptObject jso);
+    char getUnboxedChar(JavaScriptObject jso);
 
-    public double getUnboxedDouble(JavaScriptObject jso);
+    double getUnboxedDouble(JavaScriptObject jso);
 
-    public float getUnboxedFloat(JavaScriptObject jso);
+    float getUnboxedFloat(JavaScriptObject jso);
 
-    public int getUnboxedInt(JavaScriptObject jso);
+    int getUnboxedInt(JavaScriptObject jso);
 
-    public long getUnboxedLong(JavaScriptObject jso);
+    long getUnboxedLong(JavaScriptObject jso);
 
-    public short getUnboxedShort(JavaScriptObject jso);
+    short getUnboxedShort(JavaScriptObject jso);
 
-    public void setBoxedBoolean(JavaScriptObject jso, Boolean value);
+    void setBoxedBoolean(JavaScriptObject jso, Boolean value);
 
-    public void setBoxedByte(JavaScriptObject jso, Byte value);
+    void setBoxedByte(JavaScriptObject jso, Byte value);
 
-    public void setBoxedChar(JavaScriptObject jso, Character value);
+    void setBoxedChar(JavaScriptObject jso, Character value);
 
-    public void setBoxedDouble(JavaScriptObject jso, Double value);
+    void setBoxedDouble(JavaScriptObject jso, Double value);
 
-    public void setBoxedFloat(JavaScriptObject jso, Float value);
+    void setBoxedFloat(JavaScriptObject jso, Float value);
 
-    public void setBoxedInt(JavaScriptObject jso, Integer value);
+    void setBoxedInt(JavaScriptObject jso, Integer value);
 
-    public void setBoxedLong(JavaScriptObject jso, Long value);
+    void setBoxedLong(JavaScriptObject jso, Long value);
 
-    public void setBoxedShort(JavaScriptObject jso, Short value);
+    void setBoxedShort(JavaScriptObject jso, Short value);
 
-    public void setHello(JavaScriptObject jso, String hello);
+    void setHello(JavaScriptObject jso, String hello);
 
-    public void setUnboxedBoolean(JavaScriptObject jso, boolean value);
+    void setUnboxedBoolean(JavaScriptObject jso, boolean value);
 
-    public void setUnboxedByte(JavaScriptObject jso, byte value);
+    void setUnboxedByte(JavaScriptObject jso, byte value);
 
-    public void setUnboxedChar(JavaScriptObject jso, char value);
+    void setUnboxedChar(JavaScriptObject jso, char value);
 
-    public void setUnboxedDouble(JavaScriptObject jso, double value);
+    void setUnboxedDouble(JavaScriptObject jso, double value);
 
-    public void setUnboxedFloat(JavaScriptObject jso, float value);
+    void setUnboxedFloat(JavaScriptObject jso, float value);
 
-    public void setUnboxedInt(JavaScriptObject jso, int value);
+    void setUnboxedInt(JavaScriptObject jso, int value);
 
-    public void setUnboxedLong(JavaScriptObject jso, long value);
+    void setUnboxedLong(JavaScriptObject jso, long value);
 
-    public void setUnboxedShort(JavaScriptObject jso, short value);
+    void setUnboxedShort(JavaScriptObject jso, short value);
   }
 
   static interface ConstructedInterface extends JSFlyweightWrapper {
     /**
      * @gwt.constructor $wnd.ConstructedObject
      */
-    public JavaScriptObject construct(String a, int b, Tree t);
+    JavaScriptObject construct(String a, int b, Tree t);
 
-    public int getInt(JavaScriptObject obj);
+    int getInt(JavaScriptObject obj);
 
-    public String getString(JavaScriptObject obj);
-    
-    public Tree getTree(JavaScriptObject obj);
+    String getString(JavaScriptObject obj);
+
+    Tree getTree(JavaScriptObject obj);
   }
 
   static class Tree {
@@ -172,24 +172,24 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     /**
      * @gwt.binding
      */
-    public void bind(JavaScriptObject jso, Tree node);
+    void bind(JavaScriptObject jso, Tree node);
 
     /**
      * @gwt.constructor Object
      */
-    public abstract JavaScriptObject construct();
+    abstract JavaScriptObject construct();
 
-    public abstract Tree getLeft(Tree parent);
+    abstract Tree getLeft(Tree parent);
 
-    public abstract Tree getRight(Tree parent);
+    abstract Tree getRight(Tree parent);
 
-    public abstract int getValue(Tree node);
+    abstract int getValue(Tree node);
 
-    public abstract void setLeft(Tree parent, Tree left);
+    abstract void setLeft(Tree parent, Tree left);
 
-    public abstract void setRight(Tree parent, Tree right);
+    abstract void setRight(Tree parent, Tree right);
 
-    public abstract void setValue(Tree node, int value);
+    abstract void setValue(Tree node, int value);
   }
 
   public String getModuleName() {
@@ -225,12 +225,12 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   public void testConstructor() {
     // Build the constructor function and attach it to the Window.
     makeConstructedObject();
-    
+
     Tree tree = new Tree();
     tree.setValue(42);
-    
+
     ConstructedInterface ci = (ConstructedInterface) GWT.create(ConstructedInterface.class);
-    
+
     JavaScriptObject jso = ci.construct("Hello world", 42, tree);
     assertEquals("Hello world", ci.getString(jso));
     assertEquals(42, ci.getInt(jso));

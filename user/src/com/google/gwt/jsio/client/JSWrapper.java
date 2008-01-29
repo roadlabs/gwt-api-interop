@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,20 +20,22 @@ import com.google.gwt.jsio.client.impl.Extractor;
 
 /**
  * Automatically generates Java/JavaScript interface linkages.
+ * 
  * @see <a href="package-summary.html#package_description">JSIO reference</a>
  */
 public interface JSWrapper {
 
   /**
    * Used by JSList.
+   * 
    * @skip
    */
-  public Extractor getExtractor();
-  
+  Extractor getExtractor();
+
   /**
    * Return the JavaScriptObject that is backing the wrapper.
    */
-  public JavaScriptObject getJavaScriptObject();
+  JavaScriptObject getJavaScriptObject();
 
   /**
    * Set the JavaScriptObject to be wrapped by the generated class.
@@ -44,12 +46,12 @@ public interface JSWrapper {
    */
   // The JSWrapper instance is returned because it allows wrapper creation
   // in the generated classes to be a one-liner. See JSWrapperFragmentGenerator.
-  public JSWrapper setJavaScriptObject(JavaScriptObject obj)
+  JSWrapper setJavaScriptObject(JavaScriptObject obj)
       throws MultipleWrapperException;
 
   /**
    * Convenience setter for wrapping JSON data. The data will be parsed and
    * wrapped by the instance of the JSWrapper
    */
-  public void setJSONData(String data) throws JSONWrapperException;
+  void setJSONData(String data) throws JSONWrapperException;
 }

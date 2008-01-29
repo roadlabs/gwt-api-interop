@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -34,47 +34,47 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.namePolicy com.google.gwt.jsio.rebind.TestNamePolicy
    */
   static interface ClassPolicyNamedInterface extends JSWrapper {
-    public String getHello();
+    String getHello();
 
-    public void setHello(String hello);
+    void setHello(String hello);
   }
 
   /**
    * @gwt.beanProperties
    */
   static interface ListInterface extends JSWrapper {
-    public int getBasicInt();
+    int getBasicInt();
 
     /**
      * @gwt.typeArgs <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
      */
-    public JSList getPartialWrappers();
+    JSList getPartialWrappers();
 
     /**
      * @gwt.typeArgs <java.lang.Integer>
      */
-    public JSList getRank1();
+    JSList getRank1();
 
     /**
      * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<java.lang.Integer>>
      */
-    public JSList getRank2();
+    JSList getRank2();
 
     /**
      * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<com.google.gwt.jsio.client.JSList<java.lang.Integer>>>
      */
-    public JSList getRank3();
+    JSList getRank3();
 
     /**
      * @gwt.typeArgs <java.lang.String>
      */
-    public JSList getString1();
+    JSList getString1();
 
     /**
      * @gwt.typeArgs list
      *               <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
      */
-    public void setPartialWrappers(JSList list);
+    void setPartialWrappers(JSList list);
   }
 
   /**
@@ -86,9 +86,9 @@ public class JSONWrapperTest extends GWTTestCase {
     /**
      * @gwt.fieldName HELLO
      */
-    public String getHello();
+    String getHello();
 
-    public void setHello(String hello);
+    void setHello(String hello);
   }
 
   /**
@@ -121,9 +121,9 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.namePolicy upper
    */
   static interface PolicyNamedInterface extends JSWrapper {
-    public String getHello();
+    String getHello();
 
-    public void setHello(String hello);
+    void setHello(String hello);
   }
 
   /**
@@ -132,73 +132,73 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface PrimitiveInterface extends JSWrapper {
-    public Boolean getBoxedBoolean();
+    Boolean getBoxedBoolean();
 
-    public Byte getBoxedByte();
+    Byte getBoxedByte();
 
-    public Character getBoxedChar();
+    Character getBoxedChar();
 
-    public Double getBoxedDouble();
+    Double getBoxedDouble();
 
-    public Float getBoxedFloat();
+    Float getBoxedFloat();
 
-    public Integer getBoxedInt();
+    Integer getBoxedInt();
 
-    public Long getBoxedLong();
+    Long getBoxedLong();
 
-    public Short getBoxedShort();
+    Short getBoxedShort();
 
-    public String getHello();
+    String getHello();
 
-    public boolean getUnboxedBoolean();
+    boolean getUnboxedBoolean();
 
-    public byte getUnboxedByte();
+    byte getUnboxedByte();
 
-    public char getUnboxedChar();
+    char getUnboxedChar();
 
-    public double getUnboxedDouble();
+    double getUnboxedDouble();
 
-    public float getUnboxedFloat();
+    float getUnboxedFloat();
 
-    public int getUnboxedInt();
+    int getUnboxedInt();
 
-    public long getUnboxedLong();
+    long getUnboxedLong();
 
-    public short getUnboxedShort();
+    short getUnboxedShort();
 
-    public void setBoxedBoolean(Boolean value);
+    void setBoxedBoolean(Boolean value);
 
-    public void setBoxedByte(Byte value);
+    void setBoxedByte(Byte value);
 
-    public void setBoxedChar(Character value);
+    void setBoxedChar(Character value);
 
-    public void setBoxedDouble(Double value);
+    void setBoxedDouble(Double value);
 
-    public void setBoxedFloat(Float value);
+    void setBoxedFloat(Float value);
 
-    public void setBoxedInt(Integer value);
+    void setBoxedInt(Integer value);
 
-    public void setBoxedLong(Long value);
+    void setBoxedLong(Long value);
 
-    public void setBoxedShort(Short value);
+    void setBoxedShort(Short value);
 
-    public void setHello(String hello);
+    void setHello(String hello);
 
-    public void setUnboxedBoolean(boolean value);
+    void setUnboxedBoolean(boolean value);
 
-    public void setUnboxedByte(byte value);
+    void setUnboxedByte(byte value);
 
-    public void setUnboxedChar(char value);
+    void setUnboxedChar(char value);
 
-    public void setUnboxedDouble(double value);
+    void setUnboxedDouble(double value);
 
-    public void setUnboxedFloat(float value);
+    void setUnboxedFloat(float value);
 
-    public void setUnboxedInt(int value);
+    void setUnboxedInt(int value);
 
-    public void setUnboxedLong(long value);
+    void setUnboxedLong(long value);
 
-    public void setUnboxedShort(short value);
+    void setUnboxedShort(short value);
   }
 
   /**
@@ -209,6 +209,7 @@ public class JSONWrapperTest extends GWTTestCase {
    */
   abstract static class ReadOnlyInterface implements JSWrapper {
     public abstract String getHello();
+
     /**
      * @gwt.typeArgs <java.lang.Integer>
      */
@@ -222,7 +223,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.noIdentity
    */
   static interface SetterOnly extends JSWrapper {
-    public void setHello(String hello);
+    void setHello(String hello);
   }
 
   /**
@@ -236,17 +237,17 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    */
   static interface TreeInterface extends JSWrapper {
-    public TreeInterface getLeft();
+    TreeInterface getLeft();
 
-    public TreeInterface getRight();
+    TreeInterface getRight();
 
-    public int getValue();
+    int getValue();
 
-    public void setLeft(TreeInterface ti);
+    void setLeft(TreeInterface ti);
 
-    public void setRight(TreeInterface ti);
+    void setRight(TreeInterface ti);
 
-    public void setValue(int value);
+    void setValue(int value);
   }
 
   /**
@@ -257,12 +258,11 @@ public class JSONWrapperTest extends GWTTestCase {
   /**
    * Represents nested array data.
    */
-  private static final String ARRAY_DATA =
-      "{" + "basicInt: 0, " + "rank1: " + makeJsonArray(1) + ", " + "rank2: "
-          + makeJsonArray(2) + ", " + "rank3: " + makeJsonArray(3) + ", "
-          + "string1: ['this', 'is', 'a', 'test']" + ", "
-          + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]"
-          + "}";
+  private static final String ARRAY_DATA = "{" + "basicInt: 0, " + "rank1: "
+      + makeJsonArray(1) + ", " + "rank2: " + makeJsonArray(2) + ", "
+      + "rank3: " + makeJsonArray(3) + ", "
+      + "string1: ['this', 'is', 'a', 'test']" + ", "
+      + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]" + "}";
 
   /**
    * Create a json array of specified rank. Each level will contain
@@ -293,32 +293,30 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testBoxedSetters() {
-    PrimitiveInterface ti =
-        (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface ti = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(ti != null);
 
     ti.setBoxedBoolean(Boolean.TRUE);
-    ti.setBoxedByte(new Byte((byte)0x42));
+    ti.setBoxedByte(new Byte((byte) 0x42));
     ti.setBoxedChar(new Character('A'));
     ti.setBoxedDouble(new Double(Math.PI));
-    ti.setBoxedFloat(new Float((float)Math.E));
+    ti.setBoxedFloat(new Float((float) Math.E));
     ti.setBoxedInt(new Integer(42));
     ti.setBoxedLong(new Long(43));
-    ti.setBoxedShort(new Short((short)44));
+    ti.setBoxedShort(new Short((short) 44));
 
     assertEquals(Boolean.TRUE, ti.getBoxedBoolean());
-    assertEquals(new Byte((byte)0x42), ti.getBoxedByte());
+    assertEquals(new Byte((byte) 0x42), ti.getBoxedByte());
     assertEquals(new Character('A'), ti.getBoxedChar());
     assertEquals(new Double(Math.PI), ti.getBoxedDouble());
-    assertEquals(new Float((float)Math.E), ti.getBoxedFloat());
+    assertEquals(new Float((float) Math.E), ti.getBoxedFloat());
     assertEquals(new Integer(42), ti.getBoxedInt());
     assertEquals(new Long(43), ti.getBoxedLong());
-    assertEquals(new Short((short)44), ti.getBoxedShort());
+    assertEquals(new Short((short) 44), ti.getBoxedShort());
   }
 
   public void testClassPolicyNamedObject() throws JSONWrapperException {
-    ClassPolicyNamedInterface ni =
-        (ClassPolicyNamedInterface)GWT.create(ClassPolicyNamedInterface.class);
+    ClassPolicyNamedInterface ni = (ClassPolicyNamedInterface) GWT.create(ClassPolicyNamedInterface.class);
 
     ni.setJSONData("{test:\"Hello world\"}");
 
@@ -329,7 +327,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * Test accessors of nested Lists of varying parameter types.
    */
   public void testListGetters() throws JSONWrapperException {
-    ListInterface ai = (ListInterface)GWT.create(ListInterface.class);
+    ListInterface ai = (ListInterface) GWT.create(ListInterface.class);
     assertNotNull(ai.getRank1());
 
     ai.setJSONData(ARRAY_DATA);
@@ -368,7 +366,7 @@ public class JSONWrapperTest extends GWTTestCase {
     for (int i = 0; i < ARRAY_INT.length; i++) {
       for (int j = 0; j < ARRAY_INT.length; j++) {
         assertEquals("rank2, index " + j, new Integer(ARRAY_INT[j]),
-            ((List)rank2.get(i)).get(j));
+            ((List) rank2.get(i)).get(j));
       }
     }
 
@@ -379,31 +377,31 @@ public class JSONWrapperTest extends GWTTestCase {
       for (int j = 0; j < ARRAY_INT.length; j++) {
         for (int k = 0; k < ARRAY_INT.length; k++) {
           assertEquals("rank3, index " + k, new Integer(ARRAY_INT[k]),
-              ((List)((List)rank3.get(i)).get(j)).get(k));
+              ((List) ((List) rank3.get(i)).get(j)).get(k));
         }
       }
     }
 
     List partialWrappers = ai.getPartialWrappers();
-    assertEquals(2, ((PartialWrapper)partialWrappers.get(0)).multiply());
-    assertEquals(12, ((PartialWrapper)partialWrappers.get(1)).multiply());
-    assertEquals(30, ((PartialWrapper)partialWrappers.get(2)).multiply());
+    assertEquals(2, ((PartialWrapper) partialWrappers.get(0)).multiply());
+    assertEquals(12, ((PartialWrapper) partialWrappers.get(1)).multiply());
+    assertEquals(30, ((PartialWrapper) partialWrappers.get(2)).multiply());
   }
 
   public void testListInitialState() throws JSONWrapperException {
-    ListInterface ai = (ListInterface)GWT.create(ListInterface.class);
+    ListInterface ai = (ListInterface) GWT.create(ListInterface.class);
     assertNotNull(ai.getRank1());
     assertEquals(0, ai.getRank1().size());
   }
 
   public void testListSetters() {
-    ListInterface ai = (ListInterface)GWT.create(ListInterface.class);
+    ListInterface ai = (ListInterface) GWT.create(ListInterface.class);
 
     List wrappers = ai.getPartialWrappers();
     int a = 1;
     int b = 2;
     for (int i = 0; i < 10; i++) {
-      PartialWrapper pw = (PartialWrapper)GWT.create(PartialWrapper.class);
+      PartialWrapper pw = (PartialWrapper) GWT.create(PartialWrapper.class);
       pw.setA(a++);
       pw.setB(b++);
 
@@ -412,36 +410,36 @@ public class JSONWrapperTest extends GWTTestCase {
 
     a = 1;
     b = 2;
-    // Intential call to getPW() to ensure that this behavior works correctly
+    // Intentional call to getPW() to ensure that this behavior works correctly
     for (Iterator i = ai.getPartialWrappers().iterator(); i.hasNext();) {
-      PartialWrapper pw = (PartialWrapper)i.next();
+      PartialWrapper pw = (PartialWrapper) i.next();
       assertEquals(a++ * b++, pw.multiply());
     }
 
     // Make sure that setJSList() works as expected
-    ListInterface ai2 = (ListInterface)GWT.create(ListInterface.class);
+    ListInterface ai2 = (ListInterface) GWT.create(ListInterface.class);
     ai2.setPartialWrappers(ai.getPartialWrappers());
     a = 1;
     b = 2;
     for (Iterator i = ai2.getPartialWrappers().iterator(); i.hasNext();) {
-      PartialWrapper pw = (PartialWrapper)i.next();
+      PartialWrapper pw = (PartialWrapper) i.next();
       assertEquals(a++ * b++, pw.multiply());
     }
 
     // Mutate original and see if it's reflected in secondary.
-    PartialWrapper pw = (PartialWrapper)wrappers.get(0);
+    PartialWrapper pw = (PartialWrapper) wrappers.get(0);
     pw.setA(10);
     pw.setB(10);
-    assertEquals(pw.multiply(),
-        ((PartialWrapper)ai2.getPartialWrappers().get(0)).multiply());
-    
+    assertEquals(pw.multiply(), ((PartialWrapper) ai2.getPartialWrappers().get(
+        0)).multiply());
+
     ai2.setPartialWrappers(null);
     assertNull(ai2.getPartialWrappers());
   }
 
   public void testMultipleWrapperException() {
-    NamedInterface ni = (NamedInterface)GWT.create(NamedInterface.class);
-    NamedInterface ni2 = (NamedInterface)GWT.create(NamedInterface.class);
+    NamedInterface ni = (NamedInterface) GWT.create(NamedInterface.class);
+    NamedInterface ni2 = (NamedInterface) GWT.create(NamedInterface.class);
 
     try {
       ni2.setJavaScriptObject(ni.getJavaScriptObject());
@@ -452,13 +450,13 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testNamedObject() throws JSONWrapperException {
-    NamedInterface ni = (NamedInterface)GWT.create(NamedInterface.class);
+    NamedInterface ni = (NamedInterface) GWT.create(NamedInterface.class);
     ni.setJSONData("{HELLO:\"Hello world\"}");
 
     assertEquals("Hello world", ni.getHello());
 
     // Re-parent the backing JSO
-    NamedInterface ni2 = (NamedInterface)GWT.create(NamedInterface.class);
+    NamedInterface ni2 = (NamedInterface) GWT.create(NamedInterface.class);
     JavaScriptObject jso = ni.getJavaScriptObject();
     ni.setJavaScriptObject(null);
     ni2.setJavaScriptObject(jso);
@@ -466,7 +464,7 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testObjectGetters() throws JSONWrapperException {
-    TreeInterface ti1 = (TreeInterface)GWT.create(TreeInterface.class);
+    TreeInterface ti1 = (TreeInterface) GWT.create(TreeInterface.class);
     assertTrue(ti1 != null);
     assertNull(ti1.getLeft());
     assertNull(ti1.getRight());
@@ -480,15 +478,15 @@ public class JSONWrapperTest extends GWTTestCase {
   };
 
   public void testObjectSetters() {
-    TreeInterface ti1 = (TreeInterface)GWT.create(TreeInterface.class);
+    TreeInterface ti1 = (TreeInterface) GWT.create(TreeInterface.class);
     assertTrue(ti1 != null);
     assertNull(ti1.getLeft());
     assertNull(ti1.getRight());
 
-    TreeInterface ti2 = (TreeInterface)GWT.create(TreeInterface.class);
+    TreeInterface ti2 = (TreeInterface) GWT.create(TreeInterface.class);
     assertTrue(ti2 != null);
 
-    TreeInterface ti3 = (TreeInterface)GWT.create(TreeInterface.class);
+    TreeInterface ti3 = (TreeInterface) GWT.create(TreeInterface.class);
     assertTrue(ti3 != null);
 
     ti1.setValue(1);
@@ -500,14 +498,14 @@ public class JSONWrapperTest extends GWTTestCase {
 
     assertTrue(ti1.getLeft().getValue() == 2);
     assertTrue(ti1.getRight().getValue() == 3);
-    
+
     ti1.setLeft(null);
     assertNull(ti1.getLeft());
     assertSame(ti3, ti1.getRight());
   }
 
   public void testPartialWrapper() throws JSONWrapperException {
-    PartialWrapper pw = (PartialWrapper)GWT.create(PartialWrapper.class);
+    PartialWrapper pw = (PartialWrapper) GWT.create(PartialWrapper.class);
     pw.setJSONData("{a:3, b:4, c:5}");
     assertTrue(12 == pw.multiply());
 
@@ -516,14 +514,12 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testPolicyNamedObject() throws JSONWrapperException {
-    PolicyNamedInterface ni =
-        (PolicyNamedInterface)GWT.create(PolicyNamedInterface.class);
+    PolicyNamedInterface ni = (PolicyNamedInterface) GWT.create(PolicyNamedInterface.class);
     ni.setJSONData("{HELLO:\"Hello world\"}");
 
     assertEquals("Hello world", ni.getHello());
 
-    PolicyNamedInterface ni2 =
-        (PolicyNamedInterface)GWT.create(PolicyNamedInterface.class);
+    PolicyNamedInterface ni2 = (PolicyNamedInterface) GWT.create(PolicyNamedInterface.class);
     ni2.setHello("Hello world");
     // assertTrue(ni2.getJSONData().indexOf("HELLO") != -1);
     // ni2.setJSONData(ni2.getJSONData());
@@ -531,24 +527,23 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testPrimitiveSetters() {
-    PrimitiveInterface ti =
-        (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface ti = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(ti != null);
 
     ti.setUnboxedBoolean(true);
-    ti.setUnboxedByte((byte)0x42);
+    ti.setUnboxedByte((byte) 0x42);
     ti.setUnboxedChar('A');
     ti.setUnboxedDouble(Math.PI);
-    ti.setUnboxedFloat((float)Math.E);
+    ti.setUnboxedFloat((float) Math.E);
     ti.setUnboxedInt(42);
     ti.setUnboxedLong(43);
-    ti.setUnboxedShort((short)44);
+    ti.setUnboxedShort((short) 44);
 
     assertTrue(ti.getUnboxedBoolean());
     assertTrue(ti.getUnboxedByte() == 0x42);
     assertTrue(ti.getUnboxedChar() == 'A');
     assertTrue(ti.getUnboxedDouble() == Math.PI);
-    assertTrue(ti.getUnboxedFloat() == (float)Math.E);
+    assertTrue(ti.getUnboxedFloat() == (float) Math.E);
     assertTrue(ti.getUnboxedInt() == 42);
     assertTrue(ti.getUnboxedLong() == 43);
     assertTrue(ti.getUnboxedShort() == 44);
@@ -559,30 +554,27 @@ public class JSONWrapperTest extends GWTTestCase {
    * any modifications on the underlying JSO.
    */
   public void testReadOnly() throws JSONWrapperException {
-    ReadOnlyInterface ro =
-        (ReadOnlyInterface)GWT.create(ReadOnlyInterface.class);
-    ReadOnlyInterface ro2 =
-      (ReadOnlyInterface)GWT.create(ReadOnlyInterface.class);
+    ReadOnlyInterface ro = (ReadOnlyInterface) GWT.create(ReadOnlyInterface.class);
+    ReadOnlyInterface ro2 = (ReadOnlyInterface) GWT.create(ReadOnlyInterface.class);
     ro.setJSONData("{hello:'Hello world', numbers:[1,2,3,4]}");
-    
+
     // Read-only objects should allow multiple wrappers per JSO because we
     // can't have the __gwtObject field.
     ro2.setJavaScriptObject(ro.getJavaScriptObject());
   }
 
   public void testSetterOnly() {
-    SetterOnly so = (SetterOnly)GWT.create(SetterOnly.class);
-    SetterOnly so2 = (SetterOnly)GWT.create(SetterOnly.class);
+    SetterOnly so = (SetterOnly) GWT.create(SetterOnly.class);
+    SetterOnly so2 = (SetterOnly) GWT.create(SetterOnly.class);
 
     so.setHello("Hello world");
-    
+
     // Check that the gwt.noIdentity annotation works
     so2.setJavaScriptObject(so.getJavaScriptObject());
   }
 
   public void testStringSetters() {
-    PrimitiveInterface ti =
-        (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface ti = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
 
     assertTrue(ti != null);
 
@@ -600,7 +592,7 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public void testSuperInheritor() {
-    SuperInheritor si = (SuperInheritor)GWT.create(SuperInheritor.class);
+    SuperInheritor si = (SuperInheritor) GWT.create(SuperInheritor.class);
     assertTrue(si instanceof PartialWrapper);
     assertTrue(si instanceof PrimitiveInterface);
     assertTrue(si instanceof ListInterface);
@@ -610,20 +602,19 @@ public class JSONWrapperTest extends GWTTestCase {
    * Test the state of an uninitialized wrapper.
    */
   public void testUninitializedWrapper() {
-    PrimitiveInterface ti =
-        (PrimitiveInterface)GWT.create(PrimitiveInterface.class);
+    PrimitiveInterface ti = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(ti != null);
 
     assertNull(ti.getHello());
 
     assertEquals(Boolean.FALSE, ti.getBoxedBoolean());
-    assertEquals(new Byte((byte)0), ti.getBoxedByte());
+    assertEquals(new Byte((byte) 0), ti.getBoxedByte());
     assertEquals(new Character(' '), ti.getBoxedChar());
     assertEquals(new Double(0), ti.getBoxedDouble());
     assertEquals(new Float(0), ti.getBoxedFloat());
     assertEquals(new Integer(0), ti.getBoxedInt());
     assertEquals(new Long(0), ti.getBoxedLong());
-    assertEquals(new Short((short)0), ti.getBoxedShort());
+    assertEquals(new Short((short) 0), ti.getBoxedShort());
 
     assertFalse(ti.getUnboxedBoolean());
     assertTrue(0 == ti.getUnboxedByte());
