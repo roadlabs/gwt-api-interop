@@ -1,0 +1,53 @@
+<project name="JavaScript InterOp Library for GWT (JSIO)" default="build" basedir=".">
+	<property name="gwt.root" location="." />
+	<property name="project.tail" value="" />
+	<import file="${gwt.root}/common.ant.xml" />
+
+	<!-- "build" is the default when subprojects are directly targetted -->
+	<property name="target" value="build" />
+
+	<target name="build-tools" description="Builds tools required to build the Google API Library for GWT">
+	    <gwt.ant dir="build-tools"/>
+	</target>
+		
+	<target name="dist" depends="build-tools, user, samples, doc" description="Run the distributions">
+		<gwt.ant dir="distro-source" />
+	</target>
+
+	<target name="doc" depends="user" description="Build doc">
+		<gwt.ant dir="doc" />
+	</target>
+
+	<target name="user" description="Build JSIO user classes">
+		<gwt.ant dir="user"/>
+	</target>
+	
+	<target name="samples" depends="user" description="Build samples">
+		<gwt.ant dir="samples" />
+	</target>
+
+	<target name="-do" depends="dist" description="Run all subprojects" />
+
+	<target name="build" description="Builds JavaScript InterOp Library for GWT (JSIO)">
+		<antcall target="-do">
+			<param name="target" value="build" />
+		</antcall>
+	</target>
+
+	<target name="checkstyle" description="Static analysis of JSIO source">
+		<antcall target="-do">
+			<param name="target" value="checkstyle" />
+		</antcall>
+	</target>
+
+	<target name="test" depends="build" description="Test JSIO library">
+		<gwt.ant dir="user"/>
+		<antcall target="-do">
+			<param name="target" value="test" />
+		</antcall>
+	</target>
+
+	<target name="clean" description="Cleans the entire JSIO build">
+		<delete dir="${gwt.build}" />
+	</target>
+</project>
