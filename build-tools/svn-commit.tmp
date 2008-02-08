@@ -1,0 +1,56 @@
+Adding ant build system for JSIO.
+
+Patch by: zundel
+Review by: bobv
+--This line, and those below, will be ignored--
+
+A    .
+A    ant-gwt
+A    ant-gwt/src
+A    ant-gwt/src/com
+A    ant-gwt/src/com/google
+A    ant-gwt/src/com/google/gwt
+A    ant-gwt/src/com/google/gwt/ant
+A    ant-gwt/src/com/google/gwt/ant/taskdefs
+AM   ant-gwt/src/com/google/gwt/ant/taskdefs/TarCat.java
+AM   ant-gwt/build.xml
+A    doctool
+A    doctool/src
+A    doctool/src/topics-htmls.xslt
+A    doctool/src/topics-index.xslt
+A    doctool/src/topics-hhk.xslt
+A    doctool/src/topics-hhp.xslt
+A    doctool/src/java-topics.xslt
+A    doctool/src/topics-hhc.xslt
+AM   doctool/src/booklet.xsd
+AM   doctool/src/doc.css
+A    doctool/src/doc-topics.xslt
+A    doctool/src/topics-toc.xslt
+A    doctool/src/com
+A    doctool/src/com/google
+A    doctool/src/com/google/doctool
+AM   doctool/src/com/google/doctool/Booklet.java
+AM   doctool/src/com/google/doctool/LinkResolver.java
+AM   doctool/src/com/google/doctool/DocTool.java
+A    doctool/src/com/google/doctool/custom
+AM   doctool/src/com/google/doctool/custom/IncludeTaglet.java
+AM   doctool/src/com/google/doctool/custom/ExampleTaglet.java
+AM   doctool/src/com/google/doctool/custom/TipTaglet.java
+AM   doctool/src/com/google/doctool/custom/GWTJavaDoclet.java
+AM   doctool/src/com/google/doctool/DocToolFactory.java
+AM   doctool/src/com/google/doctool/ResourceIncluder.java
+AM   doctool/src/com/google/doctool/SplitterJoiner.java
+A    doctool/src/javascript-topics.xslt
+A    doctool/src/topics-singlehtml.xslt
+AM   doctool/src/topics.xsd
+AM   doctool/build.xml
+A    customchecks
+A    customchecks/src
+A    customchecks/src/com
+A    customchecks/src/com/google
+A    customchecks/src/com/google/gwt
+A    customchecks/src/com/google/gwt/checkstyle
+AM   customchecks/src/com/google/gwt/checkstyle/FieldCheck.java
+AM   customchecks/src/com/google/gwt/checkstyle/OrderCheck.java
+AM   customchecks/build.xml
+AM   build.xml
