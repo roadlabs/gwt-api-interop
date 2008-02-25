@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -70,10 +70,31 @@ class Task {
   }
 
   /**
+   * @return the name of the method that was defined in Java source.  Retuns null
+   * on failure.
+   */
+  public String getJavaMethodName() {
+    if (getter != null) {
+      return getter.getName();
+    } else if (setter != null) {
+      return setter.getName();
+    } else if (binding != null) {
+      return binding.getName();
+    } else if (exported != null) {
+      return exported.getName();
+    } else if (imported != null) {
+      return imported.getName();
+    } else if (constructor != null) {
+      return constructor.getName();
+    }
+    return null;
+  }
+
+  /**
    * Validation check to ensure that at least one method is defined within the
    * Task.
    * 
-   * @return <code>true</code> iff there is at least one method defined for
+   * @return <code>true</code> if there is at least one method defined for
    *         the Task.
    */
   public boolean hasMethods() {
@@ -89,7 +110,7 @@ class Task {
   public boolean validate(JSWrapperGenerator generator,
       FragmentGeneratorContext context) {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
-        "Validating task", null);
+        "Validating task " + getJavaMethodName() + "().", null);
     JClassType jsoType = context.typeOracle.findType(JavaScriptObject.class.getName());
 
     if ((imported != null) && ((getter != null) || (setter != null))) {
@@ -160,8 +181,8 @@ class Task {
       }
 
       JParameter[] params = binding.getParameters();
-      if (params.length == 0 ||
-          !jsoType.isAssignableFrom(params[0].getType().isClassOrInterface())) {
+      if (params.length == 0
+          || !jsoType.isAssignableFrom(params[0].getType().isClassOrInterface())) {
         logger.log(TreeLogger.ERROR, "The first parameter of a binding method "
             + "must be a JavaScriptObject", null);
         return true;
