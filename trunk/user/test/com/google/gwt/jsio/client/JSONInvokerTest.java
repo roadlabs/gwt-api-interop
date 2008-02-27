@@ -55,22 +55,19 @@ public class JSONInvokerTest extends GWTTestCase {
     int add(int toAdd, int second);
 
     /**
-     * @gwt.constructor $wnd.Hello
+     * @gwt.constructor $wnd.JSONInvokerTest.Hello
      */
     HelloWrapper constructor(String param1, int param2);
 
     int getHello();
-    
+
     /**
      * @gwt.imported true
      * @gwt.fieldName returnUndefined
      */
     Integer getIntegerAsUndefined();
 
-    /**
-     * @gwt.typeArgs <java.lang.Integer>
-     */
-    JSList getNumbers();
+    JSList<Integer> getNumbers();
 
     String getParam1();
 
@@ -96,11 +93,7 @@ public class JSONInvokerTest extends GWTTestCase {
 
     StatefulWrapper passthrough(StatefulWrapper w);
 
-    /**
-     * @gwt.typeArgs arr <java.lang.Integer>
-     * @gwt.typeArgs <java.lang.Integer>
-     */
-    JSList reverseNumbers(JSList arr);
+    JSList<Integer> reverseNumbers(JSList<Integer> arr);
 
     /**
      * Don't implement this as a bean function, but make a call out to the js
@@ -122,8 +115,7 @@ public class JSONInvokerTest extends GWTTestCase {
     /**
      * @gwt.fieldName testCallback
      */
-    Integer testCallbackBoxed(Integer a, Integer b,
-        HelloCallbackInteger c);
+    Integer testCallbackBoxed(Integer a, Integer b, HelloCallbackInteger c);
   }
 
   /**
@@ -143,7 +135,7 @@ public class JSONInvokerTest extends GWTTestCase {
   }
 
   /**
-   * @gwt.global $wnd.SingletonHello
+   * @gwt.global $wnd.JSONInvokerTest.SingletonHello
    */
   public static interface SingletonHello extends HelloWrapper {
   }
@@ -160,70 +152,11 @@ public class JSONInvokerTest extends GWTTestCase {
     String localField;
   }
 
-  /**
-   * This would normally be done by the JS included by the module. It's included
-   * inline for ease of comprehension.
-   */
-  private static native void initializeHello() /*-{
-   function Hello(param1, param2) {
-   this.hello = 42;
-   this.param1 = param1;
-   this.param2 = param2;
-   this.numbers = [1,2,3,4,5];
-   }
-   
-   Hello.prototype.add = function(sum, sum2) {
-   return this.hello += sum + (sum2 || 0);
-   }
-   
-   Hello.prototype.sub = function(sum) {
-   return this.hello -= sum;
-   }
-   
-   Hello.prototype.increment = function() {
-   this.hello++;
-   }
-   
-   Hello.prototype.returnUndefined = function() {
-   return undefined;
-   }
-   
-   Hello.prototype.setHello = function(a) {
-   this.hello = a + 10;
-   }
-   
-   Hello.prototype.testCallback = function(param1, param2, callback) {
-   return 5 * callback(param1, param2);
-   }
-   
-   Hello.prototype.identityEquals = function(o1, o2) {
-   return o1 === o2;
-   }
-   
-   Hello.prototype.reverseNumbers = function(arr) {
-   var toReturn = [];
-   for (var i = 0; i < arr.length; i++) {
-   toReturn[i] = arr[arr.length - i - 1];
-   }
-   return toReturn;
-   }
-   
-   Hello.prototype.passthrough = function(o) {
-   return o;
-   }
-   
-   $wnd.Hello = Hello;
-   
-   $wnd.SingletonHello = new Hello("Singleton", 314159);
-   }-*/;
-
   public String getModuleName() {
-    return "com.google.gwt.jsio.JSIO";
+    return "com.google.gwt.jsio.JSIOTest";
   }
 
   public void testCallback() {
-    initializeHello();
-
     HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
 
@@ -244,16 +177,12 @@ public class JSONInvokerTest extends GWTTestCase {
    * Ensure that undefined maps to null when returning a boxed primitive.
    */
   public void testIntegerAsUndefined() {
-    initializeHello();
-
     HelloWrapper w = (HelloWrapper) GWT.create(HelloWrapper.class);
     w.constructor("Hello world", 99);
     assertNull(w.getIntegerAsUndefined());
   }
 
   public void testInvocation() {
-    initializeHello();
-
     HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
     assertEquals(42, wrapper.getHello());
@@ -274,13 +203,13 @@ public class JSONInvokerTest extends GWTTestCase {
     assertEquals(20, wrapper.getHello());
 
     // Check lists returned from bean-style accessors
-    JSList numbers = wrapper.getNumbers();
+    JSList<Integer> numbers = wrapper.getNumbers();
     for (int i = 0; i < numbers.size(); i++) {
-      assertEquals(new Integer(i + 1), numbers.get(i));
+      assertEquals(i + 1, numbers.get(i).intValue());
     }
 
     // Check a list returned through an imported function
-    JSList reversed = wrapper.reverseNumbers(numbers);
+    JSList<Integer> reversed = wrapper.reverseNumbers(numbers);
     assertEquals(numbers.size(), reversed.size());
     for (int i = 0; i < numbers.size(); i++) {
       assertEquals(numbers.get(i), reversed.get(numbers.size() - i - 1));
@@ -292,34 +221,29 @@ public class JSONInvokerTest extends GWTTestCase {
       // This test does not make sense in web mode due to lack of asserts
       return;
     }
-    
-    initializeHello();
-    
+
     try {
-      MissingMethodWrapper wrapper =
-        (MissingMethodWrapper) GWT.create(MissingMethodWrapper.class);
+      MissingMethodWrapper wrapper = (MissingMethodWrapper) GWT.create(MissingMethodWrapper.class);
       wrapper.constructor("Hello world", 99);
       fail("Expected failed assertion on missing method. "
           + "Did you run with -ea?");
     } catch (RuntimeException e) {
       if (e.getCause() instanceof AssertionError) {
         // Expected behavior because the AssertionError hits the browser/JVM
-        // boundary.  The JSNI constructor method invokes setJSO() which is
+        // boundary. The JSNI constructor method invokes setJSO() which is
         // where the AssertionError is generated.
       } else {
         throw e;
       }
     }
   }
-  
+
   /**
    * Ensure that wrapped objects returned from a native JS API are returned
    * correctly and have the correct identity semantics for the underlying
    * object.
    */
   public void testPassthrough() {
-    initializeHello();
-
     HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);
 
@@ -343,17 +267,14 @@ public class JSONInvokerTest extends GWTTestCase {
    * Test initialization of a wrapper via the gwt.global singleton constructor.
    */
   public void testSingleton() {
-    initializeHello();
-
     HelloWrapper wrapper = (HelloWrapper) GWT.create(SingletonHello.class);
 
     assertEquals("Singleton", wrapper.getParam1());
     assertEquals(314159, wrapper.getParam2());
   }
 
+  @SuppressWarnings("all")
   public void testStatePreservation() {
-    initializeHello();
-
     StatefulWrapper w1 = (StatefulWrapper) GWT.create(StatefulWrapper.class);
     w1.constructor(null, 0);
     w1.localField = "bad field";

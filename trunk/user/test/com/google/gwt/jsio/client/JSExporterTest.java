@@ -19,8 +19,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.junit.client.GWTTestCase;
 
-import java.util.Iterator;
-
 /**
  * Tests native invocation capabilities of the wrapper classes.
  */
@@ -49,13 +47,12 @@ public class JSExporterTest extends GWTTestCase {
 
     /**
      * @gwt.exported
-     * @gwt.typeArgs numbers <java.lang.Integer>
      */
-    public int sum(JSList numbers) {
+    public int sum(JSList<Integer> numbers) {
       int toReturn = 0;
 
-      for (Iterator i = numbers.iterator(); i.hasNext();) {
-        toReturn += ((Integer) i.next()).intValue();
+      for (int i : numbers) {
+        toReturn += i;
       }
 
       return toReturn;
@@ -93,11 +90,11 @@ public class JSExporterTest extends GWTTestCase {
       return a - b;
     }
 
-    public int sum(JSList numbers) {
+    public int sum(JSList<Integer> numbers) {
       int toReturn = 0;
-
-      for (Iterator i = numbers.iterator(); i.hasNext();) {
-        toReturn += ((Integer) i.next()).intValue();
+      
+      for (int i : numbers) {
+        toReturn += i;
       }
 
       return toReturn;
@@ -123,9 +120,8 @@ public class JSExporterTest extends GWTTestCase {
 
     /**
      * @gwt.exported
-     * @gwt.typeArgs numbers <java.lang.Integer>
      */
-    int sum(JSList numbers);
+    int sum(JSList<Integer> numbers);
   }
 
   static interface MissingMethodInterface extends JSFlyweightWrapper {
@@ -155,11 +151,11 @@ public class JSExporterTest extends GWTTestCase {
     }
 
     private static final SimpleListFlyweight flyweight = (SimpleListFlyweight) GWT.create(SimpleListFlyweight.class);
+    private JavaScriptObject jsoPeer;
+
     private final SimpleList next;
 
     private final int value;
-
-    private JavaScriptObject jsoPeer;
 
     SimpleList(SimpleList next, int value) {
       this.next = next;
@@ -213,8 +209,9 @@ public class JSExporterTest extends GWTTestCase {
     }
   }
 
+  @Override
   public String getModuleName() {
-    return "com.google.gwt.jsio.JSIO";
+    return "com.google.gwt.jsio.JSIOTest";
   }
 
   public void testAdd() {
@@ -276,7 +273,7 @@ public class JSExporterTest extends GWTTestCase {
 
     MissingMethodInterface i = (MissingMethodInterface) GWT.create(MissingMethodInterface.class);
     try {
-      i.bind(createObject());
+      i.bind(JavaScriptObject.createObject());
       fail("Should have failed on an assertion.  Did you run with -ea?");
     } catch (AssertionError e) {
       // Expected
@@ -306,32 +303,28 @@ public class JSExporterTest extends GWTTestCase {
     assertEquals(15, invokeSum(jso));
   }
 
-  private native JavaScriptObject createObject() /*-{
-   return new Object();
-   }-*/;
-
   private native int foldSum(JavaScriptObject obj) /*-{
-   var toReturn = 0;
-   while (obj) {
-   toReturn = toReturn + obj.getValue();
-   obj = obj.getNext();
-   }
-   return toReturn;
-   }-*/;
+    var toReturn = 0;
+    while (obj) {
+      toReturn = toReturn + obj.getValue();
+      obj = obj.getNext();
+    }
+    return toReturn;
+  }-*/;
 
   private native int invokeAdd(JavaScriptObject jso, int a, int b) /*-{
-   return jso.add(a, b);
-   }-*/;
+    return jso.add(a, b);
+  }-*/;
 
   private native int invokeSub(JavaScriptObject obj, int a, int b) /*-{
-   return obj.sub(a, b);
-   }-*/;
+    return obj.sub(a, b);
+  }-*/;
 
   private native int invokeSum(JavaScriptObject obj) /*-{
-   return obj.sum([1, 2, 3, 4, 5]);
-   }-*/;
+    return obj.sum([1, 2, 3, 4, 5]);
+  }-*/;
 
   private native boolean testMethod(JavaScriptObject obj, String methodName) /*-{
-   return methodName in obj;
-   }-*/;
+    return methodName in obj;
+  }-*/;
 }

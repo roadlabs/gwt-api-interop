@@ -19,7 +19,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.junit.client.GWTTestCase;
 
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -45,36 +44,17 @@ public class JSONWrapperTest extends GWTTestCase {
   static interface ListInterface extends JSWrapper {
     int getBasicInt();
 
-    /**
-     * @gwt.typeArgs <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
-     */
-    JSList getPartialWrappers();
+    JSList<PartialWrapper> getPartialWrappers();
 
-    /**
-     * @gwt.typeArgs <java.lang.Integer>
-     */
-    JSList getRank1();
+    JSList<Integer> getRank1();
 
-    /**
-     * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<java.lang.Integer>>
-     */
-    JSList getRank2();
+    JSList<JSList<Integer>> getRank2();
 
-    /**
-     * @gwt.typeArgs <com.google.gwt.jsio.client.JSList<com.google.gwt.jsio.client.JSList<java.lang.Integer>>>
-     */
-    JSList getRank3();
+    JSList<JSList<JSList<Integer>>> getRank3();
 
-    /**
-     * @gwt.typeArgs <java.lang.String>
-     */
-    JSList getString1();
+    JSList<String> getString1();
 
-    /**
-     * @gwt.typeArgs list
-     *               <com.google.gwt.jsio.client.JSONWrapperTest.PartialWrapper>
-     */
-    void setPartialWrappers(JSList list);
+    void setPartialWrappers(JSList<PartialWrapper> list);
   }
 
   /**
@@ -210,10 +190,7 @@ public class JSONWrapperTest extends GWTTestCase {
   abstract static class ReadOnlyInterface implements JSWrapper {
     public abstract String getHello();
 
-    /**
-     * @gwt.typeArgs <java.lang.Integer>
-     */
-    public abstract JSList getNumbers();
+    public abstract JSList<Integer> getNumbers();
   }
 
   /**
@@ -251,18 +228,21 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   /**
-   * A test array, used by makeJsonArray.
-   */
-  private static final int[] ARRAY_INT = {0, 1, 2, 3, 4};
-
-  /**
    * Represents nested array data.
    */
-  private static final String ARRAY_DATA = "{" + "basicInt: 0, " + "rank1: "
-      + makeJsonArray(1) + ", " + "rank2: " + makeJsonArray(2) + ", "
-      + "rank3: " + makeJsonArray(3) + ", "
-      + "string1: ['this', 'is', 'a', 'test']" + ", "
-      + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]" + "}";
+  private static final String ARRAY_DATA;
+  /**
+   * A test array, used by makeJsonArray.
+   */
+  private static final int[] ARRAY_INT;
+
+  static {
+    ARRAY_INT = new int[] {0, 1, 2, 3, 4};
+    ARRAY_DATA = "{" + "basicInt: 0, " + "rank1: " + makeJsonArray(1) + ", "
+        + "rank2: " + makeJsonArray(2) + ", " + "rank3: " + makeJsonArray(3)
+        + ", " + "string1: ['this', 'is', 'a', 'test']" + ", "
+        + "partialWrappers: [{a:1, b:2}, {a:3, b:4}, {a:5, b:6}]" + "}";
+  }
 
   /**
    * Create a json array of specified rank. Each level will contain
@@ -289,7 +269,7 @@ public class JSONWrapperTest extends GWTTestCase {
   }
 
   public String getModuleName() {
-    return "com.google.gwt.jsio.JSIO";
+    return "com.google.gwt.jsio.JSIOTest";
   }
 
   public void testBoxedSetters() {
@@ -334,12 +314,12 @@ public class JSONWrapperTest extends GWTTestCase {
 
     assertTrue(0 == ai.getBasicInt());
 
-    List rank1 = ai.getRank1();
+    List<Integer> rank1 = ai.getRank1();
     for (int i = 0; i < ARRAY_INT.length; i++) {
       assertEquals("rank1, index " + i, new Integer(ARRAY_INT[i]), rank1.get(i));
     }
 
-    List string1 = ai.getString1();
+    List<String> string1 = ai.getString1();
     assertEquals(4, string1.size());
     assertEquals("this", string1.get(0));
     assertEquals("is", string1.get(1));
@@ -360,29 +340,29 @@ public class JSONWrapperTest extends GWTTestCase {
       assertEquals("rank1, index " + i, new Integer(ARRAY_INT[i]), rank1.get(i));
     }
 
-    List rank2 = ai.getRank2();
+    List<? extends List<Integer>> rank2 = ai.getRank2();
     assertTrue("rank2 of incorrect length " + rank2.size(),
         ARRAY_INT.length == rank2.size());
     for (int i = 0; i < ARRAY_INT.length; i++) {
       for (int j = 0; j < ARRAY_INT.length; j++) {
-        assertEquals("rank2, index " + j, new Integer(ARRAY_INT[j]),
-            ((List) rank2.get(i)).get(j));
+        assertEquals("rank2, index " + j, new Integer(ARRAY_INT[j]), rank2.get(
+            i).get(j));
       }
     }
 
-    List rank3 = ai.getRank3();
+    List<? extends List<? extends List<Integer>>> rank3 = ai.getRank3();
     assertTrue("rank3 of incorrect length " + rank3.size(),
         ARRAY_INT.length == rank3.size());
     for (int i = 0; i < ARRAY_INT.length; i++) {
       for (int j = 0; j < ARRAY_INT.length; j++) {
         for (int k = 0; k < ARRAY_INT.length; k++) {
           assertEquals("rank3, index " + k, new Integer(ARRAY_INT[k]),
-              ((List) ((List) rank3.get(i)).get(j)).get(k));
+              (rank3.get(i)).get(j).get(k));
         }
       }
     }
 
-    List partialWrappers = ai.getPartialWrappers();
+    List<PartialWrapper> partialWrappers = ai.getPartialWrappers();
     assertEquals(2, ((PartialWrapper) partialWrappers.get(0)).multiply());
     assertEquals(12, ((PartialWrapper) partialWrappers.get(1)).multiply());
     assertEquals(30, ((PartialWrapper) partialWrappers.get(2)).multiply());
@@ -397,7 +377,7 @@ public class JSONWrapperTest extends GWTTestCase {
   public void testListSetters() {
     ListInterface ai = (ListInterface) GWT.create(ListInterface.class);
 
-    List wrappers = ai.getPartialWrappers();
+    List<PartialWrapper> wrappers = ai.getPartialWrappers();
     int a = 1;
     int b = 2;
     for (int i = 0; i < 10; i++) {
@@ -411,8 +391,7 @@ public class JSONWrapperTest extends GWTTestCase {
     a = 1;
     b = 2;
     // Intentional call to getPW() to ensure that this behavior works correctly
-    for (Iterator i = ai.getPartialWrappers().iterator(); i.hasNext();) {
-      PartialWrapper pw = (PartialWrapper) i.next();
+    for (PartialWrapper pw : ai.getPartialWrappers()) {
       assertEquals(a++ * b++, pw.multiply());
     }
 
@@ -421,13 +400,12 @@ public class JSONWrapperTest extends GWTTestCase {
     ai2.setPartialWrappers(ai.getPartialWrappers());
     a = 1;
     b = 2;
-    for (Iterator i = ai2.getPartialWrappers().iterator(); i.hasNext();) {
-      PartialWrapper pw = (PartialWrapper) i.next();
+    for (PartialWrapper pw : ai2.getPartialWrappers()) {
       assertEquals(a++ * b++, pw.multiply());
     }
 
     // Mutate original and see if it's reflected in secondary.
-    PartialWrapper pw = (PartialWrapper) wrappers.get(0);
+    PartialWrapper pw = wrappers.get(0);
     pw.setA(10);
     pw.setB(10);
     assertEquals(pw.multiply(), ((PartialWrapper) ai2.getPartialWrappers().get(
