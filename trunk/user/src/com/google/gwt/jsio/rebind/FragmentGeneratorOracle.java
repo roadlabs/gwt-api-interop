@@ -21,7 +21,6 @@ import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -29,28 +28,40 @@ import java.util.List;
  */
 class FragmentGeneratorOracle {
   /**
+   * All the types of FragmentGenerators that we know about.
+   */
+  private static final Class<?>[] classes = {
+      BoxedTypeFragmentGenerator.class,
+      JavaScriptObjectFragmentGenerator.class,
+      JSFunctionFragmentGenerator.class, JSListFragmentGenerator.class,
+      PrimitiveFragmentGenerator.class, StringFragmentGenerator.class,
+      JSOpaqueFragmentGenerator.class, JSWrapperFragmentGenerator.class,
+      PeeringFragmentGenerator.class,
+
+      /*
+       * We don't actually support some types, but we can at least provide
+       * useful error messages.
+       */
+      ArrayFragmentGenerator.class, JSFlyweightFragmentGenerator.class};
+
+  /**
    * The List will always be checked in-order.
    */
-  private List fragmentGenerators = new ArrayList();
+  private List<FragmentGenerator> fragmentGenerators = new ArrayList<FragmentGenerator>();
 
   /**
    * Constructor.
    */
   public FragmentGeneratorOracle() {
-    fragmentGenerators.add(new BoxedTypeFragmentGenerator());
-    fragmentGenerators.add(new JavaScriptObjectFragmentGenerator());
-    fragmentGenerators.add(new JSFunctionFragmentGenerator());
-    fragmentGenerators.add(new JSListFragmentGenerator());
-    fragmentGenerators.add(new PrimitiveFragmentGenerator());
-    fragmentGenerators.add(new StringFragmentGenerator());
-    fragmentGenerators.add(new JSOpaqueFragmentGenerator());
-    fragmentGenerators.add(new JSWrapperFragmentGenerator());
-    fragmentGenerators.add(new PeeringFragmentGenerator());
-
-    // We don't actually support some types, but we can at least provide useful
-    // error messages.
-    fragmentGenerators.add(new ArrayFragmentGenerator());
-    fragmentGenerators.add(new JSFlyweightFragmentGenerator());
+    try {
+      for (Class<?> clazz : classes) {
+        fragmentGenerators.add(clazz.asSubclass(FragmentGenerator.class).newInstance());
+      }
+    } catch (InstantiationException e) {
+      throw new RuntimeException(e);
+    } catch (IllegalAccessException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -66,16 +77,14 @@ class FragmentGeneratorOracle {
   public FragmentGenerator findFragmentGenerator(TreeLogger logger,
       TypeOracle oracle, JType type) throws UnableToCompleteException {
 
-    for (Iterator i = fragmentGenerators.iterator(); i.hasNext();) {
-      FragmentGenerator g = (FragmentGenerator) i.next();
-
+    for (FragmentGenerator g : fragmentGenerators) {
       if (g.accepts(oracle, type)) {
         return g;
       }
     }
 
     logger.branch(TreeLogger.ERROR, "The type " + type.getQualifiedSourceName()
-        + " cannot be handled by JSWrapper.", null);
+        + " cannot be processed by JSIO.", null);
     throw new UnableToCompleteException();
   }
 }
