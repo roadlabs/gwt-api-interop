@@ -17,4 +17,7 @@
 <module>
   <inherits name="com.google.gwt.jsio.JSIO" />
   <script src="JSIOBeanReturnUndefined.js" />
+  <script src="JSFlyweightWrapperTest.js" />
+  <script src="JSONInvokerTest.js" />
+  <script src="JsoOverrideTest.js" />
 </module>

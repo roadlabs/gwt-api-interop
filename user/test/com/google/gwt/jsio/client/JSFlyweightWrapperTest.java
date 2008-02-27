@@ -106,7 +106,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
   static interface ConstructedInterface extends JSFlyweightWrapper {
     /**
-     * @gwt.constructor $wnd.ConstructedObject
+     * @gwt.constructor $wnd.JSFlyweightWrapperTest.ConstructedObject
      */
     JavaScriptObject construct(String a, int b, Tree t);
 
@@ -177,23 +177,23 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     /**
      * @gwt.constructor Object
      */
-    abstract JavaScriptObject construct();
+    JavaScriptObject construct();
 
-    abstract Tree getLeft(Tree parent);
+    Tree getLeft(Tree parent);
 
-    abstract Tree getRight(Tree parent);
+    Tree getRight(Tree parent);
 
-    abstract int getValue(Tree node);
+    int getValue(Tree node);
 
-    abstract void setLeft(Tree parent, Tree left);
+    void setLeft(Tree parent, Tree left);
 
-    abstract void setRight(Tree parent, Tree right);
+    void setRight(Tree parent, Tree right);
 
-    abstract void setValue(Tree node, int value);
+    void setValue(Tree node, int value);
   }
 
   public String getModuleName() {
-    return "com.google.gwt.jsio.JSIO";
+    return "com.google.gwt.jsio.JSIOTest";
   }
 
   public void testBoxedSetters() {
@@ -223,9 +223,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   public void testConstructor() {
-    // Build the constructor function and attach it to the Window.
-    makeConstructedObject();
-
     Tree tree = new Tree();
     tree.setValue(42);
 
@@ -352,29 +349,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertTrue(0 == primitiveInterface.getUnboxedShort(jso));
   }
 
-  private native void makeConstructedObject() /*-{
-   function C(str, i, tree) {
-   this.str = str;
-   this.i = i;
-   this.tree = tree;
-   }
-   
-   C.prototype.getInt = function() {
-   return this.i;
-   }
-   
-   C.prototype.getString = function() {
-   return this.str;
-   }
-   
-   C.prototype.getTree = function() {
-   return this.tree;
-   }
-   
-   $wnd.ConstructedObject = C;
-   }-*/;
-
   private native JavaScriptObject makeTreeData() /*-{
-   return {value:42, left:{value:43}, right:{value:44}};
-   }-*/;
+    return {value:42, left:{value:43}, right:{value:44}};
+  }-*/;
 }
