@@ -227,14 +227,8 @@ public class JSONInvokerTest extends GWTTestCase {
       wrapper.constructor("Hello world", 99);
       fail("Expected failed assertion on missing method. "
           + "Did you run with -ea?");
-    } catch (RuntimeException e) {
-      if (e.getCause() instanceof AssertionError) {
-        // Expected behavior because the AssertionError hits the browser/JVM
-        // boundary. The JSNI constructor method invokes setJSO() which is
-        // where the AssertionError is generated.
-      } else {
-        throw e;
-      }
+    } catch (AssertionError e) {
+      // Expected behavior
     }
   }
 

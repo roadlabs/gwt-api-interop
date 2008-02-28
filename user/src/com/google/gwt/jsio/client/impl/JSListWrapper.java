@@ -73,39 +73,56 @@ public final class JSListWrapper<T> extends AbstractList<T> implements
     throw new IndexOutOfBoundsException();
   }
 
+  private static native Object getNative(JavaScriptObject array, int index) /*-{
+    return Object(array[index]);
+  }-*/;
+
+  private static native int sizeNative(JavaScriptObject array) /*-{
+    return array.length;
+  }-*/;
+
+  private static native Object splice(JavaScriptObject array, int from,
+      int length) /*-{
+    return array.splice(from, length);
+  }-*/;
+
+  private static native <T> Object splice(JavaScriptObject array, int index,
+      int length, T value) /*-{
+    return array.splice(index, length, value);
+  }-*/;
+
   private JavaScriptObject arr;
+
   private final Extractor<T> extractor;
 
   public JSListWrapper(Extractor<T> extractor) {
     this.extractor = extractor;
-    initNative();
+    arr = JavaScriptObject.createArray();
   }
 
-  public native void add(int index, Object o) /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    
-    if ((index < 0) || (index > arr.length)) {
-    @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+  public void add(int index, T object) {
+    if (index < 0 || index > size()) {
+      throw new IndexOutOfBoundsException();
     }
-    
-    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-    var jso = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
-    arr.splice(index, 0, jso);
-  }-*/;
+    splice(arr, index, 0, extractor.toJS(object));
+  }
 
-  public native void clear() /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    arr.splice(0, arr.length);
-  }-*/;
+  public void clear() {
+    arr = JavaScriptObject.createArray();
+  }
 
-  public native T get(int index) /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    if ((index < 0) || (index >= arr.length)) {
-      @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+  public T get(int index) {
+    if (index < 0 || index > size()) {
+      throw new IndexOutOfBoundsException();
     }
-    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-      return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(arr[index]));
-  }-*/;
+
+    Object toReturn = getNative(arr, index);
+    if (toReturn instanceof JavaScriptObject) {
+      return extractor.fromJS((JavaScriptObject) toReturn);
+    } else {
+      return (T) toReturn;
+    }
+  }
 
   public WrappingExtractor<T> getExtractor() {
     return new WrappingExtractor<T>(extractor);
@@ -120,30 +137,31 @@ public final class JSListWrapper<T> extends AbstractList<T> implements
     return arr;
   }
 
-  public native T remove(int index) /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    if ((index < 0) || (index >= arr.length)) {
-      @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+  public T remove(int index) {
+    if (index < 0 || index > size()) {
+      throw new IndexOutOfBoundsException();
     }
 
-    var toReturn = arr.splice(index, 1);
+    Object toReturn = splice(arr, index, 1);
+    if (toReturn instanceof JavaScriptObject) {
+      return extractor.fromJS((JavaScriptObject) toReturn);
+    } else {
+      return (T) toReturn;
+    }
+  }
 
-    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-    return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(toReturn[0]));
-  }-*/;
-
-  @Override
-  public native T set(int index, T o) /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    if (( index < 0) || (index >= arr.length)) {
-       @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+  public T set(int index, T o) {
+    if (index < 0 || index > size()) {
+      throw new IndexOutOfBoundsException();
     }
 
-    var toReturn = null;
-    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-    arr[index] = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
-    return toReturn;
-   }-*/;
+    Object toReturn = splice(arr, index, 1, o);
+    if (toReturn instanceof JavaScriptObject) {
+      return extractor.fromJS((JavaScriptObject) toReturn);
+    } else {
+      return (T) toReturn;
+    }
+  }
 
   /**
    * Convenience setter for generated subclasses to be able to initialize
@@ -163,17 +181,11 @@ public final class JSListWrapper<T> extends AbstractList<T> implements
     throw new JSONWrapperException("Unimplemented");
   }
 
-  public native int size() /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    return arr.length;
-  }-*/;
+  public int size() {
+    return sizeNative(arr);
+  }
 
-  protected native void removeRange(int fromIndex, int toIndex) /*-{
-    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-    arr.splice(fromIndex, toIndex - fromIndex);
-  }-*/;
-
-  private native void initNative() /*-{
-    this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr = [];
-  }-*/;
+  protected void removeRange(int fromIndex, int toIndex) {
+    splice(arr, fromIndex, toIndex - fromIndex);
+  }
 }
