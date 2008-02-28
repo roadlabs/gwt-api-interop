@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,7 @@ import java.util.List;
 
 /**
  * This is a tag interface for use with JSWrapper when the underlying data
- * type is a JavaScript array-like object.  It must be at all times
- * accompanied by a <code>gwt.typeArgs</code> annotation.
+ * type is a JavaScript array-like object.
  * 
  * @param <T> the element type
  */
