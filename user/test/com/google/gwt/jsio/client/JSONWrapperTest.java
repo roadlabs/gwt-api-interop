@@ -32,7 +32,8 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.namePolicy com.google.gwt.jsio.rebind.TestNamePolicy
    */
-  static interface ClassPolicyNamedInterface extends JSWrapper {
+  static interface ClassPolicyNamedInterface extends
+      JSWrapper<ClassPolicyNamedInterface> {
     String getHello();
 
     void setHello(String hello);
@@ -41,7 +42,7 @@ public class JSONWrapperTest extends GWTTestCase {
   /**
    * @gwt.beanProperties
    */
-  static interface ListInterface extends JSWrapper {
+  static interface ListInterface extends JSWrapper<ListInterface> {
     int getBasicInt();
 
     JSList<PartialWrapper> getPartialWrappers();
@@ -62,7 +63,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * 
    * @gwt.beanProperties
    */
-  static interface NamedInterface extends JSWrapper {
+  static interface NamedInterface extends JSWrapper<NamedInterface> {
     /**
      * @gwt.fieldName HELLO
      */
@@ -76,7 +77,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * 
    * @gwt.beanProperties
    */
-  abstract static class PartialWrapper implements JSWrapper {
+  abstract static class PartialWrapper implements JSWrapper<PartialWrapper> {
     public abstract int getA();
 
     public abstract int getB();
@@ -100,7 +101,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.namePolicy upper
    */
-  static interface PolicyNamedInterface extends JSWrapper {
+  static interface PolicyNamedInterface extends JSWrapper<PolicyNamedInterface> {
     String getHello();
 
     void setHello(String hello);
@@ -111,7 +112,7 @@ public class JSONWrapperTest extends GWTTestCase {
    * 
    * @gwt.beanProperties
    */
-  static interface PrimitiveInterface extends JSWrapper {
+  static interface PrimitiveInterface extends JSWrapper<PrimitiveInterface> {
     Boolean getBoxedBoolean();
 
     Byte getBoxedByte();
@@ -187,7 +188,8 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.readOnly
    * @gwt.beanProperties
    */
-  abstract static class ReadOnlyInterface implements JSWrapper {
+  abstract static class ReadOnlyInterface implements
+      JSWrapper<ReadOnlyInterface> {
     public abstract String getHello();
 
     public abstract JSList<Integer> getNumbers();
@@ -199,21 +201,14 @@ public class JSONWrapperTest extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.noIdentity
    */
-  static interface SetterOnly extends JSWrapper {
+  static interface SetterOnly extends JSWrapper<SetterOnly> {
     void setHello(String hello);
-  }
-
-  /**
-   * Polymorphism test.
-   */
-  abstract static class SuperInheritor extends PartialWrapper implements
-      PrimitiveInterface, ListInterface {
   }
 
   /**
    * @gwt.beanProperties
    */
-  static interface TreeInterface extends JSWrapper {
+  static interface TreeInterface extends JSWrapper<TreeInterface> {
     TreeInterface getLeft();
 
     TreeInterface getRight();
@@ -363,9 +358,9 @@ public class JSONWrapperTest extends GWTTestCase {
     }
 
     List<PartialWrapper> partialWrappers = ai.getPartialWrappers();
-    assertEquals(2, ((PartialWrapper) partialWrappers.get(0)).multiply());
-    assertEquals(12, ((PartialWrapper) partialWrappers.get(1)).multiply());
-    assertEquals(30, ((PartialWrapper) partialWrappers.get(2)).multiply());
+    assertEquals(2, partialWrappers.get(0).multiply());
+    assertEquals(12, partialWrappers.get(1).multiply());
+    assertEquals(30, partialWrappers.get(2).multiply());
   }
 
   public void testListInitialState() throws JSONWrapperException {
@@ -408,8 +403,7 @@ public class JSONWrapperTest extends GWTTestCase {
     PartialWrapper pw = wrappers.get(0);
     pw.setA(10);
     pw.setB(10);
-    assertEquals(pw.multiply(), ((PartialWrapper) ai2.getPartialWrappers().get(
-        0)).multiply());
+    assertEquals(pw.multiply(), ai2.getPartialWrappers().get(0).multiply());
 
     ai2.setPartialWrappers(null);
     assertNull(ai2.getPartialWrappers());
@@ -567,13 +561,6 @@ public class JSONWrapperTest extends GWTTestCase {
 
     ti.setHello(null);
     assertNull(ti.getHello());
-  }
-
-  public void testSuperInheritor() {
-    SuperInheritor si = (SuperInheritor) GWT.create(SuperInheritor.class);
-    assertTrue(si instanceof PartialWrapper);
-    assertTrue(si instanceof PrimitiveInterface);
-    assertTrue(si instanceof ListInterface);
   }
 
   /**

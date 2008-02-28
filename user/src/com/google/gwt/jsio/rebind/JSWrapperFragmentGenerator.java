@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
   protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    JClassType returnType = context.returnType.isClassOrInterface();
+    JClassType returnType = context.returnType.isClassOrInterface().getErasedType();
 
     sw.print("@");
     sw.print(context.qualifiedTypeName);
@@ -51,6 +51,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     sw.print(".@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()()");
   }
 
+  @Override
   boolean accepts(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
 
@@ -61,6 +62,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     }
   }
 
+  @Override
   final void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
@@ -80,6 +82,7 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     sw.print(")");
   }
 
+  @Override
   final void toJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
@@ -91,10 +94,11 @@ class JSWrapperFragmentGenerator extends FragmentGenerator {
     writeJSNIValue(context);
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;
-    JClassType elementType = context.returnType.isClassOrInterface();
+    JClassType elementType = context.returnType.isClassOrInterface().getErasedType();
 
     sw.print("@");
     sw.print(context.qualifiedTypeName);

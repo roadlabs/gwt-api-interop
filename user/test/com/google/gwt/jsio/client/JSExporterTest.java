@@ -27,7 +27,7 @@ public class JSExporterTest extends GWTTestCase {
   /**
    * Demonstrates exporting methods from a JSWrapper.
    */
-  abstract static class ExportedMethods implements JSWrapper {
+  abstract static class ExportedMethods implements JSWrapper<ExportedMethods> {
     /**
      * @gwt.exported
      */
@@ -182,7 +182,7 @@ public class JSExporterTest extends GWTTestCase {
   /**
    * Used to test exported methods that return a JSWrapper subclass.
    */
-  abstract static class SimpleListWrapper implements JSWrapper {
+  abstract static class SimpleListWrapper implements JSWrapper<SimpleListWrapper> {
     private SimpleListWrapper next;
     private int value;
 

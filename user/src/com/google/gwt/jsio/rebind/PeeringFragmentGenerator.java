@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,7 +36,7 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     JClassType asClass = type.isClassOrInterface();
 
     while (asClass != null) {
-      JField f = asClass.findField(JSFlyweightWrapperGenerator.OBJ);
+      JField f = asClass.findField(JSWrapperGenerator.OBJ);
       if (f != null
           && isAssignable(oracle, f.getType().isClassOrInterface(),
               JavaScriptObject.class)) {
@@ -69,7 +69,7 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     JClassType asClass = type.isClassOrInterface();
 
     while (asClass != null) {
-      JField f = asClass.findField(JSFlyweightWrapperGenerator.EXTRACTOR);
+      JField f = asClass.findField(JSWrapperGenerator.EXTRACTOR);
       if (f != null
           && isAssignable(oracle, f.getType().isClassOrInterface(),
               Extractor.class)) {
@@ -81,6 +81,7 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     return null;
   }
 
+  @Override
   protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     if (findConstructor(context.typeOracle, context.returnType) == null) {
@@ -101,14 +102,15 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     sw.print(")");
   }
 
+  @Override
   protected void writeJSNIValue(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     JField f = findPeer(context.typeOracle, context.returnType);
     if (f == null) {
       context.parentLogger.log(TreeLogger.ERROR, "The type or a supertype of "
           + context.returnType.getQualifiedSourceName() + " must possess a "
-          + JSFlyweightWrapperGenerator.OBJ
-          + " field to be used as a parameter type.", null);
+          + JSWrapperGenerator.OBJ + " field to be used as a parameter type.",
+          null);
       throw new UnableToCompleteException();
     }
     SourceWriter sw = context.sw;
@@ -118,12 +120,14 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     sw.print(f.getName());
   }
 
+  @Override
   boolean accepts(TypeOracle oracle, JType type) {
     return (findConstructor(oracle, type) != null)
         || (findExtractor(oracle, type) != null)
         || (findPeer(oracle, type) != null);
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     JField f = findExtractor(context.typeOracle, context.returnType);
@@ -131,8 +135,8 @@ class PeeringFragmentGenerator extends JSWrapperFragmentGenerator {
     if (f == null) {
       context.parentLogger.log(TreeLogger.ERROR, "The type or a supertype of "
           + context.returnType.getQualifiedSourceName() + " must possess a "
-          + JSFlyweightWrapperGenerator.EXTRACTOR
-          + " field to be used with a JSList", null);
+          + JSWrapperGenerator.EXTRACTOR + " field to be used with a JSList",
+          null);
       throw new UnableToCompleteException();
     }
 

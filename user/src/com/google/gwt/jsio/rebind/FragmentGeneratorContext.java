@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,7 @@
 package com.google.gwt.jsio.rebind;
 
 import com.google.gwt.core.ext.TreeLogger;
+import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.user.rebind.SourceWriter;
@@ -28,24 +29,10 @@ import java.util.Set;
  */
 class FragmentGeneratorContext {
   /**
-   * The enclosing log context.
+   * Implementations of FragmentGenerator can add wrapper JClassType objects to
+   * this Set to indicate that they require a creator method for the given type.
    */
-  TreeLogger parentLogger;
-
-  /**
-   * A FragmentGeneratorOracle to find other FragmentGenerators with.
-   */
-  FragmentGeneratorOracle fragmentGeneratorOracle;
-
-  /**
-   * The type system in use.
-   */
-  TypeOracle typeOracle;
-
-  /**
-   * The desired output location for generated code.
-   */
-  SourceWriter sw;
+  Set<JClassType> creatorFixups;
 
   /**
    * The name of the field within the backing object to use.
@@ -53,14 +40,15 @@ class FragmentGeneratorContext {
   String fieldName;
 
   /**
-   * The type of the value being accessed.
+   * A FragmentGeneratorOracle to find other FragmentGenerators with.
    */
-  JType returnType;
+  FragmentGeneratorOracle fragmentGeneratorOracle;
 
   /**
-   * The name of the parameter in the setter.
+   * Indicates that a 1:1 identity mapping should be retained between the
+   * JSWrapper and the underlying JSO.
    */
-  String parameterName;
+  boolean maintainIdentity;
 
   /**
    * A JSNI reference to the backing JSO field.
@@ -68,36 +56,49 @@ class FragmentGeneratorContext {
   String objRef;
 
   /**
-   * The unqualified type name of the concrete class being implemented
+   * The name of the parameter in the setter.
    */
-  String simpleTypeName;
+  String parameterName;
 
   /**
-   * The qualified type name of the concrete class being implemented
+   * The enclosing log context.
+   */
+  TreeLogger parentLogger;
+
+  /**
+   * The qualified type name of the concrete class being implemented.
    */
   String qualifiedTypeName;
 
   /**
-   * Implementations of FragmentGenerator can add wrapper JClassType objects to
-   * this Set to indicate that they require a creator method for the given type.
-   */
-  Set/* <JType> */creatorFixups;
-  
-  /**
    * Indicates the JSWrapper should be generated in read-only mode.
    */
   boolean readOnly;
-  
+
   /**
-   * Indicates that a 1:1 identity mapping should be retained between the
-   * JSWrapper and the underlying JSO.
+   * The type of the value being accessed.
    */
-  boolean maintainIdentity;
-  
+  JType returnType;
+
+  /**
+   * The unqualified type name of the concrete class being implemented.
+   */
+  String simpleTypeName;
+
+  /**
+   * The desired output location for generated code.
+   */
+  SourceWriter sw;
+
   /**
    * All Tasks for the class that is being generated.
    */
-  Collection tasks;
+  Collection<Task> tasks;
+
+  /**
+   * The type system in use.
+   */
+  TypeOracle typeOracle;
 
   /**
    * Constructor.

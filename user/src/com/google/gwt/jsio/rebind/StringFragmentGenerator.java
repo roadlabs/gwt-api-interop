@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.google.gwt.user.rebind.SourceWriter;
  * Encapsulates accessors for String properties.
  */
 class StringFragmentGenerator extends FragmentGenerator {
+  @Override
   boolean accepts(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
 
@@ -36,6 +37,7 @@ class StringFragmentGenerator extends FragmentGenerator {
     }
   }
   
+  @Override
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
@@ -45,10 +47,12 @@ class StringFragmentGenerator extends FragmentGenerator {
     sw.print(context.parameterName);
   }
 
+  @Override
   boolean isIdentity() {
     return true;
   }
 
+  @Override
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value setter statement", null);
@@ -57,6 +61,7 @@ class StringFragmentGenerator extends FragmentGenerator {
     sw.print(context.parameterName);
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
     SourceWriter sw = context.sw;
     sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::STRING_EXTRACTOR");

@@ -107,7 +107,7 @@ public class JsoOverrideTest extends GWTTestCase {
   /**
    * @gwt.global $wnd.JsoOverrideTest.MathLib.constructor.prototype
    */
-  abstract static class WrapperMathLib implements JSWrapper {
+  abstract static class WrapperMathLib implements JSWrapper<WrapperMathLib> {
     /**
      * Declaring the method to be static removes the dependency on the instance
      * of WrapperMathLib in the underlying linkage code. This is an optimization

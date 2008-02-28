@@ -29,7 +29,6 @@ import com.google.gwt.jsio.client.JSWrapper;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 
@@ -45,7 +44,7 @@ public class TaskFactory {
      * Specifies the base interface type so that it will be ignored by
      * {@link #extractMethods()}.
      */
-    Collection getOperableMethods(TypeOracle oracle, JClassType clazz);
+    Collection<JMethod> getOperableMethods(TypeOracle oracle, JClassType clazz);
 
     /**
      * Exporting methods via a flyweight interface is done by binding an
@@ -84,9 +83,10 @@ public class TaskFactory {
    * other methods will be ignored under this policy.
    */
   private static class ExporterPolicy implements Policy {
-    public Collection getOperableMethods(TypeOracle oracle, JClassType clazz) {
-      Map toReturn = new HashMap();
-      Stack stack = new Stack();
+    public Collection<JMethod> getOperableMethods(TypeOracle oracle,
+        JClassType clazz) {
+      Map<String, JMethod> toReturn = new HashMap<String, JMethod>();
+      Stack<JClassType> stack = new Stack<JClassType>();
 
       // Start by creating a stack that will look at all supertypes of the
       // class under inspection
@@ -95,12 +95,8 @@ public class TaskFactory {
         clazz = clazz.getSuperclass();
       }
 
-      for (Iterator i = stack.iterator(); i.hasNext();) {
-        clazz = (JClassType) i.next();
-
-        for (Iterator j = Arrays.asList(clazz.getMethods()).iterator(); j.hasNext();) {
-          JMethod m = (JMethod) j.next();
-
+      for (JClassType searchIn : stack) {
+        for (JMethod m : searchIn.getMethods()) {
           // We add a stripped declaration so that changes which don't affect
           // the overall signature will be overwritten by the methods in the
           // leaf type.
@@ -138,6 +134,7 @@ public class TaskFactory {
    * flyweight-style methods. Adds binding tasks.
    */
   private static class FlyweightPolicy extends WrapperPolicy {
+    @Override
     public boolean shouldBind(TypeOracle typeOracle, JMethod method) {
 
       boolean hasBindingTag = JSWrapperGenerator.hasTag(method,
@@ -151,6 +148,7 @@ public class TaskFactory {
           && ((params.length == 1) || (params[1].getType().isClassOrInterface() != null));
     }
 
+    @Override
     public boolean shouldImport(TypeOracle typeOracle, JMethod method) {
       JClassType enclosing = method.getEnclosingType();
       String methodName = method.getName();
@@ -192,7 +190,8 @@ public class TaskFactory {
    * Creates constructor, import, and property Tasks.
    */
   private static class WrapperPolicy implements Policy {
-    public Collection getOperableMethods(TypeOracle typeOracle, JClassType clazz) {
+    public Collection<JMethod> getOperableMethods(TypeOracle typeOracle,
+        JClassType clazz) {
       return Arrays.asList(clazz.getOverridableMethods());
     }
 
@@ -214,10 +213,14 @@ public class TaskFactory {
     }
 
     public boolean shouldImplement(TypeOracle typeOracle, JMethod method) {
-      JClassType enclosing = method.getEnclosingType();
+      JClassType enclosing = method.getEnclosingType().getErasedType();
+      JClassType operableType = typeOracle.findType(getOperableClassName()).getErasedType();
+      // JParameterizedType asParam = enclosing.isParameterized();
+      // if (asParam != null) {
+      // enclosing = asParam.get
+      // }
 
-      return method.isAbstract()
-          && !enclosing.equals(typeOracle.findType(getOperableClassName()));
+      return method.isAbstract() && !enclosing.equals(operableType);
     }
 
     public boolean shouldImport(TypeOracle typeOracle, JMethod method) {
@@ -257,17 +260,17 @@ public class TaskFactory {
    * 
    * @return A Map of Strings to Tasks.
    */
-  public static Map extractMethods(TreeLogger logger, TypeOracle typeOracle,
-      JClassType clazz, Policy policy) throws UnableToCompleteException {
+  public static Map<String, Task> extractMethods(TreeLogger logger,
+      TypeOracle typeOracle, JClassType clazz, Policy policy)
+      throws UnableToCompleteException {
     logger = logger.branch(TreeLogger.DEBUG, "Extracting methods from "
         + clazz.getName(), null);
 
     // Value to return
-    final Map propertyAccessors = new HashMap();
+    final Map<String, Task> propertyAccessors = new HashMap<String, Task>();
 
     // Iterate over all methods that the generated subclass could override
-    for (Iterator i = policy.getOperableMethods(typeOracle, clazz).iterator(); i.hasNext();) {
-      final JMethod m = (JMethod) i.next();
+    for (JMethod m : policy.getOperableMethods(typeOracle, clazz)) {
       final String methodName = m.getName();
       logger.log(TreeLogger.DEBUG, "Examining " + m.toString(), null);
 
@@ -369,9 +372,10 @@ public class TaskFactory {
    * @param property The name of the property
    * @return A Task in the given map; created if it does not exist
    */
-  protected static Task getPropertyPair(Map propertyAccessors, String property) {
+  protected static Task getPropertyPair(Map<String, Task> propertyAccessors,
+      String property) {
     if (propertyAccessors.containsKey(property)) {
-      return (Task) propertyAccessors.get(property);
+      return propertyAccessors.get(property);
     } else {
       final Task pair = new Task();
       propertyAccessors.put(property, pair);

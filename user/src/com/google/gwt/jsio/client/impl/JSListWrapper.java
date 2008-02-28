@@ -24,42 +24,46 @@ import java.util.AbstractList;
 
 /**
  * This an implementation of List that operates directly on JS arrays.
+ * 
+ * @param <T> the type of object stored in the list
  */
-public final class JSListWrapper extends AbstractList implements JSList,
-    JSWrapper {
+public final class JSListWrapper<T> extends AbstractList<T> implements
+    JSList<T>, JSWrapper<JSListWrapper<T>> {
 
   /**
    * This is used with nested JSLists.
    */
-  private static class WrappingExtractor implements Extractor {
+  private static class WrappingExtractor<T> implements
+      Extractor<JSListWrapper<T>> {
     // package protected to avoid style warning, only read from JSNI
-    final Extractor subExtractor;
+    @SuppressWarnings("unused")
+    private final Extractor<T> subExtractor;
 
-    public WrappingExtractor(Extractor subExtractor) {
+    public WrappingExtractor(Extractor<T> subExtractor) {
       this.subExtractor = subExtractor;
     }
 
-    public native Object fromJS(JavaScriptObject obj) /*-{
-     var toReturn = @com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(
-     this.@com.google.gwt.jsio.client.impl.JSListWrapper.WrappingExtractor::subExtractor);
-     toReturn.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(obj);
-     return toReturn;
-     }-*/;
+    public native JSListWrapper<T> fromJS(JavaScriptObject obj) /*-{
+      var toReturn = @com.google.gwt.jsio.client.impl.JSListWrapper::create(Lcom/google/gwt/jsio/client/impl/Extractor;)(
+      this.@com.google.gwt.jsio.client.impl.JSListWrapper.WrappingExtractor::subExtractor);
+      toReturn.@com.google.gwt.jsio.client.JSWrapper::setJavaScriptObject(Lcom/google/gwt/core/client/JavaScriptObject;)(obj);
+      return toReturn;
+    }-*/;
 
-    public native JavaScriptObject toJS(Object o) /*-{
-     return this.@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()();
-     }-*/;
+    public native JavaScriptObject toJS(JSListWrapper<T> o) /*-{
+      return this.@com.google.gwt.jsio.client.JSWrapper::getJavaScriptObject()();
+    }-*/;
   }
 
   /**
    * Used by JSNI code to construct new JSListWrappers.
    */
-  public static JSListWrapper create(Extractor e) {
-    return new JSListWrapper(e);
+  public static <T> JSListWrapper<T> create(Extractor<T> e) {
+    return new JSListWrapper<T>(e);
   }
 
-  public static Extractor createExtractor(final Extractor e) {
-    return new WrappingExtractor(e);
+  public static <T> WrappingExtractor<T> createExtractor(final Extractor<T> e) {
+    return new WrappingExtractor<T>(e);
   }
 
   /**
@@ -69,43 +73,42 @@ public final class JSListWrapper extends AbstractList implements JSList,
     throw new IndexOutOfBoundsException();
   }
 
-  JavaScriptObject arr;
-  final Extractor extractor;
+  private JavaScriptObject arr;
+  private final Extractor<T> extractor;
 
-  public JSListWrapper(Extractor extractor) {
+  public JSListWrapper(Extractor<T> extractor) {
     this.extractor = extractor;
     initNative();
   }
 
   public native void add(int index, Object o) /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-
-   if ((index < 0) || (index > arr.length)) {
-   @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
-   }
-
-   var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-   var jso = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
-   arr.splice(index, 0, jso);
-   }-*/;
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    
+    if ((index < 0) || (index > arr.length)) {
+    @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+    }
+    
+    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
+    var jso = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
+    arr.splice(index, 0, jso);
+  }-*/;
 
   public native void clear() /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   arr.splice(0, arr.length);
-   }-*/;
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    arr.splice(0, arr.length);
+  }-*/;
 
-  public native Object get(int index) /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   if ((index < 0) || (index >= arr.length)) {
-   @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
-   }
-   
-   var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-   return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(arr[index]));
-   }-*/;
+  public native T get(int index) /*-{
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    if ((index < 0) || (index >= arr.length)) {
+      @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+    }
+    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
+      return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(arr[index]));
+  }-*/;
 
-  public Extractor getExtractor() {
-    return new WrappingExtractor(extractor);
+  public WrappingExtractor<T> getExtractor() {
+    return new WrappingExtractor<T>(extractor);
   }
 
   /**
@@ -117,28 +120,29 @@ public final class JSListWrapper extends AbstractList implements JSList,
     return arr;
   }
 
-  public native Object remove(int index) /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   if ((index < 0) || (index >= arr.length)) {
-   @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
-   }
-   
-   var toReturn = arr.splice(index, 1);
-   
-   var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-   return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(toReturn[0]));
-   }-*/;
+  public native T remove(int index) /*-{
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    if ((index < 0) || (index >= arr.length)) {
+      @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+    }
 
-  public native Object set(int index, Object o) /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   if (( index < 0) || (index >= arr.length)) {
-   @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
-   }
-   
-   var toReturn = null;
-   var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
-   arr[index] = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
-   return toReturn;
+    var toReturn = arr.splice(index, 1);
+
+    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
+    return extractor.@com.google.gwt.jsio.client.impl.Extractor::fromJS(Lcom/google/gwt/core/client/JavaScriptObject;)(new Object(toReturn[0]));
+  }-*/;
+
+  @Override
+  public native T set(int index, T o) /*-{
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    if (( index < 0) || (index >= arr.length)) {
+       @com.google.gwt.jsio.client.impl.JSListWrapper::throwIndexOutOfBoundsException()();
+    }
+
+    var toReturn = null;
+    var extractor = this.@com.google.gwt.jsio.client.impl.JSListWrapper::extractor;
+    arr[index] = extractor.@com.google.gwt.jsio.client.impl.Extractor::toJS(Ljava/lang/Object;)(o);
+    return toReturn;
    }-*/;
 
   /**
@@ -147,7 +151,7 @@ public final class JSListWrapper extends AbstractList implements JSList,
    * intentionally not exposed via JSWrapper to prevent the backing JSONObject
    * from changing out from under the wrapper.
    */
-  public JSWrapper setJavaScriptObject(JavaScriptObject obj) {
+  public JSListWrapper<T> setJavaScriptObject(JavaScriptObject obj) {
     arr = obj;
     return this;
   }
@@ -160,16 +164,16 @@ public final class JSListWrapper extends AbstractList implements JSList,
   }
 
   public native int size() /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   return arr.length;
-   }-*/;
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    return arr.length;
+  }-*/;
 
   protected native void removeRange(int fromIndex, int toIndex) /*-{
-   var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
-   arr.splice(fromIndex, toIndex - fromIndex);
-   }-*/;
+    var arr = this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr;
+    arr.splice(fromIndex, toIndex - fromIndex);
+  }-*/;
 
   private native void initNative() /*-{
-   this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr = [];
-   }-*/;
+    this.@com.google.gwt.jsio.client.impl.JSListWrapper::arr = [];
+  }-*/;
 }

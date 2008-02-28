@@ -28,6 +28,7 @@ import com.google.gwt.user.rebind.SourceWriter;
  */
 class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
 
+  @Override
   protected void writeJSNIObjectCreator(FragmentGeneratorContext context)
       throws UnableToCompleteException {
 
@@ -54,6 +55,7 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     sw.print(")");
   }
 
+  @Override
   boolean accepts(TypeOracle oracle, JType type) {
     JParameterizedType asInterface = type.isParameterized();
 
@@ -65,11 +67,13 @@ class JSListFragmentGenerator extends JSWrapperFragmentGenerator {
     }
   }
 
+  @Override
   String defaultValue(TypeOracle typeOracle, JType type)
       throws UnableToCompleteException {
     return "[]";
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
