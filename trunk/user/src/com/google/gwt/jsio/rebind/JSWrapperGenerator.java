@@ -34,12 +34,11 @@ import com.google.gwt.user.rebind.SourceWriter;
 
 import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * The Generator that provides implementations of {@link JSWrapper}.
+ * The Generator that provides implementations of JSWrapper.
  */
 public class JSWrapperGenerator extends Generator {
 
@@ -124,6 +123,7 @@ public class JSWrapperGenerator extends Generator {
   /**
    * Utility method to check for the presence of a particular metadata tag.
    */
+  @SuppressWarnings("deprecation")
   static boolean hasTag(HasMetaData item, String tagName) {
     String[] tags = item.getMetaDataTags();
     for (int i = 0; i < tags.length; i++) {
@@ -191,9 +191,8 @@ public class JSWrapperGenerator extends Generator {
       // We really use a SourceWriter since it's convenient
       final SourceWriter sw = f.createSourceWriter(context, out);
 
-      // Get a Map<String, Task>
-      final Map propertyAccessors = TaskFactory.extractMethods(logger,
-          typeOracle, sourceType, getPolicy());
+      final Map<String, Task> propertyAccessors = TaskFactory.extractMethods(
+          logger, typeOracle, sourceType, getPolicy());
 
       // Create the base context to be used during generation
       FragmentGeneratorContext fragmentContext = new FragmentGeneratorContext();
@@ -205,7 +204,7 @@ public class JSWrapperGenerator extends Generator {
       fragmentContext.simpleTypeName = generatedSimpleSourceName;
       fragmentContext.qualifiedTypeName = f.getCreatedClassName();
       fragmentContext.returnType = sourceType;
-      fragmentContext.creatorFixups = new HashSet();
+      fragmentContext.creatorFixups = new HashSet<JClassType>();
       fragmentContext.readOnly = hasTag(sourceType, READONLY);
       fragmentContext.maintainIdentity = !(fragmentContext.readOnly || hasTag(
           sourceType, NO_IDENTITY));
@@ -257,17 +256,14 @@ public class JSWrapperGenerator extends Generator {
   /**
    * Aggregate pre-write validation checks.
    */
-  protected void validateType(Map propertyAccessors,
+  protected void validateType(Map<String, Task> propertyAccessors,
       FragmentGeneratorContext context) throws UnableToCompleteException {
 
     // Try to print as many errors as possible in a run before throwing the
     // exception
     boolean error = false;
 
-    for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
-      final Map.Entry entry = (Map.Entry) i.next();
-      final Task pair = (Task) entry.getValue();
-
+    for (Task pair : propertyAccessors.values()) {
       error |= pair.validate(this, context);
     }
 
@@ -311,9 +307,12 @@ public class JSWrapperGenerator extends Generator {
       constructor = "new " + constructorMeta[0][0] + "()";
     } else {
       boolean hasImports = false;
-      for (Iterator i = context.tasks.iterator(); i.hasNext() && !hasImports;) {
-        Task t = (Task) i.next();
+      for (Task t : context.tasks) {
         hasImports |= t.imported != null;
+
+        if (hasImports) {
+          break;
+        }
       }
 
       if (!hasImports) {
@@ -354,14 +353,13 @@ public class JSWrapperGenerator extends Generator {
     // Satisfies JSWrapper and allows generated implementations to
     // efficiently initialize new objects.
     // Method declaration
-    sw.print("public JSWrapper setJavaScriptObject(");
+    sw.print("public " + context.simpleTypeName + " setJavaScriptObject(");
     sw.println("JavaScriptObject obj) {");
     sw.indent();
 
     sw.println("if (obj != null) {");
     sw.indent();
-    for (Iterator i = context.tasks.iterator(); i.hasNext();) {
-      Task t = (Task) i.next();
+    for (Task t : context.tasks) {
       if (t.imported != null) {
         String fieldName = t.getFieldName(logger);
         sw.print("assert JSONWrapperUtil.hasField(obj, \"");
@@ -373,13 +371,13 @@ public class JSWrapperGenerator extends Generator {
     }
     sw.outdent();
     sw.println("}");
-    sw.print("return setJavaScriptObjectNative(obj);");
+    sw.println("return setJavaScriptObjectNative(obj);");
     sw.outdent();
     sw.println("}");
 
     // Method declaration
-    sw.print("public native JSWrapper setJavaScriptObjectNative(");
-    sw.println("JavaScriptObject obj) /*-{");
+    sw.print("public native " + context.simpleTypeName
+        + " setJavaScriptObjectNative(JavaScriptObject obj) /*-{");
     sw.indent();
 
     if (context.maintainIdentity) {
@@ -447,7 +445,8 @@ public class JSWrapperGenerator extends Generator {
     // implementation. We'll create an implementation per generated
     // class to ensure that if the class is used with a JSList, only one
     // instance of the Extractor will ever exist.
-    sw.println("public final Extractor getExtractor() {");
+    sw.println("public final Extractor<" + asClass.getQualifiedSourceName()
+        + "> getExtractor() {");
     sw.indent();
     sw.print("return ");
     sw.print(EXTRACTOR);
@@ -577,8 +576,8 @@ public class JSWrapperGenerator extends Generator {
    * Provides a method to encapsulate empty field initialization.
    */
   protected void writeEmptyFieldInitializerMethod(final TreeLogger logger,
-      final Map propertyAccessors, final FragmentGeneratorContext context)
-      throws UnableToCompleteException {
+      final Map<String, Task> propertyAccessors,
+      final FragmentGeneratorContext context) throws UnableToCompleteException {
     SourceWriter sw = context.sw;
     JClassType returnType = context.returnType.isClassOrInterface();
 
@@ -608,8 +607,7 @@ public class JSWrapperGenerator extends Generator {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Writing field initializers", null);
 
-    for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
-      final Task task = (Task) i.next();
+    for (Task task : context.tasks) {
       final String fieldName = task.getFieldName(logger);
 
       // If there is no getter, we don't need to worry about an empty
@@ -643,10 +641,9 @@ public class JSWrapperGenerator extends Generator {
   }
 
   protected void writeFixups(TreeLogger logger, TypeOracle typeOracle,
-      SourceWriter sw, Set creatorFixups) throws UnableToCompleteException {
-    for (Iterator i = creatorFixups.iterator(); i.hasNext();) {
-      JClassType asClass = ((JType) i.next()).isClassOrInterface();
-
+      SourceWriter sw, Set<JClassType> creatorFixups)
+      throws UnableToCompleteException {
+    for (JClassType asClass : creatorFixups) {
       // If the type is parameterized, we want to replace it with the raw type
       // so that no angle-brackets are used.
       JParameterizedType pType = asClass.isParameterized();
@@ -815,8 +812,7 @@ public class JSWrapperGenerator extends Generator {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Writing method bindings initializers", null);
 
-    for (final Iterator i = context.tasks.iterator(); i.hasNext();) {
-      final Task task = (Task) i.next();
+    for (Task task : context.tasks) {
       final String fieldName = task.getFieldName(logger);
 
       if (task.exported != null) {
@@ -841,18 +837,12 @@ public class JSWrapperGenerator extends Generator {
    * write BusObjectImpl methods for Map-style access.
    */
   protected void writeMethods(FragmentGeneratorContext context,
-      Map propertyAccessors) throws UnableToCompleteException {
+      Map<String, Task> propertyAccessors) throws UnableToCompleteException {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Writing methods", null);
 
-    for (final Iterator i = propertyAccessors.entrySet().iterator(); i.hasNext();) {
-
-      final Map.Entry entry = (Map.Entry) i.next();
-      final Task task = (Task) entry.getValue();
-      final String fieldName = task.getFieldName(logger);
-
-      context.fieldName = fieldName;
-
+    for (Task task : propertyAccessors.values()) {
+      context.fieldName = task.getFieldName(logger);
       writeSingleTask(context, task);
     }
   }

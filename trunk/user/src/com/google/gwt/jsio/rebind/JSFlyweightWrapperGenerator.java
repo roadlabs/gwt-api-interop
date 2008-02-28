@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,6 @@ import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.user.rebind.SourceWriter;
 
-import java.util.Iterator;
 import java.util.Map;
 
 /**
@@ -48,14 +47,17 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
    */
   public static final String CREATE_PEER = "createPeer";
 
+  @Override
   protected int getImportOffset() {
     return 1;
   }
 
+  @Override
   protected TaskFactory.Policy getPolicy() {
     return TaskFactory.FLYWEIGHT_POLICY;
   }
 
+  @Override
   protected JParameter getSetterParameter(JMethod setter) {
     return setter.getParameters()[1];
   }
@@ -143,8 +145,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.println(") {");
     sw.indent();
 
-    for (Iterator i = context.tasks.iterator(); i.hasNext();) {
-      Task t = (Task) i.next();
+    for (Task t : context.tasks) {
       if (t.imported != null) {
         String fieldName = t.getFieldName(logger);
         sw.print("assert JSONWrapperUtil.hasField(");
@@ -230,10 +231,12 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
   /**
    * Writes common boilerplate code for all implementations.
    */
+  @Override
   protected void writeBoilerplate(final TreeLogger logger,
       final FragmentGeneratorContext context) throws UnableToCompleteException {
   }
 
+  @Override
   protected void writeConstructor(FragmentGeneratorContext context,
       JMethod constructor) throws UnableToCompleteException {
 
@@ -343,11 +346,13 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
   /**
    * This is a no-op in the flyweight style.
    */
+  @Override
   protected void writeEmptyFieldInitializerMethod(final TreeLogger logger,
-      final Map propertyAccessors, final FragmentGeneratorContext context)
+      final Map<String, Task> propertyAccessors, final FragmentGeneratorContext context)
       throws UnableToCompleteException {
   }
 
+  @Override
   protected void writeGetter(FragmentGeneratorContext context, JMethod getter)
       throws UnableToCompleteException {
 
@@ -358,6 +363,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     super.writeGetter(context, getter);
   }
 
+  @Override
   protected void writeImported(FragmentGeneratorContext context,
       JMethod imported) throws UnableToCompleteException {
 
@@ -376,6 +382,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     super.writeImported(context, imported);
   }
 
+  @Override
   protected void writeSetter(FragmentGeneratorContext context, JMethod setter)
       throws UnableToCompleteException {
 
@@ -385,6 +392,7 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     super.writeSetter(context, setter);
   }
 
+  @Override
   protected void writeSingleTask(FragmentGeneratorContext context, Task task)
       throws UnableToCompleteException {
     if (task.binding != null) {

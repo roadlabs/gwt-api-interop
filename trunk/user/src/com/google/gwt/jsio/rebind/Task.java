@@ -70,8 +70,8 @@ class Task {
   }
 
   /**
-   * @return the name of the method that was defined in Java source.  Retuns null
-   * on failure.
+   * @return the name of the method that was defined in Java source. Retuns null
+   *         on failure.
    */
   public String getJavaMethodName() {
     if (getter != null) {
@@ -94,8 +94,8 @@ class Task {
    * Validation check to ensure that at least one method is defined within the
    * Task.
    * 
-   * @return <code>true</code> if there is at least one method defined for
-   *         the Task.
+   * @return <code>true</code> if there is at least one method defined for the
+   *         Task.
    */
   public boolean hasMethods() {
     return (getter != null) || (setter != null) || (imported != null)
@@ -130,7 +130,7 @@ class Task {
       JClassType returnType = constructor.getReturnType().isClassOrInterface();
       JClassType wrapperType = context.typeOracle.findType(JSWrapper.class.getName());
 
-      if (!(jsoType.equals(returnType) || constructor.getEnclosingType().equals(
+      if (!(jsoType.isAssignableFrom(returnType) || constructor.getEnclosingType().isAssignableFrom(
           returnType))) {
         logger.log(TreeLogger.ERROR,
             "Methods annotated with @gwt.constructor or @gwt.global must "
@@ -239,15 +239,13 @@ class Task {
           // a class name. Try instantiating one and seeing if it's a
           // subclass of NamePolicy.
           try {
-            Class clazz = Class.forName(policyName);
-            if (NamePolicy.class.isAssignableFrom(clazz)) {
-              policy = (NamePolicy) clazz.newInstance();
-            } else {
-              logger.log(TreeLogger.ERROR,
-                  "@gwt.namePolicy is not an implementation of NamePolicy",
-                  null);
-              throw new UnableToCompleteException();
-            }
+            Class<? extends NamePolicy> clazz = Class.forName(policyName).asSubclass(
+                NamePolicy.class);
+            policy = clazz.newInstance();
+          } catch (ClassCastException ee) {
+            logger.log(TreeLogger.ERROR,
+                "@gwt.namePolicy is not an implementation of NamePolicy", null);
+            throw new UnableToCompleteException();
           } catch (ClassNotFoundException ee) {
             logger.log(TreeLogger.ERROR, "Bad gwt.namePolicy " + policyName, ee);
             throw new UnableToCompleteException();

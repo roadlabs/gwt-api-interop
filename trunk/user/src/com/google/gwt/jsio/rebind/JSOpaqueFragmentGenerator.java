@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,7 @@ import com.google.gwt.user.rebind.SourceWriter;
  */
 class JSOpaqueFragmentGenerator extends FragmentGenerator {
 
+  @Override
   boolean accepts(TypeOracle oracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
     if (asClass == null) {
@@ -38,11 +39,13 @@ class JSOpaqueFragmentGenerator extends FragmentGenerator {
     return isAssignable(oracle, asClass, JSOpaque.class);
   }
 
+  @Override
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     logError(context.parentLogger);
   }
 
+  @Override
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
         "Building string value setter statement", null);
@@ -52,6 +55,7 @@ class JSOpaqueFragmentGenerator extends FragmentGenerator {
     sw.print(".@com.google.gwt.jsio.client.JSOpaque::reference)");
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     SourceWriter sw = context.sw;

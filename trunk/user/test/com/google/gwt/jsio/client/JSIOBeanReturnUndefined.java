@@ -30,7 +30,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.EmptyObject
    */
-  public interface EmptyObject extends JSWrapper {
+  public interface EmptyObject extends JSWrapper<EmptyObject> {
     int getValueInt();
 
     JSList<Integer> getValueJSList();
@@ -64,7 +64,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberBoolean
    */
-  public interface MemberBoolean extends JSWrapper {
+  public interface MemberBoolean extends JSWrapper<MemberBoolean> {
     boolean getValueFalse();
 
     boolean getValueNull();
@@ -106,7 +106,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberNull
    */
-  public interface MemberNull extends JSWrapper {
+  public interface MemberNull extends JSWrapper<MemberNull> {
     byte getValueByte();
 
     char getValueChar();
@@ -164,7 +164,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberUndefined
    */
-  public interface MemberUndefined extends JSWrapper {
+  public interface MemberUndefined extends JSWrapper<MemberUndefined> {
     int getValueInt();
 
     JSList<Integer> getValueJSList();
@@ -197,7 +197,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
    * @gwt.beanProperties
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberValid
    */
-  public interface MemberValid extends JSWrapper {
+  public interface MemberValid extends JSWrapper<MemberValid> {
     String getValueEmptyString();
 
     int getValueInt();
@@ -233,7 +233,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   /**
    * @gwt.constructor $wnd.JSIOBeanReturnUndefined.ReturnUndefined
    */
-  public interface ReturnUndefined extends JSWrapper {
+  public interface ReturnUndefined extends JSWrapper<ReturnUndefined> {
 
     boolean valueBoolean();
 

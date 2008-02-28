@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.google.gwt.user.rebind.SourceWriter;
  * Encapsulates accessors for boxed primitive values.
  */
 class BoxedTypeFragmentGenerator extends FragmentGenerator {
+  @Override
   boolean accepts(TypeOracle typeOracle, JType type) {
     JClassType asClass = type.isClass();
 
@@ -38,6 +39,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
         || isAssignable(typeOracle, asClass, Number.class);
   }
 
+  @Override
   String defaultValue(TypeOracle typeOracle, JType type)
       throws UnableToCompleteException {
 
@@ -56,11 +58,11 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
     throw new UnableToCompleteException();
   }
 
+  @Override
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
-    TreeLogger logger =
-        context.parentLogger.branch(TreeLogger.DEBUG,
-            "Building value getter statement", null);
+    TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
+        "Building value getter statement", null);
 
     SourceWriter sw = context.sw;
     TypeOracle typeOracle = context.typeOracle;
@@ -109,6 +111,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
     sw.print(")");
   }
 
+  @Override
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.DEBUG,
         "Building boxed value setter statement", null);
@@ -125,6 +128,7 @@ class BoxedTypeFragmentGenerator extends FragmentGenerator {
     }
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
     SourceWriter sw = context.sw;
     sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::");

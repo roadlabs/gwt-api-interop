@@ -45,7 +45,7 @@ public class JSONInvokerTest extends GWTTestCase {
    * 
    * @gwt.beanProperties
    */
-  public static interface HelloWrapper extends JSWrapper {
+  public static interface HelloWrapper<T extends HelloWrapper<T>> extends JSWrapper<T> {
     /**
      * These functions test using variable numbers of parameters to the same
      * underlying JS function.
@@ -79,7 +79,7 @@ public class JSONInvokerTest extends GWTTestCase {
      */
     boolean identityEquals(HelloCallbackInt a, HelloCallbackInt b);
 
-    boolean identityEquals(JSWrapper a, JSWrapper b);
+    boolean identityEquals(JSWrapper<?> a, JSWrapper<?> b);
 
     void increment();
 
@@ -131,7 +131,7 @@ public class JSONInvokerTest extends GWTTestCase {
   /**
    * This is a blank interface just to be used as a reference type.
    */
-  public static interface OtherWrapper extends JSWrapper {
+  public static interface OtherWrapper extends JSWrapper<OtherWrapper> {
   }
 
   /**
@@ -243,6 +243,7 @@ public class JSONInvokerTest extends GWTTestCase {
    * correctly and have the correct identity semantics for the underlying
    * object.
    */
+  @SuppressWarnings("all")
   public void testPassthrough() {
     HelloWrapper w1 = (HelloWrapper) GWT.create(HelloWrapper.class);
     w1.constructor("hello", 1);

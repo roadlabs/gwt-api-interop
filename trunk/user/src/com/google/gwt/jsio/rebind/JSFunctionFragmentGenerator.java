@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -186,6 +186,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.print("}");
   }
 
+  @Override
   boolean accepts(TypeOracle typeOracle, JType type) {
     JClassType asClass = type.isClassOrInterface();
 
@@ -196,11 +197,13 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     return isAssignable(typeOracle, asClass, JSFunction.class);
   }
 
+  @Override
   String defaultValue(TypeOracle typeOracle, JType type)
       throws UnableToCompleteException {
     return "null";
   }
 
+  @Override
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.ERROR,
@@ -209,6 +212,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     throw new UnableToCompleteException();
   }
 
+  @Override
   void toJS(FragmentGeneratorContext context) throws UnableToCompleteException {
     TreeLogger logger = context.parentLogger.branch(TreeLogger.DEBUG,
         "Writing function() wrapper for JSFunction", null);
@@ -236,6 +240,7 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
     sw.print("))");
   }
 
+  @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context)
       throws UnableToCompleteException {
     context.parentLogger.branch(TreeLogger.ERROR,

@@ -21,16 +21,17 @@ import com.google.gwt.jsio.client.impl.Extractor;
 /**
  * Automatically generates Java/JavaScript interface linkages.
  * 
+ * @param <T> A self-referential generic type
  * @see <a href="package-summary.html#package_description">JSIO reference</a>
  */
-public interface JSWrapper {
+public interface JSWrapper<T extends JSWrapper<T>> {
 
   /**
    * Used by JSList.
    * 
    * @skip
    */
-  Extractor getExtractor();
+  Extractor<T> getExtractor();
 
   /**
    * Return the JavaScriptObject that is backing the wrapper.
@@ -46,8 +47,7 @@ public interface JSWrapper {
    */
   // The JSWrapper instance is returned because it allows wrapper creation
   // in the generated classes to be a one-liner. See JSWrapperFragmentGenerator.
-  JSWrapper setJavaScriptObject(JavaScriptObject obj)
-      throws MultipleWrapperException;
+  T setJavaScriptObject(JavaScriptObject obj) throws MultipleWrapperException;
 
   /**
    * Convenience setter for wrapping JSON data. The data will be parsed and
