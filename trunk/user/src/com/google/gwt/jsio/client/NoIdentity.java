@@ -25,7 +25,8 @@ import java.lang.annotation.Target;
  * This object disables maintaining a 1:1 identity mapping between a JSWrapper
  * and the backing JSO. The
  * {@value com.google.gwt.jsio.rebind.JSWrapperGenerator#BACKREF} field will not
- * be added to the JSO.
+ * be added to the JSO. Additionally, {@link JSWrapper#setJavaScriptObject} will
+ * no longer throw {@link MultipleWrapperException}.
  */
 @Documented
 @MetaDataName("gwt.noIdentity")

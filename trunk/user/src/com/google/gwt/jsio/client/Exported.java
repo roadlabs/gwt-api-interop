@@ -22,9 +22,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Applied to methods to indicate that they should be exported into the
- * JavaScript namespace. This is also used by {@link JSFunction} to indicate the
- * specific method to export as a function closure.
+ * Individual Java functions may be exported to JavaScript callers by applying
+ * this annotation on a concrete Java method within a JSWrapper. The Java method
+ * will be bound to a property on the backing object per the class's NamePolicy
+ * or a {@link FieldName} annotation on the method. This annotation can also be
+ * used in conjunction with a {@link JSFunction} type when the type declares
+ * more than one method.
  */
 @Documented
 @MetaDataName("gwt.exported")

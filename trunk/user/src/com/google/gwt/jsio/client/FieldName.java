@@ -22,7 +22,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Specifies the field or method in the JavaScript namespace to interact with.
+ * When implementing a bean property accessor, the default NamePolicy will be
+ * used unless this annotation appears on the property's getter or setter. This
+ * is also used with imported and exported functions to specify the object
+ * property to attach to.
  */
 @Documented
 @MetaDataName("gwt.fieldName")

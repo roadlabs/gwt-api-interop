@@ -22,8 +22,8 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Allows methods that look like bean property setter/getters to be treated as
- * imported methods.
+ * Allows methods declared in a type annotated with {@link BeanProperties} that
+ * look like bean property setter/getters to be treated as imported methods.
  */
 @Documented
 @MetaDataName("gwt.imported")

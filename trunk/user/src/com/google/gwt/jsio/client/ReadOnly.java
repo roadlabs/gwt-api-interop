@@ -22,9 +22,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * A class-level annotation that indicates that the generated JSWrapper should
- * not modify the underlying JSO. The read-only annotation implies
- * {@link NoIdentity}.
+ * This prevents the generated {@link JSWrapper} implementation from modifying
+ * the underlying JavaScriptObject. This implies {@link NoIdentity}. Invoking a
+ * bean-style getter when the underlying JavaScriptObject does not contain a
+ * value for the property will result in undefined behavior.
  */
 @Documented
 @MetaDataName("gwt.readOnly")

@@ -22,8 +22,10 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Allows classes to provide the name of a function that will construct a
- * backing object for the wrapper at instantiation time.
+ * This annotation may be applied to a class to specify a JavaScript function to
+ * evaluate. The return value of the function will be used as the initial
+ * backing object when constructing the JSWrapper. A JavaScript Date object
+ * could be created by using the value <code>$wnd.Date</code>.
  */
 @Documented
 @MetaDataName("gwt.constructor")
