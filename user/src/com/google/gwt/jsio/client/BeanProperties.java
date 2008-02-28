@@ -22,9 +22,14 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * The presence of this annotation on a type or method indicates that getFoo,
- * setFoo, and isFoo should be treated as bean-style property accessors, rather
- * than imported functions.
+ * Indicates that methods that look like bean-style property setters should be
+ * generated so as to read and write object properties rather than import
+ * functions. This is most useful with JSON-style objects. The setting may by
+ * applied on a per-method or per-type basis. When applied to a type, this
+ * behavior may be overridden on individual methods via the use of a
+ * {@link Imported} annotation.If the backing object does not contain data for a
+ * property accessor, <code>null</code>, <code>0</code>, <code>' '</code>,
+ * <code>false</code>, or an empty {@link JSList} will be returned.
  */
 @Documented
 @MetaDataName("gwt.beanProperties")
