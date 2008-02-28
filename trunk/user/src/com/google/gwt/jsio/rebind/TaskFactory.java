@@ -24,6 +24,12 @@ import com.google.gwt.core.ext.typeinfo.JParameter;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
+import com.google.gwt.jsio.client.BeanProperties;
+import com.google.gwt.jsio.client.Binding;
+import com.google.gwt.jsio.client.Constructor;
+import com.google.gwt.jsio.client.Exported;
+import com.google.gwt.jsio.client.Global;
+import com.google.gwt.jsio.client.Imported;
 import com.google.gwt.jsio.client.JSWrapper;
 
 import java.util.Arrays;
@@ -50,32 +56,37 @@ public class TaskFactory {
      * Exporting methods via a flyweight interface is done by binding an
      * instance of a type (or just the static methods of a type) to a JSO.
      */
-    boolean shouldBind(TypeOracle oracle, JMethod m);
+    boolean shouldBind(TreeLogger logger, TypeOracle oracle, JMethod m)
+        throws UnableToCompleteException;
 
     /**
      * Determines if a method should be treated as an invocation of an
      * underlying JavaScript constructor function.
      */
-    boolean shouldConstruct(TypeOracle oracle, JMethod m);
+    boolean shouldConstruct(TreeLogger logger, TypeOracle oracle, JMethod m)
+        throws UnableToCompleteException;
 
     /**
      * Determines if the generator should generate an export binding for the
      * method.
      */
-    boolean shouldExport(TypeOracle oracle, JMethod m);
+    boolean shouldExport(TreeLogger logger, TypeOracle oracle, JMethod m)
+        throws UnableToCompleteException;
 
     /**
      * Determines if the generator should implement a particular method. A
      * method will be implemented only if it is abstract and defined in a class
      * derived from JSWrapper
      */
-    boolean shouldImplement(TypeOracle oracle, JMethod m);
+    boolean shouldImplement(TreeLogger logger, TypeOracle oracle, JMethod m)
+        throws UnableToCompleteException;
 
     /**
      * Determines if the generator should generate an import binding for the
      * method.
      */
-    boolean shouldImport(TypeOracle oracle, JMethod m);
+    boolean shouldImport(TreeLogger logger, TypeOracle oracle, JMethod m)
+        throws UnableToCompleteException;
   }
 
   /**
@@ -108,23 +119,26 @@ public class TaskFactory {
       return toReturn.values();
     }
 
-    public boolean shouldBind(TypeOracle oracle, JMethod m) {
+    public boolean shouldBind(TreeLogger logger, TypeOracle oracle, JMethod m) {
       return false;
     }
 
-    public boolean shouldConstruct(TypeOracle oracle, JMethod m) {
+    public boolean shouldConstruct(TreeLogger logger, TypeOracle oracle,
+        JMethod m) {
       return false;
     }
 
-    public boolean shouldExport(TypeOracle typeOracle, JMethod method) {
-      return JSWrapperGenerator.hasTag(method, JSWrapperGenerator.EXPORTED);
+    public boolean shouldExport(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
+      return JSWrapperGenerator.hasTag(logger, method, Exported.class) != null;
     }
 
-    public boolean shouldImplement(TypeOracle oracle, JMethod m) {
+    public boolean shouldImplement(TreeLogger logger, TypeOracle oracle,
+        JMethod m) {
       return false;
     }
 
-    public boolean shouldImport(TypeOracle oracle, JMethod m) {
+    public boolean shouldImport(TreeLogger logger, TypeOracle oracle, JMethod m) {
       return false;
     }
   }
@@ -135,10 +149,11 @@ public class TaskFactory {
    */
   private static class FlyweightPolicy extends WrapperPolicy {
     @Override
-    public boolean shouldBind(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldBind(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
 
-      boolean hasBindingTag = JSWrapperGenerator.hasTag(method,
-          JSFlyweightWrapperGenerator.BINDING);
+      boolean hasBindingTag = JSWrapperGenerator.hasTag(logger, method,
+          Binding.class) != null;
       JParameter[] params = method.getParameters();
 
       return method.isAbstract()
@@ -149,19 +164,20 @@ public class TaskFactory {
     }
 
     @Override
-    public boolean shouldImport(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldImport(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
       JClassType enclosing = method.getEnclosingType();
       String methodName = method.getName();
       int arguments = method.getParameters().length;
 
-      boolean hasBindingTag = JSWrapperGenerator.hasTag(method,
-          JSFlyweightWrapperGenerator.BINDING);
-      boolean hasImportTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.IMPORTED);
-      boolean methodHasBeanTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.BEAN_PROPERTIES);
-      boolean classHasBeanTag = JSWrapperGenerator.hasTag(enclosing,
-          JSWrapperGenerator.BEAN_PROPERTIES);
+      boolean hasBindingTag = JSWrapperGenerator.hasTag(logger, method,
+          Binding.class) != null;
+      boolean hasImportTag = JSWrapperGenerator.hasTag(logger, method,
+          Imported.class) != null;
+      boolean methodHasBeanTag = JSWrapperGenerator.hasTag(logger, method,
+          BeanProperties.class) != null;
+      boolean classHasBeanTag = JSWrapperGenerator.hasTag(logger, enclosing,
+          BeanProperties.class) != null;
 
       boolean isIs = (arguments == 1)
           && (methodName.startsWith("is"))
@@ -195,24 +211,28 @@ public class TaskFactory {
       return Arrays.asList(clazz.getOverridableMethods());
     }
 
-    public boolean shouldBind(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldBind(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
       return false;
     }
 
-    public boolean shouldConstruct(TypeOracle typeOracle, JMethod method) {
-      boolean methodConstructorTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.CONSTRUCTOR);
-      boolean methodGlobalTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.GLOBAL);
+    public boolean shouldConstruct(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
+      boolean methodConstructorTag = JSWrapperGenerator.hasTag(logger, method,
+          Constructor.class) != null;
+      boolean methodGlobalTag = JSWrapperGenerator.hasTag(logger, method,
+          Global.class) != null;
 
       return methodConstructorTag || methodGlobalTag;
     }
 
-    public boolean shouldExport(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldExport(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
       return false;
     }
 
-    public boolean shouldImplement(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldImplement(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
       JClassType enclosing = method.getEnclosingType().getErasedType();
       JClassType operableType = typeOracle.findType(getOperableClassName()).getErasedType();
       // JParameterizedType asParam = enclosing.isParameterized();
@@ -223,17 +243,18 @@ public class TaskFactory {
       return method.isAbstract() && !enclosing.equals(operableType);
     }
 
-    public boolean shouldImport(TypeOracle typeOracle, JMethod method) {
+    public boolean shouldImport(TreeLogger logger, TypeOracle typeOracle,
+        JMethod method) throws UnableToCompleteException {
       JClassType enclosing = method.getEnclosingType();
       String methodName = method.getName();
       int arguments = method.getParameters().length;
 
-      boolean hasImportTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.IMPORTED);
-      boolean methodHasBeanTag = JSWrapperGenerator.hasTag(method,
-          JSWrapperGenerator.BEAN_PROPERTIES);
-      boolean classHasBeanTag = JSWrapperGenerator.hasTag(enclosing,
-          JSWrapperGenerator.BEAN_PROPERTIES);
+      boolean hasImportTag = JSWrapperGenerator.hasTag(logger, method,
+          Imported.class) != null;
+      boolean methodHasBeanTag = JSWrapperGenerator.hasTag(logger, method,
+          BeanProperties.class) != null;
+      boolean classHasBeanTag = JSWrapperGenerator.hasTag(logger, enclosing,
+          BeanProperties.class) != null;
       boolean isIs = (arguments == 0)
           && (methodName.startsWith("is"))
           && (JPrimitiveType.BOOLEAN.equals(method.getReturnType().isPrimitive()));
@@ -263,8 +284,8 @@ public class TaskFactory {
   public static Map<String, Task> extractMethods(TreeLogger logger,
       TypeOracle typeOracle, JClassType clazz, Policy policy)
       throws UnableToCompleteException {
-    logger = logger.branch(TreeLogger.DEBUG, "Extracting methods from "
-        + clazz.getName(), null);
+    TreeLogger parentLogger = logger.branch(TreeLogger.DEBUG,
+        "Extracting methods from " + clazz.getName(), null);
 
     // Value to return
     final Map<String, Task> propertyAccessors = new HashMap<String, Task>();
@@ -272,11 +293,12 @@ public class TaskFactory {
     // Iterate over all methods that the generated subclass could override
     for (JMethod m : policy.getOperableMethods(typeOracle, clazz)) {
       final String methodName = m.getName();
-      logger.log(TreeLogger.DEBUG, "Examining " + m.toString(), null);
+      logger = parentLogger.branch(TreeLogger.DEBUG, "Examining "
+          + m.toString(), null);
 
       // Look for methods that are to be exported by the presence of
       // the gwt.exported annotation.
-      if (policy.shouldExport(typeOracle, m)) {
+      if (policy.shouldExport(logger, typeOracle, m)) {
         Task task = getPropertyPair(propertyAccessors,
             m.getReadableDeclaration());
         task.exported = m;
@@ -284,7 +306,7 @@ public class TaskFactory {
         continue;
       }
 
-      if (policy.shouldBind(typeOracle, m)) {
+      if (policy.shouldBind(logger, typeOracle, m)) {
         Task task = getPropertyPair(propertyAccessors,
             m.getReadableDeclaration());
         task.binding = m;
@@ -294,12 +316,12 @@ public class TaskFactory {
 
       // Ignore concrete methods and those methods that are not declared in
       // a subtype of JSWrapper.
-      if (!policy.shouldImplement(typeOracle, m)) {
+      if (!policy.shouldImplement(logger, typeOracle, m)) {
         logger.log(TreeLogger.DEBUG, "Ignoring method " + m.toString(), null);
         continue;
       }
 
-      if (policy.shouldConstruct(typeOracle, m)) {
+      if (policy.shouldConstruct(logger, typeOracle, m)) {
         // getReadableDeclaration is used so that overloaded methods will
         // be stored with distinct keys.
         Task task = getPropertyPair(propertyAccessors,
@@ -309,7 +331,7 @@ public class TaskFactory {
 
         // Enable bypassing of name-determination logic with the presence of the
         // @gwt.imported annotation
-      } else if (policy.shouldImport(typeOracle, m)) {
+      } else if (policy.shouldImport(logger, typeOracle, m)) {
         // getReadableDeclaration is used so that overloaded methods will
         // be stored with distinct keys.
         Task task = getPropertyPair(propertyAccessors,

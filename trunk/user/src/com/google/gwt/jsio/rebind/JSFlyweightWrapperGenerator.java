@@ -26,6 +26,9 @@ import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
+import com.google.gwt.jsio.client.Binding;
+import com.google.gwt.jsio.client.Constructor;
+import com.google.gwt.jsio.client.Global;
 import com.google.gwt.user.rebind.SourceWriter;
 
 import java.util.Map;
@@ -34,13 +37,6 @@ import java.util.Map;
  * Generates a flyweight-style JSIO interface.
  */
 public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
-
-  /**
-   * Indicates that a flyweight-style method should be used to bind exported
-   * functions from a type into a JavaScriptObject.
-   */
-  public static final String BINDING = "gwt.binding";
-
   /**
    * The name of a static method that can be implemented in a class so that it
    * can receive a peer object. It must accept a JSO.
@@ -106,7 +102,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
 
     SourceWriter sw = context.sw;
     TypeOracle typeOracle = context.typeOracle;
-    String[][] bindingMeta = binding.getMetaData(BINDING);
+    Binding bindingAnnotation = JSWrapperGenerator.hasTag(logger, binding,
+        Binding.class);
 
     // Write the java half to add assertions to the code. These will be elided
     // in web mode, and the method become a pure delegation, allowing it to
@@ -132,12 +129,13 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       sw.print(bindingType.getQualifiedSourceName());
       sw.print(" ");
       sw.print(context.objRef);
-    } else if ((bindingMeta.length == 1) && (bindingMeta[0].length == 1)) {
+    } else if (bindingAnnotation != null
+        && bindingAnnotation.value().length() > 0) {
       // Use the binding type specified in the the gwt.binding annotation.
-      bindingType = typeOracle.findType(bindingMeta[0][0]);
+      bindingType = typeOracle.findType(bindingAnnotation.value());
       if (bindingType == null) {
         logger.log(TreeLogger.ERROR, "Could not resolve binding type "
-            + bindingMeta[0][0], null);
+            + bindingType, null);
         throw new UnableToCompleteException();
       }
     }
@@ -287,13 +285,15 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
     sw.print(subContext.objRef);
     sw.print(" = ");
 
-    if (hasTag(constructor, CONSTRUCTOR)) {
+    Constructor constructorAnnotation = hasTag(logger, constructor,
+        Constructor.class);
+    Global globalAnnotation = hasTag(logger, constructor, Global.class);
+    if (constructorAnnotation != null) {
       // If the imported method is acting as an invocation of a JavaScript
       // constructor, use the new Foo() syntax, otherwise treat is an an
       // invocation on a field on the underlying JSO.
-      String[][] constructorMeta = constructor.getMetaData(CONSTRUCTOR);
       sw.print("new ");
-      sw.print(constructorMeta[0][0]);
+      sw.print(constructorAnnotation.value());
 
       // Write the invocation's parameter list
       sw.print("(");
@@ -321,9 +321,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
       }
       sw.print(")");
 
-    } else if (hasTag(constructor, GLOBAL)) {
-      String[][] globalMeta = constructor.getMetaData(GLOBAL);
-      sw.print(globalMeta[0][0]);
+    } else if (globalAnnotation != null) {
+      sw.print(globalAnnotation.value());
 
     } else {
       logger.log(TreeLogger.ERROR,
@@ -348,8 +347,8 @@ public class JSFlyweightWrapperGenerator extends JSWrapperGenerator {
    */
   @Override
   protected void writeEmptyFieldInitializerMethod(final TreeLogger logger,
-      final Map<String, Task> propertyAccessors, final FragmentGeneratorContext context)
-      throws UnableToCompleteException {
+      final Map<String, Task> propertyAccessors,
+      final FragmentGeneratorContext context) throws UnableToCompleteException {
   }
 
   @Override

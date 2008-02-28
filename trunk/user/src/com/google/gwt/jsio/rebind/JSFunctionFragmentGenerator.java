@@ -22,6 +22,7 @@ import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
+import com.google.gwt.jsio.client.Exported;
 import com.google.gwt.jsio.client.JSFunction;
 import com.google.gwt.user.rebind.SourceWriter;
 
@@ -254,46 +255,38 @@ class JSFunctionFragmentGenerator extends FragmentGenerator {
   private JMethod findExportedMethod(TreeLogger logger, JClassType clazz)
       throws UnableToCompleteException {
 
-    // Look for a gwt.export annotation on the enclosing class.
-    String[][] exportMeta = clazz.getMetaData(JSWrapperGenerator.EXPORTED);
-    String exported;
-    if (exportMeta.length == 1 && exportMeta[0].length == 1) {
-      exported = exportMeta[0][0];
-      logger.log(TreeLogger.DEBUG, "Using export annotation", null);
-    } else {
-      exported = null;
-    }
-
-    // If there's no explicit annotation, we look for the presence of a single
-    // function.
     JMethod[] methods = clazz.getMethods();
-    if (exported == null && methods.length > 1) {
-      logger.log(TreeLogger.ERROR, "JSFunctions with multiple methods must "
-          + " specify a " + JSWrapperGenerator.EXPORTED + " annotation.", null);
-      throw new UnableToCompleteException();
-    }
-
     if (methods.length == 0) {
       logger.log(TreeLogger.ERROR, "The JSFunction interface did not "
           + "declare any functions.", null);
       throw new UnableToCompleteException();
-
-      // If no value is specified, take the one method that was found.
-    } else if ((exported == null) && (methods.length == 1)) {
+    } else if (methods.length == 1) {
       return methods[0];
-
-      // Find the matching function
-    } else {
-      for (int i = 0; i < methods.length; i++) {
-        JMethod m = methods[i];
-        if (exported.equals(m.getName())) {
-          return m;
-        }
-      }
     }
 
-    logger.log(TreeLogger.ERROR, "Did not find exported function " + exported
-        + " in type " + clazz.getQualifiedSourceName(), null);
-    throw new UnableToCompleteException();
+    try {
+      JMethod toReturn = null;
+      for (JMethod method : methods) {
+        if (JSWrapperGenerator.hasTag(logger, method, Exported.class) != null) {
+          if (toReturn == null) {
+            toReturn = method;
+          } else {
+            // Can't declare two methods with export annotations
+            throw new UnableToCompleteException();
+          }
+        }
+      }
+      if (toReturn != null) {
+        return toReturn;
+      } else {
+        // Didn't find any methods with an export annotation
+        throw new UnableToCompleteException();
+      }
+    } catch (UnableToCompleteException e) {
+      logger.log(TreeLogger.ERROR, "JSFunctions with multiple methods must "
+          + " specify exactly one method with an " + Exported.class.getName()
+          + " annotation.", null);
+      throw e;
+    }
   }
 }

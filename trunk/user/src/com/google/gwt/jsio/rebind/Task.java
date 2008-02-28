@@ -22,6 +22,8 @@ import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
 import com.google.gwt.core.ext.typeinfo.JParameter;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
+import com.google.gwt.jsio.client.FieldName;
+import com.google.gwt.jsio.client.Global;
 import com.google.gwt.jsio.client.JSWrapper;
 
 import java.lang.reflect.Field;
@@ -138,11 +140,16 @@ class Task {
         return true;
       }
 
-      if (wrapperType.isAssignableFrom(returnType)
-          && JSWrapperGenerator.hasTag(constructor, JSWrapperGenerator.GLOBAL)) {
-        logger.log(TreeLogger.ERROR,
-            "Cannot place @gwt.global annotation on JSWrapper methods."
-                + " Apply to the class or interface instead.", null);
+      try {
+        if (wrapperType.isAssignableFrom(returnType)
+            && JSWrapperGenerator.hasTag(logger, constructor, Global.class) != null) {
+          logger.log(TreeLogger.ERROR,
+              "Cannot place @gwt.global annotation on JSWrapper methods."
+                  + " Apply to the class or interface instead.", null);
+          return true;
+        }
+      } catch (UnableToCompleteException e) {
+        // Already logged the error in hasTag, just return here.
         return true;
       }
     }
@@ -199,9 +206,10 @@ class Task {
       boolean imported) throws UnableToCompleteException {
     logger = logger.branch(TreeLogger.DEBUG, "Extracting field name", null);
 
-    String[][] meta = m.getMetaData(JSWrapperGenerator.FIELD_NAME);
+    FieldName fieldNameAnnotation = JSWrapperGenerator.hasTag(logger, m,
+        FieldName.class);
 
-    if (meta == null || meta.length == 0) {
+    if (fieldNameAnnotation == null) {
       // If the method is imported and there's no overriding annotation,
       // just return the methods original name. This ensures that native
       // JS methods that look like bean getter/setters don't get munged.
@@ -212,20 +220,20 @@ class Task {
       // If no gwt.fieldName is specified, see if there's a naming policy
       // defined on the enclosing class.
       JClassType enclosing = m.getEnclosingType();
-      String[][] policyMeta = enclosing.getMetaData(JSWrapperGenerator.NAME_POLICY);
+      com.google.gwt.jsio.client.NamePolicy namePolicyAnnotation = JSWrapperGenerator.hasTag(
+          logger, enclosing, com.google.gwt.jsio.client.NamePolicy.class);
       NamePolicy policy;
 
       // If there is no namePolicy or it's not of the desired form, default
       // to the JavaBean-style naming policy.
-      if (policyMeta == null || policyMeta.length != 1
-          || policyMeta[0].length != 1) {
+      if (namePolicyAnnotation == null) {
         policy = NamePolicy.BEAN;
         logger.log(TreeLogger.DEBUG, "No useful policy metadata for class",
             null);
 
       } else {
         // Use the provided name to access fields within NamePolicy
-        String policyName = policyMeta[0][0];
+        String policyName = namePolicyAnnotation.value();
         try {
           Field f = NamePolicy.class.getDeclaredField(policyName.toUpperCase());
           policy = (NamePolicy) f.get(null);
@@ -263,17 +271,11 @@ class Task {
       String propertyName = TaskFactory.getPropertyNameFromMethod(m);
       return policy.convert(propertyName);
 
-    } else if (meta[0].length == 1) {
+    } else {
       // Use the field name specified on the method
       logger.log(TreeLogger.DEBUG, "Overriding field name based on annotation",
           null);
-      return meta[0][0];
-
-    } else {
-      // There were multiple field name values specified, so bail.
-      logger.log(TreeLogger.ERROR, "Unable to evaluate field name annotation",
-          null);
-      throw new UnableToCompleteException();
+      return fieldNameAnnotation.value();
     }
   }
 }
