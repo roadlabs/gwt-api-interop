@@ -21,6 +21,7 @@ import com.google.gwt.core.ext.Generator;
 import com.google.gwt.core.ext.GeneratorContext;
 import com.google.gwt.core.ext.TreeLogger;
 import com.google.gwt.core.ext.UnableToCompleteException;
+import com.google.gwt.core.ext.typeinfo.HasAnnotations;
 import com.google.gwt.core.ext.typeinfo.HasMetaData;
 import com.google.gwt.core.ext.typeinfo.JClassType;
 import com.google.gwt.core.ext.typeinfo.JMethod;
@@ -29,10 +30,19 @@ import com.google.gwt.core.ext.typeinfo.JParameterizedType;
 import com.google.gwt.core.ext.typeinfo.JPrimitiveType;
 import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
+import com.google.gwt.jsio.client.Constructor;
+import com.google.gwt.jsio.client.Global;
+import com.google.gwt.jsio.client.NoIdentity;
+import com.google.gwt.jsio.client.ReadOnly;
+import com.google.gwt.jsio.client.impl.MetaDataName;
 import com.google.gwt.user.rebind.ClassSourceFileComposerFactory;
 import com.google.gwt.user.rebind.SourceWriter;
 
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -43,72 +53,10 @@ import java.util.Set;
 public class JSWrapperGenerator extends Generator {
 
   /**
-   * The presence of this annotation on the class indicates that getFoo, setFoo,
-   * and isFoo should be treated as bean-style property accessors, rather than
-   * imported functions.
-   */
-  public static final String BEAN_PROPERTIES = "gwt.beanProperties";
-
-  /**
-   * Allows JSFunction classes to explicitly specify the function to be
-   * exported.
-   */
-  public static final String EXPORTED = "gwt.exported";
-
-  /**
-   * The name of the metadata field that contains the underlying property name
-   * to use for the bean property.
-   */
-  public static final String FIELD_NAME = "gwt.fieldName";
-
-  /**
-   * The policy to use when mangling bean property names to JSON object property
-   * names.
-   */
-  public static final String NAME_POLICY = "gwt.namePolicy";
-
-  /**
-   * Allows classes to provide the name of a function that will construct a
-   * backing object for the wrapper at instantiation time.
-   */
-  public static final String CONSTRUCTOR = "gwt.constructor";
-
-  /**
-   * This annotation is used on a JSWrapper class in a manner similar to
-   * <code>gwt.constructor</code> although the value is interpreted as a value
-   * reference rather than a function.
-   */
-  public static final String GLOBAL = "gwt.global";
-
-  /**
-   * Allows methods that look like bean property setter/getters to be treated as
-   * imported methods.
-   */
-  public static final String IMPORTED = "gwt.imported";
-
-  /**
-   * A class-level annotation that indicates that the generated JSWrapper should
-   * not modify the underlying JSO. The read-only annotation implies
-   * NO_IDENTITY.
-   */
-  public static final String READONLY = "gwt.readOnly";
-
-  /**
-   * This object disables maintaining a 1:1 identity mapping between a JSWrapper
-   * and the backing JSO. The BACKREF field will not be added to the JSO.
-   */
-  public static final String NO_IDENTITY = "gwt.noIdentity";
-
-  /**
    * The name of the field within the backing object that refers back to the
    * JSWrapper object.
    */
   public static final String BACKREF = "__gwtPeer";
-
-  /**
-   * The name of the backing object field.
-   */
-  protected static final String OBJ = "jsoPeer";
 
   /**
    * The name of the static field that contains the class's Extractor instance.
@@ -121,17 +69,147 @@ public class JSWrapperGenerator extends Generator {
   protected static final FragmentGeneratorOracle FRAGMENT_ORACLE = new FragmentGeneratorOracle();
 
   /**
-   * Utility method to check for the presence of a particular metadata tag.
+   * The name of the backing object field.
+   */
+  protected static final String OBJ = "jsoPeer";
+
+  /**
+   * Allows the metadata warning to be turned off to prevent log spam.
+   */
+  private static final boolean SUPPRESS_WARNINGS = Boolean.getBoolean("JSWrapper.suppressMetaWarnings");
+
+  /**
+   * Extract an Annotation. If the requested Annotation does not exist on the
+   * target node, the target's metadata will be examined for a tag based on the
+   * requested Annotation's {@link MetaDataName} meta-annotation. If the target
+   * has metadata which can be interpreted as the return type of the requested
+   * Annotation's value method, a {@link Proxy} will be synthesized. The proxy
+   * mode is only to support existing functionality, all new features should be
+   * added via new annotations.
+   * 
+   * @param <A> the desired type of Annotation
+   * @param <M> the type of object to search
+   * @param logger a logger
+   * @param target the object to search
+   * @param annotation the desired type of annotation
+   * @return an instance of the requested annotation, or <code>null</code> if
+   *         the annotation is not present and an instance of the annotation
+   *         cannot be synthesized due to lack of metadata
+   * @throws UnableToCompleteException if metadata with the correct tag exists
+   *           but cannot be interpreted as the return type of the annotation's
+   *           value method
    */
   @SuppressWarnings("deprecation")
-  static boolean hasTag(HasMetaData item, String tagName) {
-    String[] tags = item.getMetaDataTags();
-    for (int i = 0; i < tags.length; i++) {
-      if (tagName.equals(tags[i])) {
-        return true;
+  static <A extends Annotation, M extends HasAnnotations & HasMetaData> A hasTag(
+      TreeLogger logger, M target, final Class<A> annotation)
+      throws UnableToCompleteException {
+    logger = logger.branch(TreeLogger.TRACE, "Looking for annotation/meta "
+        + annotation.getName(), null);
+
+    // If the item has an annotation of the requested type, return it
+    A toReturn = target.getAnnotation(annotation);
+    if (toReturn != null) {
+      logger.log(TreeLogger.TRACE, "Found Annotation instance", null);
+      return toReturn;
+    }
+
+    // Otherwise, fall back to HasMetaData
+    MetaDataName metaDataName = annotation.getAnnotation(MetaDataName.class);
+    if (metaDataName == null) {
+      // Indicates that the requested annotation doesn't have legacy support
+      logger.log(TreeLogger.TRACE, "No legacy support for this annotation",
+          null);
+      return null;
+    }
+
+    String tagName = metaDataName.value();
+    boolean hasTag = false;
+    for (String tag : target.getMetaDataTags()) {
+      if (tagName.equals(tag)) {
+        hasTag = true;
+        if (!SUPPRESS_WARNINGS) {
+          logger.log(TreeLogger.WARN, target
+              + " uses deprecated metadata.  Replace with annotation "
+              + annotation.getName(), null);
+        }
+        break;
       }
     }
-    return false;
+    if (!hasTag) {
+      logger.log(TreeLogger.TRACE, "No metadata with tag " + tagName, null);
+      return null;
+    }
+
+    Object value;
+    try {
+      Method valueMethod = annotation.getMethod("value");
+      Class<?> returnType = valueMethod.getReturnType();
+      String[][] metaData = target.getMetaData(metaDataName.value());
+
+      // Use the default value if there's no value in the metadata
+      Object annotationDefaultValue;
+      try {
+        annotationDefaultValue = annotation.getMethod("value").getDefaultValue();
+      } catch (NoSuchMethodException e) {
+        annotationDefaultValue = null;
+      }
+
+      if (annotationDefaultValue == null && metaData.length == 0) {
+        logger.log(TreeLogger.ERROR, "Metadata " + tagName
+            + " must appear exactly once", null);
+        throw new UnableToCompleteException();
+
+      } else if (returnType.equals(String.class)) {
+        if (metaData[0].length == 1) {
+          logger.log(TreeLogger.TRACE, "Using value from metadata", null);
+          value = metaData[0][0];
+
+        } else if (annotationDefaultValue != null) {
+          value = annotationDefaultValue;
+        } else {
+          logger.log(TreeLogger.ERROR, "Metadata " + tagName
+              + " must have exactly one value", null);
+          throw new UnableToCompleteException();
+        }
+
+      } else if (annotationDefaultValue != null) {
+        logger.log(TreeLogger.TRACE, "Using annotation's default value", null);
+        value = annotationDefaultValue;
+
+      } else {
+        logger.log(TreeLogger.ERROR, "Can't deal with return type "
+            + returnType.getName(), null);
+        throw new UnableToCompleteException();
+      }
+    } catch (NoSuchMethodException e) {
+      // Just a tag annotation
+      value = null;
+    }
+
+    final Object finalValue = value;
+    Object proxy = Proxy.newProxyInstance(annotation.getClassLoader(),
+        new Class<?>[] {annotation}, new InvocationHandler() {
+          public Object invoke(Object proxy, Method method, Object[] args)
+              throws Throwable {
+            String name = method.getName();
+            if (name.equals("annotationType")) {
+              return annotation;
+            } else if (name.equals("hashCode")) {
+              return 0;
+            } else if (name.equals("toString")) {
+              return "Proxy for type " + annotation.getName() + " : "
+                  + finalValue;
+            } else if (name.equals("value")) {
+              return finalValue;
+            } else if (method.getDefaultValue() != null) {
+              return method.getDefaultValue();
+            }
+            throw new RuntimeException("Don't know how to service " + name
+                + " in type " + method.getDeclaringClass().getName());
+          }
+        });
+
+    return annotation.cast(proxy);
   }
 
   /**
@@ -205,9 +283,9 @@ public class JSWrapperGenerator extends Generator {
       fragmentContext.qualifiedTypeName = f.getCreatedClassName();
       fragmentContext.returnType = sourceType;
       fragmentContext.creatorFixups = new HashSet<JClassType>();
-      fragmentContext.readOnly = hasTag(sourceType, READONLY);
+      fragmentContext.readOnly = hasTag(logger, sourceType, ReadOnly.class) != null;
       fragmentContext.maintainIdentity = !(fragmentContext.readOnly || hasTag(
-          sourceType, NO_IDENTITY));
+          logger, sourceType, NoIdentity.class) != null);
       fragmentContext.tasks = propertyAccessors.values();
 
       // Perform sanity checks on the extracted information
@@ -298,13 +376,14 @@ public class JSWrapperGenerator extends Generator {
 
     // Determine the correct expression to use to initialize the object
     JClassType asClass = context.returnType.isClassOrInterface();
-    String[][] constructorMeta = asClass.getMetaData(CONSTRUCTOR);
-    String[][] globalMeta = asClass.getMetaData(GLOBAL);
+    Constructor constructorAnnotation = hasTag(logger, asClass,
+        Constructor.class);
+    Global globalAnnotation = hasTag(logger, asClass, Global.class);
     String constructor;
-    if (globalMeta.length == 1 && globalMeta[0].length == 1) {
-      constructor = globalMeta[0][0];
-    } else if (constructorMeta.length == 1 && constructorMeta[0].length == 1) {
-      constructor = "new " + constructorMeta[0][0] + "()";
+    if (globalAnnotation != null) {
+      constructor = globalAnnotation.value();
+    } else if (constructorAnnotation != null) {
+      constructor = "new " + constructorAnnotation.value() + "()";
     } else {
       boolean hasImports = false;
       for (Task t : context.tasks) {
@@ -534,9 +613,10 @@ public class JSWrapperGenerator extends Generator {
     // If the imported method is acting as an invocation of a JavaScript
     // constructor, use the new Foo() syntax, otherwise treat is an an
     // invocation on a field on the underlying JSO.
-    String[][] constructorMeta = constructor.getMetaData(CONSTRUCTOR);
     sw.print("new ");
-    sw.print(constructorMeta[0][0]);
+    Constructor constructorAnnotation = hasTag(logger, constructor,
+        Constructor.class);
+    sw.print(constructorAnnotation.value());
 
     // Write the invocation's parameter list
     sw.print("(");

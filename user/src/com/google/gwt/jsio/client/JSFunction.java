@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,8 +20,8 @@ import com.google.gwt.core.client.JavaScriptObject;
 /**
  * This is an interface for use with JSWrapper to export a Java function into a
  * JavaScript context. If the JSFunction contains multiple functions, the method
- * to export may be specified with a <code>gwt.exported</code> annotation on
- * the class or interface. Anonymous classes are supported.
+ * to export must by specified with an {@link Exported} annotation on the
+ * method. Anonymous classes are supported.
  * <p>
  * The underlying JavaScript function object will have an identity corresponding
  * to that of the JSFunction object, which makes it suitable for use with a
@@ -34,6 +34,6 @@ public abstract class JSFunction {
    * lifetime of the function is at least equal to that of the enclosing object.
    * This object is constructed the first time the JSFunction is used.
    */
-  // Package access to prevent style warning
-  JavaScriptObject exportedFunction;
+  @SuppressWarnings("unused")
+  private JavaScriptObject exportedFunction;
 }

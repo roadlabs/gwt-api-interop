@@ -28,8 +28,6 @@ public interface JSWrapper<T extends JSWrapper<T>> {
 
   /**
    * Used by JSList.
-   * 
-   * @skip
    */
   Extractor<T> getExtractor();
 
