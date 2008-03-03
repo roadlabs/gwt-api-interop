@@ -22,17 +22,17 @@ import com.google.gwt.jsio.client.JSONInvokerTest;
 import com.google.gwt.jsio.client.JSONWrapperTest;
 import com.google.gwt.jsio.client.JsoOverrideTest;
 import com.google.gwt.jsio.rebind.NamePolicyTest;
+import com.google.gwt.junit.tools.GWTTestSuite;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 /**
  * TestSuite for the JSIO API.
  */
 public class JSIOTestSuite extends TestCase {
   public static Test suite() {
-    TestSuite suite = new TestSuite("Test for the JSIO API");
+    GWTTestSuite suite = new GWTTestSuite("Test for the JSIO API");
 
     suite.addTestSuite(JSExporterTest.class);
     suite.addTestSuite(JSFlyweightWrapperTest.class);
