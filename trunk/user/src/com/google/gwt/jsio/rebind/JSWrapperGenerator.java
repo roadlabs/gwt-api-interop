@@ -32,6 +32,7 @@ import com.google.gwt.core.ext.typeinfo.JType;
 import com.google.gwt.core.ext.typeinfo.TypeOracle;
 import com.google.gwt.jsio.client.Constructor;
 import com.google.gwt.jsio.client.Global;
+import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.jsio.client.NoIdentity;
 import com.google.gwt.jsio.client.ReadOnly;
 import com.google.gwt.jsio.client.impl.MetaDataName;
@@ -210,6 +211,45 @@ public class JSWrapperGenerator extends Generator {
         });
 
     return annotation.cast(proxy);
+  }
+
+  /**
+   * Get the erased type of the parameterization of the JSWrapper. Returns
+   * <code>null</code> if JSWrapper is not in the class's inhertence
+   * hierarchy.
+   */
+  private static JClassType findJSWrapperParameterization(TypeOracle oracle,
+      JClassType extendsJSWrapper) {
+
+    // Break recursion
+    if (extendsJSWrapper == null) {
+      return null;
+    }
+
+    // Are we looking at JSWrapper<T>; if so, return it's parameterization
+    JClassType rawJSWrapper = oracle.findType(JSWrapper.class.getName()).getErasedType();
+    JParameterizedType asParam = extendsJSWrapper.isParameterized();
+    if (asParam != null && asParam.getErasedType().equals(rawJSWrapper)) {
+      return asParam.getTypeArgs()[0].getErasedType();
+    }
+
+    // Try the supertype
+    JClassType toReturn = findJSWrapperParameterization(oracle,
+        extendsJSWrapper.getSuperclass());
+    if (toReturn != null) {
+      return toReturn;
+    }
+
+    // Not in the supertype hierarchy, search the interfaces
+    for (JClassType implemented : extendsJSWrapper.getImplementedInterfaces()) {
+      toReturn = findJSWrapperParameterization(oracle, implemented);
+      if (toReturn != null) {
+        return toReturn;
+      }
+    }
+
+    // No type for you
+    return null;
   }
 
   /**
@@ -402,6 +442,12 @@ public class JSWrapperGenerator extends Generator {
       }
     }
 
+    JClassType parameterization = findJSWrapperParameterization(
+        context.typeOracle, asClass);
+    if (parameterization == null) {
+      parameterization = asClass;
+    }
+
     // Initialize native state of the wrapper
     sw.println("private native JavaScriptObject __nativeInit() /*-{");
     sw.indent();
@@ -432,7 +478,8 @@ public class JSWrapperGenerator extends Generator {
     // Satisfies JSWrapper and allows generated implementations to
     // efficiently initialize new objects.
     // Method declaration
-    sw.print("public " + context.simpleTypeName + " setJavaScriptObject(");
+    sw.print("public " + parameterization.getParameterizedQualifiedSourceName()
+        + " setJavaScriptObject(");
     sw.println("JavaScriptObject obj) {");
     sw.indent();
 
@@ -524,7 +571,8 @@ public class JSWrapperGenerator extends Generator {
     // implementation. We'll create an implementation per generated
     // class to ensure that if the class is used with a JSList, only one
     // instance of the Extractor will ever exist.
-    sw.println("public final Extractor<" + asClass.getQualifiedSourceName()
+    sw.println("public final Extractor<"
+        + parameterization.getParameterizedQualifiedSourceName()
         + "> getExtractor() {");
     sw.indent();
     sw.print("return ");
