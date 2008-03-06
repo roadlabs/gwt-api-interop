@@ -26,10 +26,8 @@ import com.google.gwt.junit.client.GWTTestCase;
  */
 public class JSIOBeanReturnUndefined extends GWTTestCase {
 
-  /**
-   * @gwt.beanProperties
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.EmptyObject
-   */
+  @BeanProperties
+  @Constructor("$wnd.JSIOBeanReturnUndefined.EmptyObject")
   public interface EmptyObject extends JSWrapper<EmptyObject> {
     int getValueInt();
 
@@ -40,15 +38,11 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   public interface EmptyObjectFW extends JSFlyweightWrapper {
     EmptyObjectFW impl = GWT.create(EmptyObjectFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.EmptyObject
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.EmptyObject")
     JavaScriptObject construct();
 
     int getValueInt(JavaScriptObject jsoPeer);
@@ -60,10 +54,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
-  /**
-   * @gwt.beanProperties
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberBoolean
-   */
+  @BeanProperties
+  @Constructor("$wnd.JSIOBeanReturnUndefined.MemberBoolean")
   public interface MemberBoolean extends JSWrapper<MemberBoolean> {
     boolean getValueFalse();
 
@@ -78,15 +70,11 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     boolean getValueZero();
   }
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   public interface MemberBooleanFW extends JSFlyweightWrapper {
     MemberBooleanFW impl = GWT.create(MemberBooleanFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberBoolean
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.MemberBoolean")
     JavaScriptObject construct();
 
     boolean getValueFalse(JavaScriptObject jsoPeer);
@@ -102,10 +90,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     boolean getValueZero(JavaScriptObject jsoPeer);
   }
 
-  /**
-   * @gwt.beanProperties
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberNull
-   */
+  @BeanProperties
+  @Constructor("$wnd.JSIOBeanReturnUndefined.MemberNull")
   public interface MemberNull extends JSWrapper<MemberNull> {
     byte getValueByte();
 
@@ -128,15 +114,11 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   public interface MemberNullFW extends JSFlyweightWrapper {
     MemberNullFW impl = GWT.create(MemberNullFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberNull
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.MemberNull")
     JavaScriptObject construct();
 
     byte getValueByte(JavaScriptObject jsoPeer);
@@ -160,10 +142,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
-  /**
-   * @gwt.beanProperties
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberUndefined
-   */
+  @BeanProperties
+  @Constructor("$wnd.JSIOBeanReturnUndefined.MemberUndefined")
   public interface MemberUndefined extends JSWrapper<MemberUndefined> {
     int getValueInt();
 
@@ -173,15 +153,12 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
 
     String getValueString();
   }
-  /**
-   * @gwt.beanProperties
-   */
+
+  @BeanProperties
   public interface MemberUndefinedFW extends JSFlyweightWrapper {
     MemberUndefinedFW impl = GWT.create(MemberUndefinedFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberUndefined
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.MemberUndefined")
     JavaScriptObject construct();
 
     int getValueInt(JavaScriptObject jsoPeer);
@@ -193,10 +170,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
-  /**
-   * @gwt.beanProperties
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberValid
-   */
+  @BeanProperties
+  @Constructor("$wnd.JSIOBeanReturnUndefined.MemberValid")
   public interface MemberValid extends JSWrapper<MemberValid> {
     String getValueEmptyString();
 
@@ -209,15 +184,11 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   public interface MemberValidFW extends JSFlyweightWrapper {
     MemberValidFW impl = GWT.create(MemberValidFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.MemberValid
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.MemberValid")
     JavaScriptObject construct();
 
     String getValueEmptyString(JavaScriptObject jsoPeer);
@@ -230,9 +201,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
 
     String getValueString(JavaScriptObject jsoPeer);
   }
-  /**
-   * @gwt.constructor $wnd.JSIOBeanReturnUndefined.ReturnUndefined
-   */
+
+  @Constructor("$wnd.JSIOBeanReturnUndefined.ReturnUndefined")
   public interface ReturnUndefined extends JSWrapper<ReturnUndefined> {
 
     boolean valueBoolean();
@@ -252,9 +222,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   public interface ReturnUndefinedFW extends JSFlyweightWrapper {
     ReturnUndefinedFW impl = GWT.create(ReturnUndefinedFW.class);
 
-    /**
-     * @gwt.constructor $wnd.JSIOBeanReturnUndefined.ReturnUndefined
-     */
+    @Constructor("$wnd.JSIOBeanReturnUndefined.ReturnUndefined")
     JavaScriptObject construct();
 
     boolean valueBoolean(JavaScriptObject jsoPeer);

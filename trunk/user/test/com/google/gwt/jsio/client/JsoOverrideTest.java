@@ -41,9 +41,8 @@ public class JsoOverrideTest extends GWTTestCase {
      * The MultiplyOverride is written with instance methods, so it's necessary
      * to bind a particular instance of the MultiplyOverride to the JavaScript
      * API.
-     * 
-     * @gwt.binding
      */
+    @Binding
     void bindMultiply(JavaScriptObject jso, MultiplyOverride multiplier);
 
     /**
@@ -51,21 +50,16 @@ public class JsoOverrideTest extends GWTTestCase {
      * provide an instance of the class when we perform the binding. Without a
      * second parameter on the binding method from which to infer the binding
      * type, we have to rely on a type declaration within the annotation.
-     * 
-     * @gwt.binding com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride
      */
+    @Binding("com.google.gwt.jsio.client.JsoOverrideTest.SubtractOverride")
     void bindSubtract(JavaScriptObject jso);
 
-    /**
-     * @gwt.global $wnd.JsoOverrideTest.MathLibFWInstance
-     */
+    @Global("$wnd.JsoOverrideTest.MathLibFWInstance")
     JavaScriptObject instance();
 
     int multiply(JavaScriptObject jso, int a, int b);
     
-    /**
-     * @gwt.global $wnd.JsoOverrideTest.MathLibFWConstructor.prototype
-     */
+    @Global("$wnd.JsoOverrideTest.MathLibFWConstructor.prototype")
     JavaScriptObject prototype();
 
     int subtract(JavaScriptObject jso, int a, int b);
@@ -81,9 +75,7 @@ public class JsoOverrideTest extends GWTTestCase {
       return invocations;
     }
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public int multiply(int x, int y) {
       invocations++;
       return x * y;
@@ -95,9 +87,7 @@ public class JsoOverrideTest extends GWTTestCase {
    * around an instance of SubtractOverride per MathLib instance.
    */
   static class SubtractOverride {
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public static int subtract(int x, int y) {
       return x - y;
     }
@@ -109,17 +99,14 @@ public class JsoOverrideTest extends GWTTestCase {
     }
   }
 
-  /**
-   * @gwt.global $wnd.JsoOverrideTest.MathLibConstructor.prototype
-   */
+  @Global("$wnd.JsoOverrideTest.MathLibConstructor.prototype")
   abstract static class WrapperMathLib implements JSWrapper<WrapperMathLib> {
     /**
      * Declaring the method to be static removes the dependency on the instance
      * of WrapperMathLib in the underlying linkage code. This is an optimization
      * and not a requirement.
-     * 
-     * @gwt.exported
      */
+    @Exported
     public static int subtract(int a, int b) {
       return a - b;
     }
@@ -128,9 +115,8 @@ public class JsoOverrideTest extends GWTTestCase {
 
     /**
      * Export an instance method as well.
-     * 
-     * @gwt.exported
      */
+    @Exported
     public int multiply(int a, int b) {
       return a * b;
     }

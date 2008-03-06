@@ -28,26 +28,21 @@ public class JSExporterTest extends GWTTestCase {
    * Demonstrates exporting methods from a JSWrapper.
    */
   abstract static class ExportedMethods implements JSWrapper<ExportedMethods> {
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public int add(int a, int b) {
       return a + b;
     }
 
     /**
      * This is final to ensure that we aren't excluding non-overridable methods.
-     * 
-     * @gwt.exported
-     * @gwt.fieldName sub
      */
+    @Exported
+    @FieldName("sub")
     public final int subtract(int a, int b) {
       return a - b;
     }
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public int sum(JSList<Integer> numbers) {
       int toReturn = 0;
 
@@ -67,14 +62,11 @@ public class JSExporterTest extends GWTTestCase {
     /**
      * Indicates that the method should be used to export methods from a Java
      * object to a JSO.
-     * 
-     * @gwt.binding
      */
+    @Binding
     void bind(JavaScriptObject obj, MathMethods m);
 
-    /**
-     * @gwt.constructor Object
-     */
+    @Constructor("$wnd.Object")
     JavaScriptObject construct();
   }
 
@@ -107,27 +99,19 @@ public class JSExporterTest extends GWTTestCase {
    * interface is the presence of gwt.exported tags.
    */
   static interface MathMethods {
-    /**
-     * @gwt.exported
-     */
+    @Exported
     int add(int a, int b);
 
-    /**
-     * @gwt.exported
-     * @gwt.fieldName sub
-     */
+    @Exported
+    @FieldName("sub")
     int subtract(int a, int b);
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     int sum(JSList<Integer> numbers);
   }
 
   static interface MissingMethodInterface extends JSFlyweightWrapper {
-    /**
-     * @gwt.binding
-     */
+    @Binding
     void bind(JavaScriptObject jso);
 
     void missingMethod(JavaScriptObject jso);
@@ -139,14 +123,10 @@ public class JSExporterTest extends GWTTestCase {
    */
   static class SimpleList {
     protected static interface SimpleListFlyweight extends JSFlyweightWrapper {
-      /**
-       * @gwt.binding
-       */
+      @Binding
       void bind(JavaScriptObject obj, SimpleList list);
 
-      /**
-       * @gwt.constructor $wnd.Object
-       */
+      @Constructor("$wnd.Object")
       JavaScriptObject create();
     }
 
@@ -164,16 +144,12 @@ public class JSExporterTest extends GWTTestCase {
       flyweight.bind(jsoPeer, this);
     }
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public SimpleList getNext() {
       return next;
     }
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public int getValue() {
       return value;
     }
@@ -186,16 +162,12 @@ public class JSExporterTest extends GWTTestCase {
     private SimpleListWrapper next;
     private int value;
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public SimpleListWrapper getNext() {
       return next;
     }
 
-    /**
-     * @gwt.exported
-     */
+    @Exported
     public int getValue() {
       return value;
     }

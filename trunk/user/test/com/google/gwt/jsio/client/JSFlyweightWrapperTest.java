@@ -25,14 +25,11 @@ import com.google.gwt.junit.client.GWTTestCase;
 public class JSFlyweightWrapperTest extends GWTTestCase {
   /**
    * Contains getters for all primitive types.
-   * 
-   * @gwt.beanProperties
    */
+  @BeanProperties
   static interface PrimitiveInterface extends JSFlyweightWrapper {
 
-    /**
-     * @gwt.constructor Object
-     */
+    @Constructor("$wnd.Object")
     JavaScriptObject construct();
 
     Boolean getBoxedBoolean(JavaScriptObject jso);
@@ -105,9 +102,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   static interface ConstructedInterface extends JSFlyweightWrapper {
-    /**
-     * @gwt.constructor $wnd.JSFlyweightWrapperTest.ConstructedObject
-     */
+    @Constructor("$wnd.JSFlyweightWrapperTest.ConstructedObject")
     JavaScriptObject construct(String a, int b, Tree t);
 
     int getInt(JavaScriptObject obj);
@@ -165,18 +160,13 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
       IMPL.setValue(this, value);
     }
   }
-  /**
-   * @gwt.beanProperties
-   */
+
+  @BeanProperties
   static interface TreeInterface extends JSFlyweightWrapper {
-    /**
-     * @gwt.binding
-     */
+    @Binding
     void bind(JavaScriptObject jso, Tree node);
 
-    /**
-     * @gwt.constructor Object
-     */
+    @Constructor("$wnd.Object")
     JavaScriptObject construct();
 
     Tree getLeft(Tree parent);

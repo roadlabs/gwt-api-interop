@@ -28,10 +28,9 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * A class that uses class-based naming policy.
-   * 
-   * @gwt.beanProperties
-   * @gwt.namePolicy com.google.gwt.jsio.rebind.TestNamePolicy
    */
+  @BeanProperties
+  @NamePolicy("com.google.gwt.jsio.rebind.TestNamePolicy")
   static interface ClassPolicyNamedInterface extends
       JSWrapper<ClassPolicyNamedInterface> {
     String getHello();
@@ -39,9 +38,7 @@ public class JSONWrapperTest extends GWTTestCase {
     void setHello(String hello);
   }
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   static interface ListInterface extends JSWrapper<ListInterface> {
     int getBasicInt();
 
@@ -60,13 +57,10 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * A class that uses method-based naming policy.
-   * 
-   * @gwt.beanProperties
    */
+  @BeanProperties
   static interface NamedInterface extends JSWrapper<NamedInterface> {
-    /**
-     * @gwt.fieldName HELLO
-     */
+    @FieldName("HELLO")
     String getHello();
 
     void setHello(String hello);
@@ -74,9 +68,8 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * Test "finishing" an abstract base class.
-   * 
-   * @gwt.beanProperties
    */
+  @BeanProperties
   abstract static class PartialWrapper implements JSWrapper<PartialWrapper> {
     public abstract int getA();
 
@@ -97,10 +90,9 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * A class that uses a built-in class-based naming policy.
-   * 
-   * @gwt.beanProperties
-   * @gwt.namePolicy upper
    */
+  @BeanProperties
+  @NamePolicy(NamePolicy.UPPER)
   static interface PolicyNamedInterface extends JSWrapper<PolicyNamedInterface> {
     String getHello();
 
@@ -109,9 +101,8 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * Contains getters for all primitive types.
-   * 
-   * @gwt.beanProperties
    */
+  @BeanProperties
   static interface PrimitiveInterface extends JSWrapper<PrimitiveInterface> {
     Boolean getBoxedBoolean();
 
@@ -184,10 +175,9 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * This class exists to test object identity behavior of read-only wrappers.
-   * 
-   * @gwt.readOnly
-   * @gwt.beanProperties
    */
+  @BeanProperties
+  @ReadOnly
   abstract static class ReadOnlyInterface implements
       JSWrapper<ReadOnlyInterface> {
     public abstract String getHello();
@@ -197,17 +187,17 @@ public class JSONWrapperTest extends GWTTestCase {
 
   /**
    * Tests interface with a set-only method.
-   * 
-   * @gwt.beanProperties
-   * @gwt.noIdentity
    */
+  @BeanProperties
+  @NoIdentity
   static interface SetterOnly extends JSWrapper<SetterOnly> {
     void setHello(String hello);
   }
 
   /**
-   * @gwt.beanProperties
+   * A tree-like structure.
    */
+  @BeanProperties
   static interface TreeInterface extends JSWrapper<TreeInterface> {
     TreeInterface getLeft();
 

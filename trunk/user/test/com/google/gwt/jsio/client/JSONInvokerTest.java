@@ -42,10 +42,10 @@ public class JSONInvokerTest extends GWTTestCase {
 
   /**
    * Testbed class for invocation testing.
-   * 
-   * @gwt.beanProperties
    */
-  public static interface HelloWrapper<T extends HelloWrapper<T>> extends JSWrapper<T> {
+  @BeanProperties
+  public static interface HelloWrapper<T extends HelloWrapper<T>> extends
+      JSWrapper<T> {
     /**
      * These functions test using variable numbers of parameters to the same
      * underlying JS function.
@@ -54,17 +54,13 @@ public class JSONInvokerTest extends GWTTestCase {
 
     int add(int toAdd, int second);
 
-    /**
-     * @gwt.constructor $wnd.JSONInvokerTest.Hello
-     */
-    HelloWrapper constructor(String param1, int param2);
+    @Constructor("$wnd.JSONInvokerTest.Hello")
+    HelloWrapper<T> constructor(String param1, int param2);
 
     int getHello();
 
-    /**
-     * @gwt.imported true
-     * @gwt.fieldName returnUndefined
-     */
+    @Imported
+    @FieldName("returnUndefined")
     Integer getIntegerAsUndefined();
 
     JSList<Integer> getNumbers();
@@ -87,7 +83,7 @@ public class JSONInvokerTest extends GWTTestCase {
      * Test that a JSWrapper can be passed through and returned from a native
      * code block.
      */
-    HelloWrapper passthrough(HelloWrapper w);
+    HelloWrapper<T> passthrough(HelloWrapper<T> w);
 
     OtherWrapper passthrough(OtherWrapper w);
 
@@ -98,33 +94,28 @@ public class JSONInvokerTest extends GWTTestCase {
     /**
      * Don't implement this as a bean function, but make a call out to the js
      * object.
-     * 
-     * @gwt.imported true
      */
+    @Imported
     void setHello(int hello);
 
     /**
      * Alias test.
-     * 
-     * @gwt.fieldName sub
      */
+    @FieldName("sub")
     int subtract(int toSubtract);
 
     int testCallback(int a, int b, HelloCallbackInt c);
 
-    /**
-     * @gwt.fieldName testCallback
-     */
+    @FieldName("testCallback")
     Integer testCallbackBoxed(Integer a, Integer b, HelloCallbackInteger c);
   }
 
   /**
    * Ensures an assertion fails when constructor method called.
    */
-  public static interface MissingMethodWrapper extends HelloWrapper {
-    /**
-     * @gwt.import
-     */
+  public static interface MissingMethodWrapper extends
+      HelloWrapper<MissingMethodWrapper> {
+    @Imported
     void missingMethod();
   }
 
@@ -134,15 +125,15 @@ public class JSONInvokerTest extends GWTTestCase {
   public static interface OtherWrapper extends JSWrapper<OtherWrapper> {
   }
 
-  /**
-   * @gwt.global $wnd.JSONInvokerTest.SingletonHello
-   */
-  public static interface SingletonHello extends HelloWrapper {
+  @Global("$wnd.JSONInvokerTest.SingletonHello")
+  public static interface SingletonHello extends HelloWrapper<SingletonHello> {
   }
+
   /**
    * Tests state-preserving behavior across the JS/Java boundary.
    */
-  public abstract static class StatefulWrapper implements HelloWrapper {
+  public abstract static class StatefulWrapper implements
+      HelloWrapper<StatefulWrapper> {
     static String staticField;
     final String finalField = "finalField";
     transient String transientField;
@@ -157,7 +148,7 @@ public class JSONInvokerTest extends GWTTestCase {
   }
 
   public void testCallback() {
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper<?> wrapper = GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
 
     assertEquals(30, wrapper.testCallback(2, 3, new HelloCallbackInt()));
@@ -177,13 +168,13 @@ public class JSONInvokerTest extends GWTTestCase {
    * Ensure that undefined maps to null when returning a boxed primitive.
    */
   public void testIntegerAsUndefined() {
-    HelloWrapper w = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper<?> w = GWT.create(HelloWrapper.class);
     w.constructor("Hello world", 99);
     assertNull(w.getIntegerAsUndefined());
   }
 
   public void testInvocation() {
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(HelloWrapper.class);
+    HelloWrapper<?> wrapper = GWT.create(HelloWrapper.class);
     wrapper.constructor("Hello world", 99);
     assertEquals(42, wrapper.getHello());
     assertEquals("Hello world", wrapper.getParam1());
@@ -262,7 +253,7 @@ public class JSONInvokerTest extends GWTTestCase {
    * Test initialization of a wrapper via the gwt.global singleton constructor.
    */
   public void testSingleton() {
-    HelloWrapper wrapper = (HelloWrapper) GWT.create(SingletonHello.class);
+    HelloWrapper<?> wrapper = GWT.create(SingletonHello.class);
 
     assertEquals("Singleton", wrapper.getParam1());
     assertEquals(314159, wrapper.getParam2());
