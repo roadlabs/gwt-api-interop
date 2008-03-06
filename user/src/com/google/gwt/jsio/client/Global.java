@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  */
 @Documented
 @MetaDataName("gwt.global")
-@Target(ElementType.TYPE)
+@Target(value = {ElementType.METHOD, ElementType.TYPE})
 public @interface Global {
   String value();
 }

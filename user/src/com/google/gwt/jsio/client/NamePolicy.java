@@ -23,11 +23,38 @@ import java.lang.annotation.Target;
 
 /**
  * The policy to use when mangling bean property names to JSON object property
- * names.
+ * names. The value of this annotation can be one of the predefined policy
+ * names, or the qualified source name of a type that implement
+ * {@link com.google.gwt.jsio.rebind.NamePolicy}.
  */
 @Documented
 @MetaDataName("gwt.namePolicy")
 @Target(ElementType.TYPE)
 public @interface NamePolicy {
+  /**
+   * Converts SomeFunctionName to someFunctionName.
+   */
+  String BEAN = "bean";
+
+  /**
+   * Converts SomeFunctionName to some_function_name.
+   */
+  String C_STYLE = "c_style";
+
+  /**
+   * Makes no changes.
+   */
+  String EXACT = "exact";
+
+  /**
+   * Converts to lower-case.
+   */
+  String LOWER = "lower";
+
+  /**
+   * Converts to upper-case.
+   */
+  String UPPER = "upper";
+
   String value();
 }
