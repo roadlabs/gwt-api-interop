@@ -57,11 +57,16 @@ public class JsoOverrideTest extends GWTTestCase {
     void bindSubtract(JavaScriptObject jso);
 
     /**
-     * @gwt.global $wnd.JsoOverrideTest.MathLibFW.constructor.prototype
+     * @gwt.global $wnd.JsoOverrideTest.MathLibFWInstance
      */
-    JavaScriptObject construct();
+    JavaScriptObject instance();
 
     int multiply(JavaScriptObject jso, int a, int b);
+    
+    /**
+     * @gwt.global $wnd.JsoOverrideTest.MathLibFWConstructor.prototype
+     */
+    JavaScriptObject prototype();
 
     int subtract(JavaScriptObject jso, int a, int b);
   }
@@ -105,7 +110,7 @@ public class JsoOverrideTest extends GWTTestCase {
   }
 
   /**
-   * @gwt.global $wnd.JsoOverrideTest.MathLib.constructor.prototype
+   * @gwt.global $wnd.JsoOverrideTest.MathLibConstructor.prototype
    */
   abstract static class WrapperMathLib implements JSWrapper<WrapperMathLib> {
     /**
@@ -138,7 +143,8 @@ public class JsoOverrideTest extends GWTTestCase {
   public void testFlyweightOverride() {
     FlyweightMathLib flyweightMathLib = (FlyweightMathLib) GWT.create(FlyweightMathLib.class);
 
-    JavaScriptObject mathJso = flyweightMathLib.construct();
+    JavaScriptObject mathJso = flyweightMathLib.instance();
+    JavaScriptObject prototype = flyweightMathLib.prototype();
 
     assertEquals(7, flyweightMathLib.add(mathJso, 3, 4));
     // Show the broken version is still there until binding
@@ -151,11 +157,11 @@ public class JsoOverrideTest extends GWTTestCase {
     // Because we're only exporting static methods from SubtractOverride, it's
     // unnecessary to actually provide an instance of a SubtractOverride to the
     // binding. If we did, it would be ignored.
-    flyweightMathLib.bindSubtract(mathJso);
-    
+    flyweightMathLib.bindSubtract(prototype);
+
     // Now we'll bind an instance of a MultiplyOverride to the API
     MultiplyOverride override = new MultiplyOverride();
-    flyweightMathLib.bindMultiply(mathJso, override);
+    flyweightMathLib.bindMultiply(prototype, override);
 
     assertEquals(7, flyweightMathLib.add(mathJso, 3, 4));
 
@@ -168,7 +174,7 @@ public class JsoOverrideTest extends GWTTestCase {
     assertEquals(50, invokeMultiplyFW(10, 5));
     assertEquals(5, invokeSubtractOnNewInstanceFW(10, 5));
     assertEquals(50, invokeMultiplyOnNewInstanceFW(10, 5));
-    
+
     // Check that we have statefulness in the bound override.
     assertEquals(3, override.getInvocations());
   }
@@ -193,19 +199,19 @@ public class JsoOverrideTest extends GWTTestCase {
     assertEquals(50, invokeMultiply(10, 5));
     assertEquals(50, invokeMultiplyOnNewInstance(10, 5));
   }
-  
+
   /**
    * Invokes the MathLib multiply function from JavaScript.
    */
   private native int invokeMultiply(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLib.multiply(a, b);
+    return $wnd.JsoOverrideTest.MathLibInstance.multiply(a, b);
   }-*/;
 
   /**
    * Invokes the MathLib multiply function from JavaScript.
    */
   private native int invokeMultiplyFW(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibFW.multiply(a, b);
+    return $wnd.JsoOverrideTest.MathLibFWInstance.multiply(a, b);
   }-*/;
 
   /**
@@ -228,14 +234,14 @@ public class JsoOverrideTest extends GWTTestCase {
    * Invokes the MathLib subtract function from JavaScript.
    */
   private native int invokeSubtract(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLib.subtract(a, b);
+    return $wnd.JsoOverrideTest.MathLibInstance.subtract(a, b);
   }-*/;
 
   /**
    * Invokes the MathLib subtract function from JavaScript.
    */
   private native int invokeSubtractFW(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibFW.subtract(a, b);
+    return $wnd.JsoOverrideTest.MathLibFWInstance.subtract(a, b);
   }-*/;
 
   /**

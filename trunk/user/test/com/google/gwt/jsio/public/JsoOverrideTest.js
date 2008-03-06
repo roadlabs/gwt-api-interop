@@ -15,26 +15,24 @@
  */
 
 (function() {
-  var MathLib = function() {};
-  var MathLibFW = function() {};
+  function MathLib() {};
+  function MathLibFW() {};
   
-  MathLibFW.prototype.add = MathLib.prototype.add = function(a, b) {
-    return a + b;
+  function makeLib() {
+    return {
+      add:function(a, b) {return a + b;},
+      // subtract and multiply are intentionally broken
+      subtract:function(a, b) {return 0;},
+      multiply:function(a, b) {return 0;}
+    };
   }
   
-  // This function is broken, we'll override it in Java with a static method
-  MathLibFW.prototype.subtract = MathLib.prototype.subtract = function(a, b) {
-    return 0;
-  }
-  
-  // This function is broken, we'll override it with an instance method
-  MathLibFW.prototype.multiply = MathLib.prototype.multiply = function(a, b) {
-    return 0;
-  }
+  MathLib.prototype = makeLib();
+  MathLibFW.prototype = makeLib();
   
   JsoOverrideTest = {};
   JsoOverrideTest.MathLibConstructor = MathLib;
   JsoOverrideTest.MathLibFWConstructor = MathLibFW;
-  JsoOverrideTest.MathLib = new MathLib();
-  JsoOverrideTest.MathLibFW = new MathLibFW();
+  JsoOverrideTest.MathLibInstance = new MathLib();
+  JsoOverrideTest.MathLibFWInstance = new MathLibFW();
 })();
