@@ -30,18 +30,34 @@ In the general case, there may be at most one [http://gwt-api-interop.googlecode
 
 == Annotations ==
 
-The behavior of the generated classes may be altered by the presence of various @gwt annotations.
+The behavior of the generated classes may be altered by the presence of various annotations.  In GWT 1.4 and earlier, this was signified by using a javadoc metadata comment as follows:
+
+{{{
+   /**
+    * Deprecated - GWT 1.4 style JSIO annotation
+    * @gwt.constructor("Object")
+    */
+   JavaScriptObject foo();
+}}}
+
+In GWT 1.5, the Java 5 annotations support is used.  This allows for the compiler to perform lexical and syntax checks on the annotations.
+
+{{{
+   @Constructor("Object")
+   JavaScriptObject foo();
+}}}
+
 
 ||Annotation 	        ||Location 	||Description ||
-|| `gwt.beanProperties`    ||Class, Method || Indicates that methods that look like bean-style property setters (methods that begin with the prefix `get`, `set`, or `is`) should be generated so as to read and write object properties rather than import functions. This is most useful with JSON-style objects. The setting may by applied on a per-method basis in an imported class and may by overridden on a per-method basis by `gwt.imported`. If the backing object does not contain data for a property accessor, null, 0, ' ', false, or an empty [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSList.html com.google.gwt.jsio.client.JSList] will be returned. ||
-|| `gwt.constructor` 	||Class, Method  || The annotation `gwt.constructor` may be applied to a class to specify a !JavaScript function to execute when constructing a JSWrapper to use as the initial backing object. A !JavaScript Date object could be created by using the value $wnd.Date. If the gwt.constructor annotation is applied to a method within a JSWrapper and the method invoked, the parameters of the method will be passed to the named global function and the resulting !JavaScript object will be used as the backing object. ||
-|| `gwt.exported` 	||Method 	||Individual Java functions may be exported to !JavaScript callers by declaring a `gwt.exported` annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' !NamePolicy or a `gwt.fieldName` annotation on the method. When applied at the class level to a [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSFunction.html com.google.gwt.jsio.client.JSFunction], it specifies which of the methods declared within to type to export as a !JavaScript Function object.||
-|| `gwt.fieldName` 	||Method 	||When implementing a bean property accessor, the default !NamePolicy will be used unless a `gwt.fieldName` annotation appears on the property's getter or setter. This is also used with imported and exported functions to specify the object property to attach to.||
-|| `gwt.global` 	||Class 	||The annotation `gwt.global` is similar to gwt.constructor, however it may be applied only at the class level and the value is interpreted as a globally-accessible object name, rather than a function. ||
-|| `gwt.imported` 	||Method 	||  By default, any method in an interface is implicitly imported for use in Java.  Using `gwt.imported` is a way to override methods within classes annotated with `gwt.beanProperties`.  This will explicitly import a !JavaScript method instead of generating a getter or setter method. ||
-|| `gwt.namePolicy` 	||Class 	||Specifies the default transformation to use when converting bean property accessor function names to fields on the underlying !JavaScriptObject. The valid values for the namePolicy are the field names on the `com.google.gwt.jsio.rebind.NamePolicy` class, or the name of a class that implements !NamePolicy.||
-|| `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally,  [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html#setJavaScriptObject(JavaScriptObject) com.google.gwt.jsio.client.JSWrapper.setJavaScriptObject()] will no longer throw [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/MultipleWrapperException.html com.google.gwt.jsio.client.MultipleWrapperException].  ||
-|| `gwt.readOnly`	||Class 	||This prevents the generated JSWrapper implementation from containing any code that will modify the underlying !JavaScriptObject. This implies `gwt.noIdentity`. Invoking a bean-style getter when the underlying !JavaScriptObject does not contain a value for the property will result in undefined behavior. ||
+|| `@BeanProperties`, `gwt.beanProperties`    ||Class, Method || Indicates that methods that look like bean-style property setters (methods that begin with the prefix `get`, `set`, or `is`) should be generated so as to read and write object properties rather than import functions. This is most useful with JSON-style objects. The setting may by applied on a per-method basis in an imported class and may by overridden on a per-method basis by `@Imported`. If the backing object does not contain data for a property accessor, null, 0, ' ', false, or an empty [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSList.html com.google.gwt.jsio.client.JSList] will be returned. ||
+|| `@Constructor(String)`, `gwt.constructor` 	||Class, Method  || The annotation `@Constructor` may be applied to a class to specify a !JavaScript function to execute when constructing a JSWrapper to use as the initial backing object. A !JavaScript Date object could be created by using the value $wnd.Date. If the `@Constructor` annotation is applied to a method within a JSWrapper and the method invoked, the parameters of the method will be passed to the named global function and the resulting !JavaScript object will be used as the backing object. ||
+|| `@Exported`, `gwt.exported` 	||Method 	||Individual Java functions may be exported to !JavaScript callers by declaring a `@Exported` annotation on a concrete Java method within a JSWrapper. The Java method will be bound to a property on the backing object per the class' !NamePolicy or a `@FieldName` annotation on the method.  _GWT 1.4 only:_  When applied at the class level to a [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSFunction.html com.google.gwt.jsio.client.JSFunction], it specifies which of the methods declared within to type to export as a !JavaScript Function object.||
+|| `@FieldName(String)`, `gwt.fieldName` 	||Method 	||When implementing a bean property accessor, the default !NamePolicy will be used unless a `@FieldName` annotation appears on the property's getter or setter. This is also used with imported and exported functions to specify the object property to attach to.||
+|| `@Global(String)`,`gwt.global` 	||Class 	||The annotation `@Global` is similar to `@Constructor`, however it may be applied only at the class level and the value is interpreted as a globally-accessible object name, rather than a function. ||
+|| `@Imported`, `gwt.imported` 	||Method 	||  By default, any method in an interface is implicitly imported for use in Java.  Using `@Imported` is a way to override methods within classes annotated with `@BeanProperties`.  This will explicitly import a !JavaScript method instead of generating a getter or setter method. ||
+|| `@NamePolicy(String)`,`gwt.namePolicy` || Class || The valid values for the namePolicy are the field names on the `com.google.gwt.jsio.rebind.NamePolicy` class, or the name of a class that implements !NamePolicy.||
+|| `@NoIdentity`, `gwt.noIdentity` 	||Class 	||This annotation suppresses the addition of the __gwtObject property on the underlying !JavaScriptObject. The object identity of the JSWrapper will no longer maintain a 1:1 correspondence with the underlying !JavaScriptObject. Additionally,  [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/JSWrapper.html#setJavaScriptObject(JavaScriptObject) com.google.gwt.jsio.client.JSWrapper.setJavaScriptObject()] will no longer throw [http://gwt-api-interop.googlecode.com/svn/javadoc/com/google/gwt/jsio/client/MultipleWrapperException.html com.google.gwt.jsio.client.MultipleWrapperException].  ||
+|| `@ReadOnly`, `gwt.readOnly`	||Class 	||This prevents the generated JSWrapper implementation from containing any code that will modify the underlying !JavaScriptObject. This implies `@NoIdentity`. Invoking a bean-style getter when the underlying !JavaScriptObject does not contain a value for the property will result in undefined behavior. ||
 
 
 ==JSWrapper Examples==
@@ -58,7 +74,7 @@ The tags are pretty much the same as JSWrapper, but you'll want to look at anyth
 == New Annotations ==
 
 || Annotation   || Location || Description ||
-|| `gwt.binding` || Method || Used in conjuction with `@gwt.exported`. Indicates that a flyweight-style method should be used to bind exported functions from a Java type into a !JavaScriptObject.  The method should have the signature void bind (JavaScriptObject jsoPeer, <classname> obj);.  This creates a property named `__gwtPeer` on the !JavaScriptObject that references the type. Passing a !JavaScriptObject to a bind method will also perform some assertions on the JSO to make sure it has the same duck type as the one specified by the Java interface (by checking the existence of methods in the object for those being imported.) Turn on assertions on the commandline with `-ea` to get the extra checking in hosted mode.  Multiple methods may be annoated with gwt.binding, but a single JSO instance should be bound to no more than one Java object.  ||
+|| `@Binding`, `gwt.binding` || Method || Used in conjuction with `@Exported`. Indicates that a flyweight-style method should be used to bind exported functions from a Java type into a !JavaScriptObject.  The method should have the signature void bind (JavaScriptObject jsoPeer, <classname> obj);.  This creates a property named `__gwtPeer` on the !JavaScriptObject that references the type. Passing a !JavaScriptObject to a bind method will also perform some assertions on the JSO to make sure it has the same duck type as the one specified by the Java interface (by checking the existence of methods in the object for those being imported.) Turn on assertions on the commandline with `-ea` to get the extra checking in hosted mode.  Multiple methods may be annoated with `@Binding`, but a single JSO instance should be bound to no more than one Java object.  ||
 
 
 == New Methods:==
