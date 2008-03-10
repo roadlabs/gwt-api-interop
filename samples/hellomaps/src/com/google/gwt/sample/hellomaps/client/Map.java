@@ -1,5 +1,5 @@
 /*
- * Copyright 2006 Google Inc.
+ * Copyright 2008 Google Inc.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,9 @@
 package com.google.gwt.sample.hellomaps.client;
 
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.jsio.client.Constructor;
+import com.google.gwt.jsio.client.Exported;
+import com.google.gwt.jsio.client.FieldName;
 import com.google.gwt.jsio.client.JSFunction;
 import com.google.gwt.jsio.client.JSWrapper;
 import com.google.gwt.user.client.Element;
@@ -46,15 +49,14 @@ public class Map extends Composite {
    * direct bearing on the linkage, it's simply convenient to use the same name
    * as the Maps API documentation.
    */
-  interface GControl extends JSWrapper {
+  interface GControl extends JSWrapper<GControl> {
   }
 
   /**
-   * Provides access to the Google Maps geocoding service
-   * 
-   * @gwt.constructor $wnd.GClientGeocoder
+   * Provides access to the Google Maps geocoding service.
    */
-  interface Geocoder extends JSWrapper {
+  @Constructor("$wnd.GClientGeocoder")
+  interface Geocoder extends JSWrapper<Geocoder> {
     /**
      * Sends a request to the geocoding service. The Geocoder will issue a
      * callback, so it's important that we can "pass" a Java code closure into a
@@ -63,45 +65,42 @@ public class Map extends Composite {
      * @param address The location to geocode
      * @param callback A callback that will be invoked when a result is
      *          returned.
-     * @gwt.fieldName getLatLng
      */
+    @FieldName("getLatLng")
     void lookup(String address, GeocoderCallback callback);
   }
 
   /**
-   * A callback for the geocoding service. We explicity name the desired export
+   * A callback for the geocoding service. We explicitly name the desired export
    * function so that the interface could provide additional functions. If the
    * class has only a single function, the annotation isn't strictly necessary.
-   * 
-   * @gwt.exported onGeocode
    */
   abstract class GeocoderCallback extends JSFunction {
+    @Exported
     public abstract void onGeocode(GLatLng position);
   }
 
   /**
    * The naming of the class is arbitrary, but chosen for consistency with the
-   * underlying JS API
+   * underlying JS API.
    */
-  interface GLatLng extends JSWrapper {
+  interface GLatLng extends JSWrapper<GLatLng> {
     /**
      * The naming of the method is arbitrary, the only thing that's important is
      * the presence of the gwt.constructor annotation.
-     * 
-     * @gwt.constructor $wnd.GLatLng
      */
-    public GLatLng construct(double lat, double lng);
+    @Constructor("$wnd.GLatLng")
+    GLatLng construct(double lat, double lng);
 
-    public double lat();
+    double lat();
 
-    public double lng();
+    double lng();
   }
 
   /**
-   * This is the map type controller (map, satellite, hybrid)
-   * 
-   * @gwt.constructor $wnd.GMapTypeControl
+   * This is the map type controller (map, satellite, hybrid).
    */
+  @Constructor("$wnd.GMapTypeControl")
   interface GMapTypeControl extends GControl {
   }
 
@@ -109,41 +108,38 @@ public class Map extends Composite {
    * This interface is named differently from the underlying name of the JS
    * class.
    */
-  interface GoogleMap extends JSWrapper {
+  interface GoogleMap extends JSWrapper<GoogleMap> {
     /**
      * We need to be able to add some controls to the map, so we'll expose the
      * method to do so. See below for the two "implementations" of GControl.
      */
-    public void addControl(GControl control);
+    void addControl(GControl control);
 
     /**
      * Tells the map code to update its visual state when the size of the
      * containing element changes.
      */
-    public void checkResize();
+    void checkResize();
 
-    /**
-     * @gwt.constructor $wnd.GMap2
-     */
-    public GoogleMap construct(Element elt);
+    @Constructor("$wnd.GMap2")
+    GoogleMap construct(Element elt);
 
     /**
      * Pan the map to a new position.
      */
-    public void panTo(GLatLng position);
+    void panTo(GLatLng position);
 
     /**
      * No annotations are required since the arguments make this not a bean-
      * style setter.
      */
-    public void setCenter(GLatLng position, int zoomLevel);
+    void setCenter(GLatLng position, int zoomLevel);
   }
 
   /**
    * This is the small map controller (directional control and zoom).
-   * 
-   * @gwt.constructor $wnd.GSmallMapControl
    */
+  @Constructor("$wnd.GSmallMapControl")
   interface GSmallMapControl extends GControl {
   }
 
@@ -160,10 +156,10 @@ public class Map extends Composite {
     // Add some standard controllers
     map.addControl((GControl) GWT.create(GSmallMapControl.class));
     map.addControl((GControl) GWT.create(GMapTypeControl.class));
-
+    
     // Create a position wrapper
     final GLatLng center = (GLatLng) GWT.create(GLatLng.class);
-    // Set the position of the wrapper (Palto Alto)
+    // Set the position of the wrapper (Palo Alto)
     center.construct(37.4419, -122.1419);
 
     // Set the center and zoom level
@@ -172,6 +168,7 @@ public class Map extends Composite {
     initWidget(panel);
   }
 
+  @Override
   public void onLoad() {
     // The map control needs to be kicked when its enclosing element changes
     // size.
@@ -181,7 +178,8 @@ public class Map extends Composite {
   public void setLocation(String address) {
     // Notice that the callbacks work correctly with anonymous classes
     geocoder.lookup(address, new GeocoderCallback() {
-      // This will move the map to the location retured by the service
+      // This will move the map to the location returned by the service
+      @Override
       public void onGeocode(GLatLng position) {
         if (position == null) {
           Window.alert("The name you entered couldn't be found.");
