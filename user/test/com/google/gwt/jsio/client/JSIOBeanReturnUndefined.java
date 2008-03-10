@@ -26,6 +26,9 @@ import com.google.gwt.junit.client.GWTTestCase;
  */
 public class JSIOBeanReturnUndefined extends GWTTestCase {
 
+  /**
+   * Wraps a JSO for testing undefined properties (JSWrapper)
+   */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.EmptyObject")
   public interface EmptyObject extends JSWrapper<EmptyObject> {
@@ -38,6 +41,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
+  /**
+   * Wraps a JSO for testing undefined properties (JSFlyweightWrapper)
+   */
   @BeanProperties
   public interface EmptyObjectFW extends JSFlyweightWrapper {
     EmptyObjectFW impl = GWT.create(EmptyObjectFW.class);
@@ -54,6 +60,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
+  /**
+   * Wraps a JSO for testing booleans (JSWrapper)
+   */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberBoolean")
   public interface MemberBoolean extends JSWrapper<MemberBoolean> {
@@ -70,6 +79,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     boolean getValueZero();
   }
 
+  /**
+   * Wraps a JSO for testing booleans (JSWrapper)
+   */
   @BeanProperties
   public interface MemberBooleanFW extends JSFlyweightWrapper {
     MemberBooleanFW impl = GWT.create(MemberBooleanFW.class);
@@ -90,6 +102,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     boolean getValueZero(JavaScriptObject jsoPeer);
   }
 
+  /**
+   * Wraps a JSO for testing null values (JSWrapper)
+   */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberNull")
   public interface MemberNull extends JSWrapper<MemberNull> {
@@ -114,6 +129,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
+  /**
+   * Wraps a JSO for testing null values (JSWrapper)
+   */
   @BeanProperties
   public interface MemberNullFW extends JSFlyweightWrapper {
     MemberNullFW impl = GWT.create(MemberNullFW.class);
@@ -142,6 +160,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
+  /**
+   * Wraps a JSO for testing null values (JSWrapper)
+   */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberUndefined")
   public interface MemberUndefined extends JSWrapper<MemberUndefined> {
@@ -154,6 +175,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
+  /**
+   * Wraps a JSO for testing null values (JSFlyweightWrapper)
+   */
   @BeanProperties
   public interface MemberUndefinedFW extends JSFlyweightWrapper {
     MemberUndefinedFW impl = GWT.create(MemberUndefinedFW.class);
@@ -170,6 +194,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
+  /**
+   * Wraps a JSO that returns valid values. (JSWrapper)
+   */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberValid")
   public interface MemberValid extends JSWrapper<MemberValid> {
@@ -184,6 +211,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString();
   }
 
+  /**
+   * Wraps a JSO that returns valid values. (JSFlyweightWrapper)
+   */
   @BeanProperties
   public interface MemberValidFW extends JSFlyweightWrapper {
     MemberValidFW impl = GWT.create(MemberValidFW.class);
@@ -202,6 +232,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     String getValueString(JavaScriptObject jsoPeer);
   }
 
+  /**
+   * Wraps a JSO that returns valid values. (JSWrapper)
+   */
   @Constructor("$wnd.JSIOBeanReturnUndefined.ReturnUndefined")
   public interface ReturnUndefined extends JSWrapper<ReturnUndefined> {
 
@@ -217,7 +250,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * 
+   * Wraps a JSO that returns valid values. (JSFlyweightWrapper)
    */
   public interface ReturnUndefinedFW extends JSFlyweightWrapper {
     ReturnUndefinedFW impl = GWT.create(ReturnUndefinedFW.class);

@@ -38,7 +38,7 @@ public class JSOpaque {
   /**
    * Object identity between JSOpaque instances is based on their reference.
    * 
-   * @return <code>true</code> iff the other JSOpaque has the same reference.
+   * @return <code>true</code> if the other JSOpaque has the same reference.
    */
   public final boolean equals(JSOpaque o) {
     return reference.equals(o.reference);
@@ -47,18 +47,20 @@ public class JSOpaque {
   /**
    * Allows comparisons of the JSOpaque to JavaScriptObjects.
    */
+  @Override
   public native boolean equals(Object o) /*-{
-   // We use eval so that JSOpaques don't have to be generated classes
-   var result = eval(this.@com.google.gwt.jsio.client.JSOpaque::reference);
-   
-   // Object versus everything else
-   if (typeof(result) == 'object' && typeof(o) == 'object') {
-   return result.equals(o);
-   } else {
-   return result == o;
-   }
-   }-*/;
+    // We use eval so that JSOpaques don't have to be generated classes
+    var result = eval(this.@com.google.gwt.jsio.client.JSOpaque::reference);
+    
+    // Object versus everything else
+    if (typeof(result) == 'object' && typeof(o) == 'object') {
+    return result.equals(o);
+    } else {
+    return result == o;
+    }
+    }-*/;
 
+  @Override
   public int hashCode() {
     return reference.hashCode();
   }
@@ -70,9 +72,9 @@ public class JSOpaque {
    *         identity with the value represented by <code>o</code>.
    */
   public final native boolean identityEquals(JSOpaque o) /*-{
-   return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) ===
-   eval(o.@com.google.gwt.jsio.client.JSOpaque::reference);
-   }-*/;
+    return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) ===
+    eval(o.@com.google.gwt.jsio.client.JSOpaque::reference);
+    }-*/;
 
   /**
    * Convenience method for comparing object identity.
@@ -81,10 +83,11 @@ public class JSOpaque {
    *         identity with <code>o</code>
    */
   public final native boolean identityEquals(Object o) /*-{
-   return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) === o;
-   }-*/;
+    return eval(this.@com.google.gwt.jsio.client.JSOpaque::reference) === o;
+    }-*/;
 
+  @Override
   public native String toString() /*-{
-   return String(eval(this.@com.google.gwt.jsio.client.JSOpaque::reference));
-   }-*/;
+    return String(eval(this.@com.google.gwt.jsio.client.JSOpaque::reference));
+    }-*/;
 }

@@ -58,7 +58,7 @@ public class JsoOverrideTest extends GWTTestCase {
     JavaScriptObject instance();
 
     int multiply(JavaScriptObject jso, int a, int b);
-    
+
     @Global("$wnd.JsoOverrideTest.MathLibFWConstructor.prototype")
     JavaScriptObject prototype();
 
@@ -122,6 +122,7 @@ public class JsoOverrideTest extends GWTTestCase {
     }
   }
 
+  @Override
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIOTest";
   }
@@ -190,59 +191,59 @@ public class JsoOverrideTest extends GWTTestCase {
    * Invokes the MathLib multiply function from JavaScript.
    */
   private native int invokeMultiply(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibInstance.multiply(a, b);
-  }-*/;
+     return $wnd.JsoOverrideTest.MathLibInstance.multiply(a, b);
+   }-*/;
 
   /**
    * Invokes the MathLib multiply function from JavaScript.
    */
   private native int invokeMultiplyFW(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibFWInstance.multiply(a, b);
-  }-*/;
+     return $wnd.JsoOverrideTest.MathLibFWInstance.multiply(a, b);
+   }-*/;
 
   /**
    * Creates a new instance of MathLib to verify that patching the prototype
    * will work for new instances of MathLib.
    */
   private native int invokeMultiplyOnNewInstance(int a, int b) /*-{
-    return (new $wnd.JsoOverrideTest.MathLibConstructor()).multiply(a, b);
-  }-*/;
+     return (new $wnd.JsoOverrideTest.MathLibConstructor()).multiply(a, b);
+   }-*/;
 
   /**
    * Creates a new instance of MathLib to verify that patching the prototype
    * will work for new instances of MathLib.
    */
   private native int invokeMultiplyOnNewInstanceFW(int a, int b) /*-{
-    return (new $wnd.JsoOverrideTest.MathLibFWConstructor()).multiply(a, b);
-  }-*/;
+     return (new $wnd.JsoOverrideTest.MathLibFWConstructor()).multiply(a, b);
+   }-*/;
 
   /**
    * Invokes the MathLib subtract function from JavaScript.
    */
   private native int invokeSubtract(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibInstance.subtract(a, b);
-  }-*/;
+     return $wnd.JsoOverrideTest.MathLibInstance.subtract(a, b);
+   }-*/;
 
   /**
    * Invokes the MathLib subtract function from JavaScript.
    */
   private native int invokeSubtractFW(int a, int b) /*-{
-    return $wnd.JsoOverrideTest.MathLibFWInstance.subtract(a, b);
-  }-*/;
+     return $wnd.JsoOverrideTest.MathLibFWInstance.subtract(a, b);
+   }-*/;
 
   /**
    * Creates a new instance of MathLib to verify that patching the prototype
    * will work for new instances of MathLib.
    */
   private native int invokeSubtractOnNewInstance(int a, int b) /*-{
-    return (new $wnd.JsoOverrideTest.MathLibConstructor()).subtract(a, b);
-  }-*/;
+     return (new $wnd.JsoOverrideTest.MathLibConstructor()).subtract(a, b);
+   }-*/;
 
   /**
    * Creates a new instance of MathLib to verify that patching the prototype
    * will work for new instances of MathLib.
    */
   private native int invokeSubtractOnNewInstanceFW(int a, int b) /*-{
-    return (new $wnd.JsoOverrideTest.MathLibFWConstructor()).subtract(a, b);
-  }-*/;
+     return (new $wnd.JsoOverrideTest.MathLibFWConstructor()).subtract(a, b);
+   }-*/;
 }
