@@ -182,6 +182,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     void setValue(Tree node, int value);
   }
 
+  @Override
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIOTest";
   }
@@ -261,7 +262,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertSame(three, one.getRight());
     assertEquals(2, one.getLeft().getValue());
     assertEquals(3, one.getRight().getValue());
-  };
+  }
 
   public void testPrimitiveSetters() {
     PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
@@ -340,6 +341,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   private native JavaScriptObject makeTreeData() /*-{
-    return {value:42, left:{value:43}, right:{value:44}};
-  }-*/;
+       return {value:42, left:{value:43}, right:{value:44}};
+     }-*/;
 }

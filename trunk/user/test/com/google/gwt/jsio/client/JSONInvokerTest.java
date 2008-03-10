@@ -19,7 +19,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.junit.client.GWTTestCase;
 
 /**
- * Tests native ivocation capabilities of the wrapper classes.
+ * Tests native invocation capabilities of the wrapper classes.
  */
 public class JSONInvokerTest extends GWTTestCase {
   /**
@@ -125,6 +125,9 @@ public class JSONInvokerTest extends GWTTestCase {
   public static interface OtherWrapper extends JSWrapper<OtherWrapper> {
   }
 
+  /**
+   * Another blank interface.
+   */
   @Global("$wnd.JSONInvokerTest.SingletonHello")
   public static interface SingletonHello extends HelloWrapper<SingletonHello> {
   }
@@ -143,6 +146,7 @@ public class JSONInvokerTest extends GWTTestCase {
     String localField;
   }
 
+  @Override
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIOTest";
   }

@@ -253,6 +253,7 @@ public class JSONWrapperTest extends GWTTestCase {
     return toReturn;
   }
 
+  @Override
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIOTest";
   }
@@ -437,7 +438,7 @@ public class JSONWrapperTest extends GWTTestCase {
     assertTrue(ti1.getValue() == 42);
     assertTrue(ti1.getLeft().getValue() == 43);
     assertTrue(ti1.getRight().getValue() == 44);
-  };
+  }
 
   public void testObjectSetters() {
     TreeInterface ti1 = (TreeInterface) GWT.create(TreeInterface.class);
