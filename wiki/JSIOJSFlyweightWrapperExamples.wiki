@@ -16,15 +16,12 @@ This example shows how to implement the Hello World example using JSFlyweightWra
    * using the JSFlyweight interface.
    */
 
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   interface HelloWrapperFw extends JSFlyweightWrapper {
     static HelloWrapperFw impl = GWT.create(HelloWrapperFw.class);
 
-    /**
-     * @gwt.constructor $wnd.Hello
-     */
+   
+    @Constructor("$wnd.Hello")
     JavaScriptObject construct();
 
     public String getHello(JavaScriptObject jso);
@@ -68,9 +65,8 @@ TextThingo.prototype.show = function () {
 The code is similar to the `JSWrapper` example, but a static instance of the generated class is created and stored within the Flyweight object.  Note that each accessor method contains a `JavaScriptObject` as the first parameter:
 
 {{{
-/**
- * @gwt.beanProperties
- */
+
+@BeanProperties
 public interface TextThingoFW extends JSFlyweightWrapper {
   /** 
    * You only need to instantiate TextThingoFW once, so we save it in
@@ -82,9 +78,7 @@ public interface TextThingoFW extends JSFlyweightWrapper {
   public static final TextThingoFW impl = 
     (TextThingoFW) GWT.create(TextThingoFW.class);
   
-  /**
-   * @gwt.constructor $wnd.TextThingo
-   */
+  @Constructor("$wnd.TextThingo")
   public JavaScriptObject construct(Element container, String value);
 
   /* Automatically created bean method to access option property */
@@ -201,16 +195,13 @@ public interface TwoButtonFW extends JSFlyweightWrapper {
   public static final TwoButtonFW impl = 
     (TwoButtonFW) GWT.create(TwoButtonFW.class);
   
-  /**
-   * @gwt.constructor $wnd.TwoButton
-   */
+  
+  @Constructor("$wnd.TwoButton") 
   public JavaScriptObject construct(
       Element container, TwoButtonCallback cb, String buttonOneText, 
       String buttonTwoText);
   
-  /**
-   * @gwt.beanProperties
-   */
+  @BeanProperties
   public String getId(JavaScriptObject jsoPeer);
   
   public void addCallback (JavaScriptObject jsoPeer, TwoButtonCallback cb);
@@ -263,9 +254,7 @@ public class JSFlyweightWrapperCallbackExample implements EntryPoint {
 }
 }}}
 
-== Invoking a method defined in Java from a JavaScript API (Example 1)==
-
-== Invoking a method defined in Java from a JavaScript API (Example 2)==
+== Invoking a method defined in Java from a JavaScript API ==
 
 This example demonstrates one way to invoke a Java method from JavaScript.  In this example, both the called and calling code are wrapped using JSIO.
 
@@ -304,9 +293,7 @@ First, wrap A using JSFlyweightWrapper:
     
     static AWrapper impl = GWT.create(AWrapper.class);
 
-    /**
-     * @gwt.constructor $wnd.A
-     */
+    @Constructor("$wnd.A")
     JavaScriptObject construct();
 
     /*
@@ -315,9 +302,9 @@ First, wrap A using JSFlyweightWrapper:
      */
     void myMethod(JavaScriptObject jso, B bObject);
   }
-}}
+}}}
 
-Next, we need to define a class to hold our new function that we are going to attach to the JavaScript B object.  The method to be exported is annotated with `@gwt.exported`.  The `jsoPeer` field is used later:
+Next, we need to define a class to hold our new function that we are going to attach to the JavaScript B object.  The method to be exported is annotated with `@Exported`.  The `jsoPeer` field is used later:
 
 {{{
 
@@ -332,14 +319,13 @@ Next, we need to define a class to hold our new function that we are going to at
     /**
      * A JavaScript API expects the function myMethod() as a property in this
      * object, so we need to export it.
-     * 
-     * @gwt.exported
      */
+    @Exported
     public abstract String retrieveMessage();
   }
 }}}
 
-Now define a Wrapper class that extends !JSFlyweightWrapper.  A constructor is needed. If you want to add functions to an existing !JavaScript class, you can change the target of the `@gwt.constructor` annotation.  In this case, we are adding the function to a plain !JavaScript object.
+Now define a Wrapper class that extends !JSFlyweightWrapper.  A constructor is needed. If you want to add functions to an existing !JavaScript class, you can change the target of the `@Constructor` annotation.  In this case, we are adding the function to a plain !JavaScript object.
 
 {{{
 
@@ -350,14 +336,11 @@ Now define a Wrapper class that extends !JSFlyweightWrapper.  A constructor is n
     /**
      * Indicates that the method should be used to export methods from a Java
      * object to a JSO.
-     * 
-     * @gwt.binding
      */
+    @Binding
     public void bind(JavaScriptObject obj, B bObject);
 
-    /**
-     * @gwt.constructor Object
-     */
+    @Constructor("Object")
     public JavaScriptObject construct();
   }
 }}}
