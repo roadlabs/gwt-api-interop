@@ -12,12 +12,10 @@ This simple example demonstrates how to access a property in a !JavaScript Objec
 {{{
   /*
    * HelloJSIO.java
-   * A simple wrapper around a single !JavaScript object property named 'hello'
+   * A simple wrapper around a single JavaScript object property named 'hello'
    */
 
-  /**
-  * @gwt.beanProperties
-  */
+  @BeanProperties
   interface HelloWrapper extends JSWrapper {
     public String getHello();
   }
@@ -38,9 +36,7 @@ The following example uses several JSIO features:
  * A !JavaScript function is imported from !JavaScript to Java.
 
 {{{
-/**
- * @gwt.beanProperties
- */
+@BeanProperties
 abstract class MixedWrapper implements JSWrapper {
 
   // Property accessor - read the property named 'a'
@@ -119,14 +115,10 @@ And the resulting web page would display the text, "Goodbye Cruel World" in an e
 Now, we will wrap the API using JSIO so we can access it from GWT.  The following code shows how to wrap the constructor, the start() method, and create bean accessors to the textValue property:
 
 {{{
-/**
- * @gwt.beanProperties
- */
+@BeanProperties
 public interface TextThingo extends JSWrapper {
 
-  /**
-   * @gwt.constructor $wnd.TextThingo
-   */
+  @Constructor("$wnd.TextThingo")
   public TextThingo construct(Element container, String value);
 
   /* Automatically created bean method to access option property */
@@ -157,7 +149,7 @@ You will need to add the JSIO `<inherits>` line to your _<module>_`.gwt.xml` fil
 
 }}}
 
-Now to use the wrapper, you need to use GWT.create() to invoke the JSIO generators, then run the `construct()` method to instantiate the !JavaScript object:
+Now to use the wrapper, you need to use `GWT.create()` to invoke the JSIO generators, then run the `construct()` method to instantiate the !JavaScript object:
 
 {{{
   private TextThingo textThingo;
@@ -211,16 +203,12 @@ function invokeApi () {
 
 The developer is expected to add a function to 'B' to return a string used in the `myMethod()` function.  In GWT, the developer will want to write the definition of `retrieveMessage()` in Java.  For this to work correctly in hosted mode, JSIO must generate special interface code.  For this to work correctly in Web mode, the compiler must be told to preserve the name of the `retrieveMessage()` method.
 
-Wrapping the `A` object is straightforward with JSWrapper.  Note that in this case since our constructor takes no argument, we can annotate with `@gwt.constructor` at the class level:
+Wrapping the `A` object is straightforward with JSWrapper.  Note that in this case since our constructor takes no argument, we can annotate with `@Constructor` at the class level:
 
 {{{
 import com.google.gwt.jsio.client.JSWrapper;
 
-/**
- * 
- * @gwt.constructor $wnd.A
- *
- */
+@Constructor("$wnd.A")
 public interface A extends JSWrapper {
     
     /* A function in the JavaScript API we want to call and pass an instance
@@ -231,25 +219,20 @@ public interface A extends JSWrapper {
 }
 }}}
 
-The `B` object needs to be wrapped in a different way.  Since we are extending it by adding a new method, we cannot represent it with a Java interface.  Instead, we use an abstract class.  The class extends JSWrapper and makes use of the @gwt.exported annotation on the functions that are inteded to be called from within JavaScript:
+The `B` object needs to be wrapped in a different way.  Since we are extending it by adding a new method, we cannot represent it with a Java interface.  Instead, we use an abstract class.  The class extends JSWrapper and makes use of the `@Exported` annotation on the functions that are inteded to be called from within JavaScript:
 
 {{{
 import com.google.gwt.jsio.client.JSWrapper;
 
-/**
- * 
- * @gwt.constructor Object
- *
- */
+@Constructor("Object")
 public abstract class B implements JSWrapper {
   static int numInvocations = 0;
 
   /**
    * A JavaScript API expects the function myMethod() as a property in
    * this object, so we need to export it.
-   * 
-   * @gwt.exported
-   */
+   */ 
+  @Exported
   public String retrieveMessage() {
     numInvocations++;
     return "Hello World! "+numInvocations;
@@ -282,4 +265,3 @@ Below is an example of how to invoke the API from a GWT project:
     RootPanel.get("elementId").add(s);
   }
 }}}
-
