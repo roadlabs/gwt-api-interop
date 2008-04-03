@@ -108,16 +108,6 @@ public class JSONWrapperUtil {
      }-*/;
   };
 
-  public static final Extractor<Long> LONG_EXTRACTOR = new Extractor<Long>() {
-    public native Long fromJS(JavaScriptObject obj) /*-{
-     return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(J)(Number(obj));
-     }-*/;
-
-    public native JavaScriptObject toJS(Long o) /*-{
-     return new Number(o.@java.lang.Long::longValue()());
-     }-*/;
-  };
-  
   public static final Extractor<Short> SHORT_EXTRACTOR = new Extractor<Short>() {
     public native Short fromJS(JavaScriptObject obj) /*-{
      return @com.google.gwt.jsio.client.impl.JSONWrapperUtil::createWrapper(S)(Number(obj));
@@ -160,10 +150,6 @@ public class JSONWrapperUtil {
 
   public static Integer createWrapper(int c) {
     return new Integer(c);
-  }
-
-  public static Long createWrapper(long c) {
-    return new Long(c);
   }
 
   public static Short createWrapper(short c) {

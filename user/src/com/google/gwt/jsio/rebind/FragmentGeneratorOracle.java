@@ -31,7 +31,7 @@ class FragmentGeneratorOracle {
    * All the types of FragmentGenerators that we know about.
    */
   private static final Class<?>[] classes = {
-      BoxedTypeFragmentGenerator.class,
+      LongFragmentGenerator.class, BoxedTypeFragmentGenerator.class,
       JavaScriptObjectFragmentGenerator.class,
       JSFunctionFragmentGenerator.class, JSListFragmentGenerator.class,
       PrimitiveFragmentGenerator.class, StringFragmentGenerator.class,

@@ -122,8 +122,6 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
 
     JavaScriptObject getValueJSO();
 
-    long getValueLong();
-
     short getValueShort();
 
     String getValueString();
@@ -152,8 +150,6 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     JSList<Integer> getValueJSList(JavaScriptObject jsoPeer);
 
     JavaScriptObject getValueJSO(JavaScriptObject jsoPeer);
-
-    long getValueLong(JavaScriptObject jsoPeer);
 
     short getValueShort(JavaScriptObject jsoPeer);
 
