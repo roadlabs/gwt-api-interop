@@ -116,8 +116,6 @@ public class JSONWrapperTest extends GWTTestCase {
 
     Integer getBoxedInt();
 
-    Long getBoxedLong();
-
     Short getBoxedShort();
 
     String getHello();
@@ -134,8 +132,6 @@ public class JSONWrapperTest extends GWTTestCase {
 
     int getUnboxedInt();
 
-    long getUnboxedLong();
-
     short getUnboxedShort();
 
     void setBoxedBoolean(Boolean value);
@@ -149,8 +145,6 @@ public class JSONWrapperTest extends GWTTestCase {
     void setBoxedFloat(Float value);
 
     void setBoxedInt(Integer value);
-
-    void setBoxedLong(Long value);
 
     void setBoxedShort(Short value);
 
@@ -167,8 +161,6 @@ public class JSONWrapperTest extends GWTTestCase {
     void setUnboxedFloat(float value);
 
     void setUnboxedInt(int value);
-
-    void setUnboxedLong(long value);
 
     void setUnboxedShort(short value);
   }
@@ -268,8 +260,6 @@ public class JSONWrapperTest extends GWTTestCase {
     ti.setBoxedDouble(new Double(Math.PI));
     ti.setBoxedFloat(new Float((float) Math.E));
     ti.setBoxedInt(new Integer(42));
-    // TODO(zundel): issue 14: fixup passing of long values
-    // ti.setBoxedLong(new Long(43));
     ti.setBoxedShort(new Short((short) 44));
 
     assertEquals(Boolean.TRUE, ti.getBoxedBoolean());
@@ -278,8 +268,6 @@ public class JSONWrapperTest extends GWTTestCase {
     assertEquals(new Double(Math.PI), ti.getBoxedDouble());
     assertEquals(new Float((float) Math.E), ti.getBoxedFloat());
     assertEquals(new Integer(42), ti.getBoxedInt());
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertEquals(new Long(43), ti.getBoxedLong());
     assertEquals(new Short((short) 44), ti.getBoxedShort());
   }
 
@@ -501,8 +489,6 @@ public class JSONWrapperTest extends GWTTestCase {
     ti.setUnboxedDouble(Math.PI);
     ti.setUnboxedFloat((float) Math.E);
     ti.setUnboxedInt(42);
-    // TODO(zundel): issue 14: fixup passing of long values
-    // ti.setUnboxedLong(43);
     ti.setUnboxedShort((short) 44);
 
     assertTrue(ti.getUnboxedBoolean());
@@ -511,8 +497,6 @@ public class JSONWrapperTest extends GWTTestCase {
     assertTrue(ti.getUnboxedDouble() == Math.PI);
     assertTrue(ti.getUnboxedFloat() == (float) Math.E);
     assertTrue(ti.getUnboxedInt() == 42);
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertTrue(ti.getUnboxedLong() == 43);
     assertTrue(ti.getUnboxedShort() == 44);
   }
 
@@ -573,8 +557,6 @@ public class JSONWrapperTest extends GWTTestCase {
     assertEquals(new Double(0), ti.getBoxedDouble());
     assertEquals(new Float(0), ti.getBoxedFloat());
     assertEquals(new Integer(0), ti.getBoxedInt());
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertEquals(new Long(0), ti.getBoxedLong());
     assertEquals(new Short((short) 0), ti.getBoxedShort());
 
     assertFalse(ti.getUnboxedBoolean());
@@ -583,8 +565,6 @@ public class JSONWrapperTest extends GWTTestCase {
     assertTrue(0.0 == ti.getUnboxedDouble());
     assertTrue(0.0 == ti.getUnboxedFloat());
     assertTrue(0 == ti.getUnboxedInt());
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertTrue(0 == ti.getUnboxedLong());
     assertTrue(0 == ti.getUnboxedShort());
   }
 }

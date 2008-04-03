@@ -44,8 +44,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     Integer getBoxedInt(JavaScriptObject jso);
 
-    Long getBoxedLong(JavaScriptObject jso);
-
     Short getBoxedShort(JavaScriptObject jso);
 
     String getHello(JavaScriptObject jso);
@@ -62,8 +60,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     int getUnboxedInt(JavaScriptObject jso);
 
-    long getUnboxedLong(JavaScriptObject jso);
-
     short getUnboxedShort(JavaScriptObject jso);
 
     void setBoxedBoolean(JavaScriptObject jso, Boolean value);
@@ -77,8 +73,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     void setBoxedFloat(JavaScriptObject jso, Float value);
 
     void setBoxedInt(JavaScriptObject jso, Integer value);
-
-    void setBoxedLong(JavaScriptObject jso, Long value);
 
     void setBoxedShort(JavaScriptObject jso, Short value);
 
@@ -95,8 +89,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     void setUnboxedFloat(JavaScriptObject jso, float value);
 
     void setUnboxedInt(JavaScriptObject jso, int value);
-
-    void setUnboxedLong(JavaScriptObject jso, long value);
 
     void setUnboxedShort(JavaScriptObject jso, short value);
   }
@@ -200,8 +192,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     primitiveInterface.setBoxedDouble(jso, new Double(Math.PI));
     primitiveInterface.setBoxedFloat(jso, new Float((float) Math.E));
     primitiveInterface.setBoxedInt(jso, new Integer(42));
-    // TODO(zundel): issue 14: fixup passing of long values
-    // primitiveInterface.setBoxedLong(jso, new Long(43));
     primitiveInterface.setBoxedShort(jso, new Short((short) 44));
 
     assertEquals(Boolean.TRUE, primitiveInterface.getBoxedBoolean(jso));
@@ -211,8 +201,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertEquals(new Float((float) Math.E),
         primitiveInterface.getBoxedFloat(jso));
     assertEquals(new Integer(42), primitiveInterface.getBoxedInt(jso));
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertEquals(new Long(43), primitiveInterface.getBoxedLong(jso));
     assertEquals(new Short((short) 44), primitiveInterface.getBoxedShort(jso));
   }
 
@@ -279,8 +267,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     primitiveInterface.setUnboxedDouble(jso, Math.PI);
     primitiveInterface.setUnboxedFloat(jso, (float) Math.E);
     primitiveInterface.setUnboxedInt(jso, 42);
-    // TODO(zundel): issue 14: fixup passing of long values
-    // primitiveInterface.setUnboxedLong(jso, 43);
     primitiveInterface.setUnboxedShort(jso, (short) 44);
 
     assertTrue(primitiveInterface.getUnboxedBoolean(jso));
@@ -289,8 +275,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertTrue(primitiveInterface.getUnboxedDouble(jso) == Math.PI);
     assertTrue(primitiveInterface.getUnboxedFloat(jso) == (float) Math.E);
     assertTrue(primitiveInterface.getUnboxedInt(jso) == 42);
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertTrue(primitiveInterface.getUnboxedLong(jso) == 43);
     assertTrue(primitiveInterface.getUnboxedShort(jso) == 44);
   }
 
@@ -332,8 +316,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertEquals(new Double(0), primitiveInterface.getBoxedDouble(jso));
     assertEquals(new Float(0), primitiveInterface.getBoxedFloat(jso));
     assertEquals(new Integer(0), primitiveInterface.getBoxedInt(jso));
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertEquals(new Long(0), primitiveInterface.getBoxedLong(jso));
     assertEquals(new Short((short) 0), primitiveInterface.getBoxedShort(jso));
 
     assertFalse(primitiveInterface.getUnboxedBoolean(jso));
@@ -342,8 +324,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertTrue(0.0 == primitiveInterface.getUnboxedDouble(jso));
     assertTrue(0.0 == primitiveInterface.getUnboxedFloat(jso));
     assertTrue(0 == primitiveInterface.getUnboxedInt(jso));
-    // TODO(zundel): issue 14: fixup passing of long values
-    // assertTrue(0 == primitiveInterface.getUnboxedLong(jso));
     assertTrue(0 == primitiveInterface.getUnboxedShort(jso));
   }
 
