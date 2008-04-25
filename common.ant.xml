@@ -42,6 +42,7 @@
 		<isset property="build.host.ismac" />
 	</condition>
 
+
 	<condition property="build.host.iswindows">
 		<os family="windows" />
 	</condition>
@@ -105,7 +106,7 @@
 	<fail unless="gwt.user.jar.exists" message="Cannot find '${gwt.user.jar}'; perhaps you should define the GWT_HOME environment variable" />
 
 	<condition property="junit.platform.args" value="-XstartOnFirstThread" else="">
-		<equals arg1="${build.host.platform}" arg2="mac" casesensitive="false" />
+ 		<isset property="build.host.ismac" />
 	</condition>
 
 	<!-- JUnit support -->
@@ -156,9 +157,13 @@
 			<mkdir dir="@{test.reports}" />
 
 			<echo message="${javac.out} ${javac.junit.out}" />
-			<junit dir="@{test.out}" fork="yes" printsummary="yes" haltonfailure="true">
-				<jvmarg line="-ea" />
+
+                        <!-- One side effect of setting haltonfailure to    -->
+                        <!-- "true" seems to be that some errors don't get  -->
+                        <!-- written out to the remoteweb report            -->
+			<junit dir="@{test.out}" fork="yes" printsummary="yes" failureproperty="junit.failure" haltonfailure="false">
 				<jvmarg line="${junit.platform.args}" />
+	                        <jvmarg line="-Xmx512m" />
 				<sysproperty key="gwt.args" value="@{test.args}" />
 				<sysproperty key="gwt.devjar" value="${gwt.dev.jar}" />
 				<sysproperty key="java.awt.headless" value="true" />
