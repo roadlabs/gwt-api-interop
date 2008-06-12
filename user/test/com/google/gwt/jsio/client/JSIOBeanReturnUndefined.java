@@ -27,7 +27,7 @@ import com.google.gwt.junit.client.GWTTestCase;
 public class JSIOBeanReturnUndefined extends GWTTestCase {
 
   /**
-   * Wraps a JSO for testing undefined properties (JSWrapper)
+   * Wraps a JSO for testing undefined properties. (JSWrapper)
    */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.EmptyObject")
@@ -42,7 +42,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing undefined properties (JSFlyweightWrapper)
+   * Wraps a JSO for testing undefined properties. (JSFlyweightWrapper)
    */
   @BeanProperties
   public interface EmptyObjectFW extends JSFlyweightWrapper {
@@ -61,7 +61,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing booleans (JSWrapper)
+   * Wraps a JSO for testing booleans. (JSWrapper)
    */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberBoolean")
@@ -80,7 +80,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing booleans (JSWrapper)
+   * Wraps a JSO for testing booleans. (JSWrapper)
    */
   @BeanProperties
   public interface MemberBooleanFW extends JSFlyweightWrapper {
@@ -103,7 +103,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing null values (JSWrapper)
+   * Wraps a JSO for testing null values. (JSWrapper)
    */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberNull")
@@ -128,7 +128,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing null values (JSWrapper)
+   * Wraps a JSO for testing null values. (JSWrapper)
    */
   @BeanProperties
   public interface MemberNullFW extends JSFlyweightWrapper {
@@ -157,7 +157,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing null values (JSWrapper)
+   * Wraps a JSO for testing null values. (JSWrapper)
    */
   @BeanProperties
   @Constructor("$wnd.JSIOBeanReturnUndefined.MemberUndefined")
@@ -172,7 +172,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
   }
 
   /**
-   * Wraps a JSO for testing null values (JSFlyweightWrapper)
+   * Wraps a JSO for testing null values. (JSFlyweightWrapper)
    */
   @BeanProperties
   public interface MemberUndefinedFW extends JSFlyweightWrapper {
@@ -519,6 +519,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     JSList<Integer> jsListResult = memberUndefinedObj.getValueJSList();
     assertTrue(jsListResult == null);
 
+    String stringResult = memberUndefinedObj.getValueString();
+    assertEquals("return undefined String", stringResult, null);
+
     if (!GWT.isScript()) {
       try {
         // throws a HostedModeException: JavaScript undefined, expected
@@ -529,15 +532,8 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
       } catch (RuntimeException e) {
         // Expected Hosted mode exception.
       }
-      try {
-        // throws a HostedModeException: JavaScript undefined, expected
-        // java.lang.String
-        String stringResult = memberUndefinedObj.getValueString();
-        fail("Expected HostedModeException returning undefined String");
-      } catch (RuntimeException e) {
-        // Expected Hosted mode exception.
-      }
-    } // end if running in Hosted Mode
+      // end if running in Hosted Mode
+    }
   }
 
   @SuppressWarnings("unused")
@@ -556,21 +552,15 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     JSList<Integer> jsListResult = MemberUndefinedFW.impl.getValueJSList(peerMemberUndefined);
     assertTrue(jsListResult == null);
 
+    String stringResult = MemberUndefinedFW.impl.getValueString(peerMemberUndefined);
+    assertEquals("Undefined string member", stringResult, null);
+
     if (!GWT.isScript()) {
       try {
         // throws a HostedModeException: JavaScript undefined, expected
         // java.lang.Integer
         int intResult = MemberUndefinedFW.impl.getValueInt(peerMemberUndefined);
         fail("Expected HostedModeException returning undefined int");
-
-      } catch (RuntimeException e) {
-        // Expected Hosted mode exception.
-      }
-      try {
-        // throws a HostedModeException: JavaScript undefined, expected
-        // java.lang.String
-        String stringResult = MemberUndefinedFW.impl.getValueString(peerMemberUndefined);
-        fail("Expected HostedModeException returning undefined String");
       } catch (RuntimeException e) {
         // Expected Hosted mode exception.
       }
@@ -639,6 +629,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     JSList<Integer> jsListResult = returnUndefinedObj.valueJSList();
     assertTrue(jsListResult == null);
 
+    String stringResult = returnUndefinedObj.valueString();
+    assertEquals("undefined string returned from method", stringResult, null);
+
     if (!GWT.isScript()) {
       try {
         // throws a HostedModeException: JavaScript undefined, expected
@@ -656,15 +649,6 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
         int intResult = returnUndefinedObj.valueInt();
         fail("Expected HostedModeException returning undefined int");
 
-      } catch (RuntimeException e) {
-        // Expected Hosted mode exception.
-      }
-
-      try {
-        // throws a HostedModeException: JavaScript undefined, expected
-        // java.lang.String
-        String stringResult = returnUndefinedObj.valueString();
-        fail("Expected HostedModeException returning undefined String");
       } catch (RuntimeException e) {
         // Expected Hosted mode exception.
       }
@@ -687,6 +671,9 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
     JSList<Integer> jsListResult = ReturnUndefinedFW.impl.valueJSList(peerReturnUndefined);
     assertTrue(jsListResult == null);
 
+    String stringResult = ReturnUndefinedFW.impl.valueString(peerReturnUndefined);
+    assertEquals("undefined string returned from method", stringResult, null);
+
     if (!GWT.isScript()) {
       try {
         // throws a HostedModeException: JavaScript undefined, expected
@@ -706,14 +693,7 @@ public class JSIOBeanReturnUndefined extends GWTTestCase {
       } catch (RuntimeException e) {
         // Expected Hosted mode exception.
       }
-      try {
-        // throws a HostedModeException: JavaScript undefined, expected
-        // java.lang.String
-        String stringResult = ReturnUndefinedFW.impl.valueString(peerReturnUndefined);
-        fail("Expected HostedModeException returning undefined String");
-      } catch (RuntimeException e) {
-        // Expected Hosted mode exception.
-      }
+
     } // end if running in Hosted Mode
   }
 }

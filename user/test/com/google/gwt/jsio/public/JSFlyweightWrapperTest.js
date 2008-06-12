@@ -32,7 +32,34 @@
   C.prototype.getTree = function() {
     return this.tree;
   }
+  
+  // One class in JS can handle an array of any type.  Not so for Java.
+  var ArrayTest = function () {
+    this.stringArrayValue = new Array();
+  }
+
+  ArrayTest.prototype.setArray = function(arr) {
+    this.stringArrayValue = arr;
+  }
+  
+  ArrayTest.prototype.getArray = function() {
+    return this.stringArrayValue;
+  }
+  
+  ArrayTest.prototype.getIndex = function(i) {
+    return this.stringArrayValue[i];
+  }
+  
+  ArrayTest.prototype.getLength = function() {
+    return this.stringArrayValue.length;
+  }
+  
+  ArrayTest.prototype.clear = function() {
+    this.stringArrayValue = new Array();
+  }
+  
 
   JSFlyweightWrapperTest = {};
   JSFlyweightWrapperTest.ConstructedObject = C;
+  JSFlyweightWrapperTest.ArrayTest = ArrayTest;
 })();

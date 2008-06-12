@@ -23,6 +23,41 @@ import com.google.gwt.junit.client.GWTTestCase;
  * Tests the flyweight variant of the JSWrapper.
  */
 public class JSFlyweightWrapperTest extends GWTTestCase {
+
+  static interface ArrayInterface extends JSFlyweightWrapper {
+    void clear(JavaScriptObject jso);
+
+    @Constructor("$wnd.JSFlyweightWrapperTest.ArrayTest")
+    JavaScriptObject construct();
+
+    String getIndex(JavaScriptObject jso, int i);
+
+    @FieldName("getArray")
+    JSList<Integer> getIntegerArray(JavaScriptObject jso);
+
+    int getLength(JavaScriptObject jso);
+
+    @FieldName("getArray")
+    JSList<String> getStringArray(JavaScriptObject jso);
+
+    @FieldName("setArray")
+    void setIntegerArray(JavaScriptObject jso, JSList<Integer> arrayArg);
+
+    @FieldName("setArray")
+    void setStringArray(JavaScriptObject jso, JSList<String> arrayArg);
+  }
+
+  static interface ConstructedInterface extends JSFlyweightWrapper {
+    @Constructor("$wnd.JSFlyweightWrapperTest.ConstructedObject")
+    JavaScriptObject construct(String a, int b, Tree t);
+
+    int getInt(JavaScriptObject obj);
+
+    String getString(JavaScriptObject obj);
+
+    Tree getTree(JavaScriptObject obj);
+  }
+
   /**
    * Contains getters for all primitive types.
    */
@@ -91,17 +126,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     void setUnboxedInt(JavaScriptObject jso, int value);
 
     void setUnboxedShort(JavaScriptObject jso, short value);
-  }
-
-  static interface ConstructedInterface extends JSFlyweightWrapper {
-    @Constructor("$wnd.JSFlyweightWrapperTest.ConstructedObject")
-    JavaScriptObject construct(String a, int b, Tree t);
-
-    int getInt(JavaScriptObject obj);
-
-    String getString(JavaScriptObject obj);
-
-    Tree getTree(JavaScriptObject obj);
   }
 
   static class Tree {
@@ -174,12 +198,125 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     void setValue(Tree node, int value);
   }
 
+  private static native void nativeTestIntegerArrayToJS(JavaScriptObject peer) /*-{
+    // peer should be an instance of ArrayTest
+    if (! peer instanceof $wnd.JSFlyweightWrapperTest.ArrayTest) {
+      throw new Error("Expected instance of $wnd.JSFlyweightWrapperTest.ArrayTest");
+    }
+    var arr = peer.getArray(); 
+    if (arr.length != 3) {
+      throw new Error("Expected three elements in the array got " + arr.length);
+    }
+  
+    if (arr[0] != 1) {
+      throw new Error("Expected arr[0] == 0 but got " + arr[0]);
+    }
+    if (arr[1] != 100) {
+      throw new Error("Expected arr[1] == 100 but got " + arr[1]);
+    }
+    if (arr[2] != -100) {
+      throw new Error("Expected arr[2] == -100 but got " + arr[2]);
+    } 
+  }-*/;
+
+  private static native void nativeTestStringArrayToJS(JavaScriptObject peer) /*-{
+  // peer should be an instance of ArrayTest
+  if (! peer instanceof $wnd.JSFlyweightWrapperTest.ArrayTest) {
+    throw new Error("Expected instance of $wnd.JSFlyweightWrapperTest.ArrayTest");
+  }
+  var arr = peer.getArray(); 
+  if (arr.length != 3) {
+    throw new Error("Expected three elements in the array, got " + arr.length);
+  }
+  if (arr[0] != "Peter") {
+    throw new Error ("Expected arr[0] == Mary got " + arr[0] );
+  }
+  if (arr[1] != "Paul")  {
+    throw new Error ("Expected arr[1] == Paul got " + arr[1] );
+  } 
+  if (arr[2] != "Mary") {
+    throw new Error ("Expected arr[2] == Mary got " + arr[2] );
+  }
+}-*/;
+
   @Override
   public String getModuleName() {
     return "com.google.gwt.jsio.JSIOTest";
   }
 
-  
+  public void testArrayIntegerToJS() {
+    int arrayLength = 3;
+    ArrayInterface arrayInterface = GWT.create(ArrayInterface.class);
+    JavaScriptObject jso = arrayInterface.construct();
+
+    JSList<Integer> jslist = arrayInterface.getIntegerArray(jso);
+
+    Integer intArray[] = new Integer[arrayLength];
+
+    intArray[0] = Integer.valueOf(1);
+    intArray[1] = Integer.valueOf(100);
+    intArray[2] = Integer.valueOf(-100);
+
+    for (Integer i : intArray) {
+      jslist.add(i);
+    }
+
+    arrayInterface.setIntegerArray(jso, jslist);
+
+    assertTrue("Expected 3 elements in the array",
+        arrayInterface.getLength(jso) == arrayLength);
+    JSList<Integer> jslist2 = arrayInterface.getIntegerArray(jso);
+    assertTrue("stringArray2 expected to be 3 elements long",
+        jslist2.size() == arrayLength);
+    for (int i = 0; i < arrayLength; ++i) {
+      assertTrue("Element: " + i + " didn't match.  " + intArray[i] + " != "
+          + jslist2.get(i), jslist2.get(i).equals(intArray[i]));
+    }
+    // Do a few tests from the JavaScript side to make sure the data is intact
+    nativeTestIntegerArrayToJS(jso);
+
+    arrayInterface.clear(jso);
+    assertTrue(arrayInterface.getLength(jso) == 0);
+  }
+
+  /**
+   * Test creating an array in Java, accessing it in JS.
+   */
+  public void testArrayStringArrayToJS() {
+    int arrayLength = 3;
+    ArrayInterface arrayInterface = GWT.create(ArrayInterface.class);
+    JavaScriptObject jso = arrayInterface.construct();
+
+    JSList<String> jslist = arrayInterface.getStringArray(jso);
+
+    String stringArray[] = new String[arrayLength];
+    stringArray[0] = "Peter";
+    stringArray[1] = "Paul";
+    stringArray[2] = "Mary";
+
+    for (String s : stringArray) {
+      jslist.add(s);
+    }
+
+    arrayInterface.setStringArray(jso, jslist);
+
+    assertTrue("Expected 3 elements in the array",
+        arrayInterface.getLength(jso) == arrayLength);
+    JSList<String> jslist2 = arrayInterface.getStringArray(jso);
+    assertTrue("stringArray2 expected to be 3 elements long",
+        jslist2.size() == arrayLength);
+    for (int i = 0; i < arrayLength; ++i) {
+      assertTrue("Element: " + i + " didn't match.  " + stringArray[i] + " != "
+          + jslist2.get(i), jslist2.get(i).equals(stringArray[i]));
+    }
+
+    // Do a few tests from the JavaScript side to make sure the data is intact
+    nativeTestStringArrayToJS(jso);
+
+    arrayInterface.clear(jso);
+    assertTrue(arrayInterface.getLength(jso) == 0);
+  }
+
   public void testBoxedSetters() {
     PrimitiveInterface primitiveInterface = (PrimitiveInterface) GWT.create(PrimitiveInterface.class);
     assertTrue(primitiveInterface != null);
@@ -216,7 +353,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
     assertSame(tree, ci.getTree(jso));
   }
 
-  public void testObjectGetters() throws JSONWrapperException {
+  public void testObjectGetters() {
     Tree parent = new Tree();
 
     assertNotNull(parent);
@@ -263,6 +400,7 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
 
     primitiveInterface.setUnboxedBoolean(jso, true);
     primitiveInterface.setUnboxedByte(jso, (byte) 0x42);
+    // there is something wrong with this test case.
     primitiveInterface.setUnboxedChar(jso, 'A');
     primitiveInterface.setUnboxedDouble(jso, Math.PI);
     primitiveInterface.setUnboxedFloat(jso, (float) Math.E);
@@ -328,6 +466,6 @@ public class JSFlyweightWrapperTest extends GWTTestCase {
   }
 
   private native JavaScriptObject makeTreeData() /*-{
-       return {value:42, left:{value:43}, right:{value:44}};
-     }-*/;
+    return {value:42, left:{value:43}, right:{value:44}};
+  }-*/;
 }
