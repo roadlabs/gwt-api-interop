@@ -63,8 +63,7 @@ class StringFragmentGenerator extends FragmentGenerator {
 
   @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
-    // No need for a String Extractor - The JavaScriptObject class is not an
+    // No need to write a String Extractor - The JavaScriptObject class is not an
     // appropriate representation
-    throw new RuntimeException("Internal Errror: String members to not need an Extractor.");
   }
 }
