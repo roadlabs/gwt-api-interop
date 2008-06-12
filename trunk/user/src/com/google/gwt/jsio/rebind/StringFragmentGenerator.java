@@ -36,7 +36,7 @@ class StringFragmentGenerator extends FragmentGenerator {
       return isAssignable(oracle, asClass, String.class);
     }
   }
-  
+
   @Override
   void fromJS(FragmentGeneratorContext context)
       throws UnableToCompleteException {
@@ -63,7 +63,8 @@ class StringFragmentGenerator extends FragmentGenerator {
 
   @Override
   void writeExtractorJSNIReference(FragmentGeneratorContext context) {
-    SourceWriter sw = context.sw;
-    sw.print("@com.google.gwt.jsio.client.impl.JSONWrapperUtil::STRING_EXTRACTOR");
+    // No need for a String Extractor - The JavaScriptObject class is not an
+    // appropriate representation
+    throw new RuntimeException("Internal Errror: String members to not need an Extractor.");
   }
 }
