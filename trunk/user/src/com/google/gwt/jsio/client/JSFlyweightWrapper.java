@@ -25,7 +25,10 @@ import com.google.gwt.core.client.JavaScriptObject;
  * JavaScriptObject.
  * 
  * @see <a href="package-summary.html#package_description">JSIO reference</a>
+ *
+ * @deprecated use subclasses of {@link JavaScriptObject} instead.
  */
+@Deprecated
 public interface JSFlyweightWrapper {
   /**
    * Allows access to flyweight internals.
