@@ -23,7 +23,10 @@ import com.google.gwt.jsio.client.impl.Extractor;
  * 
  * @param <T> A self-referential generic type
  * @see <a href="package-summary.html#package_description">JSIO reference</a>
+ *
+ * @deprecated use subclasses of {@link JavaScriptObject} instead.
  */
+@Deprecated
 public interface JSWrapper<T extends JSWrapper<T>> {
 
   /**
