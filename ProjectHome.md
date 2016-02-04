@@ -1,0 +1,3 @@
+Allows for no-JSNI interop with existing JavaScript libraries by declaring a Java interface for use in the [Google Web Toolkit](http://code.google.com/webtoolkit/)
+
+This project exists to allow the interop facility to be developed independently of the main GWT trunk as an experimental project.  It is currently used by the [gwt-google-api](http://code.google.com/p/gwt-google-apis) and [GWT Feed Reader](http://code.google.com/p/gwt-feed-reader) projects.
